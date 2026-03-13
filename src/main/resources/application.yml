@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: process-automation-example
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:vacation-approval}
+    username: ${POSTGRES_USER:user}
+    password: ${POSTGRES_PASSWORD:secret}
+    driver-class-name: org.postgresql.Driver
+
+  flyway:
+    enabled: true
+    locations: "classpath:db/migration/data"
+
+camunda:
+  bpm:
+    auto-deployment-enabled: false
+    admin-user:
+      id: ${CAMUNDA_ADMIN_USER:admin}
+      password: ${CAMUNDA_ADMIN_PASSWORD:admin}
+      first-name: ${CAMUNDA_ADMIN_FIRST_NAME:Admin}
+      last-name: ${CAMUNDA_ADMIN_LAST_NAME:Admin}

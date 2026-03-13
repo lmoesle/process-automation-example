@@ -1,0 +1,11 @@
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
+      - org.camunda.bpm.spring.boot.starter.rest.CamundaBpmRestJerseyAutoConfiguration
+      - org.camunda.bpm.spring.boot.starter.webapp.CamundaBpmWebappAutoConfiguration
+
+camunda:
+  bpm:
+    enabled: false
