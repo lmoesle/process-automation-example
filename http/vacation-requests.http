@@ -1,0 +1,16 @@
+@baseUrl = http://localhost:8080
+@contentType = application/json
+@applicantUserId = 772699cf-4ebd-4eb1-bf18-0f6d7569d9bb
+@substituteUserId = 1deec1f5-2f8d-456d-bef5-b3fb75f6f028
+
+### Create vacation request
+POST {{baseUrl}}/api/vacation-requests
+Content-Type: {{contentType}}
+Accept: application/json
+
+{
+  "from": "2026-07-01",
+  "to": "2026-07-10",
+  "applicantUserId": "{{applicantUserId}}",
+  "substituteUserId": "{{substituteUserId}}"
+}

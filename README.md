@@ -84,3 +84,10 @@ After startup, the Camunda web application is available at:
 ```text
 http://localhost:8080/camunda/app/
 ```
+
+The OpenAPI description and Swagger UI are available at:
+
+```text
+http://localhost:8080/v3/api-docs
+http://localhost:8080/swagger-ui/index.html
+```
