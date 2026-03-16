@@ -2,7 +2,7 @@ package de.lmoesle.processautomationexample.adapter.in.rest;
 
 import de.lmoesle.processautomationexample.application.ports.in.CreateVacationRequestInPort;
 import de.lmoesle.processautomationexample.application.ports.in.CreateVacationRequestInPort.CreateVacationRequestResult;
-import de.lmoesle.processautomationexample.domain.vacationrequest.ProcessInstanceId;
+import de.lmoesle.processautomationexample.domain.user.UserTestData;
 import de.lmoesle.processautomationexample.domain.vacationrequest.VacationRequestId;
 import de.lmoesle.processautomationexample.domain.vacationrequest.VacationRequestTestData;
 import org.junit.jupiter.api.Test;
@@ -41,7 +41,9 @@ class CreateVacationRequestControllerTest {
         when(createVacationRequestInPort.createVacationRequest(any()))
             .thenReturn(new CreateVacationRequestResult(
                 VacationRequestId.of(vacationRequestId),
-                VacationRequestTestData.processInstanceId()
+                VacationRequestTestData.processInstanceId(),
+                UserTestData.ada(),
+                UserTestData.carla()
             ));
 
         mockMvc.perform(post("/api/vacation-requests")
@@ -59,9 +61,13 @@ class CreateVacationRequestControllerTest {
             .andExpect(jsonPath("$.id").value(vacationRequestId.toString()))
             .andExpect(jsonPath("$.from").value("2026-07-01"))
             .andExpect(jsonPath("$.to").value("2026-07-10"))
-            .andExpect(jsonPath("$.applicantUserId").value(applicantUserId.toString()))
-            .andExpect(jsonPath("$.substituteUserId").value(substituteUserId.toString()))
-            .andExpect(jsonPath("$.processInstanceId").value(VacationRequestTestData.PROCESS_INSTANCE_ID_VALUE));
+            .andExpect(jsonPath("$.applicantUser.id").doesNotExist())
+            .andExpect(jsonPath("$.applicantUser.name").value(UserTestData.ada().name()))
+            .andExpect(jsonPath("$.applicantUser.email").value(UserTestData.ada().email()))
+            .andExpect(jsonPath("$.substituteUser.id").doesNotExist())
+            .andExpect(jsonPath("$.substituteUser.name").value(UserTestData.carla().name()))
+            .andExpect(jsonPath("$.substituteUser.email").value(UserTestData.carla().email()))
+            .andExpect(jsonPath("$.processInstanceId").doesNotExist());
     }
 
     @Test

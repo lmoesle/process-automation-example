@@ -1,7 +1,7 @@
 package de.lmoesle.processautomationexample.adapter.in.rest;
 
-import de.lmoesle.processautomationexample.adapter.in.rest.dto.CreateVacationRequestRequest;
-import de.lmoesle.processautomationexample.adapter.in.rest.dto.CreateVacationRequestResponse;
+import de.lmoesle.processautomationexample.adapter.in.rest.dto.CreateVacationRequestDto;
+import de.lmoesle.processautomationexample.adapter.in.rest.dto.VacationRequestDto;
 import de.lmoesle.processautomationexample.application.ports.in.CreateVacationRequestInPort;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -39,7 +39,7 @@ public class CreateVacationRequestController {
             description = "Vacation request created successfully.",
             content = @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = CreateVacationRequestResponse.class)
+                schema = @Schema(implementation = VacationRequestDto.class)
             )
         ),
         @ApiResponse(
@@ -51,18 +51,11 @@ public class CreateVacationRequestController {
             )
         )
     })
-    public ResponseEntity<CreateVacationRequestResponse> createVacationRequest(
-        @Valid @RequestBody CreateVacationRequestRequest request
+    public ResponseEntity<VacationRequestDto> createVacationRequest(
+        @Valid @RequestBody CreateVacationRequestDto request
     ) {
         var result = createVacationRequestInPort.createVacationRequest(request.toCommand());
-        var response = new CreateVacationRequestResponse(
-            result.vacationRequestId().value(),
-            request.from(),
-            request.to(),
-            request.applicantUserId(),
-            request.substituteUserId(),
-            result.processInstanceId().value()
-        );
+        var response = VacationRequestDto.from(result, request.from(), request.to());
 
         return ResponseEntity
             .created(URI.create("/api/vacation-requests/" + result.vacationRequestId().value()))

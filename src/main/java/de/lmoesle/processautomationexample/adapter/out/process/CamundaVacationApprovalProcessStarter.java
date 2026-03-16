@@ -53,10 +53,10 @@ public class CamundaVacationApprovalProcessStarter implements StartVacationAppro
         variables.put("vacationRequestId", vacationRequest.id().value().toString());
         variables.put("from", vacationRequest.period().from().toString());
         variables.put("to", vacationRequest.period().to().toString());
-        variables.put("applicantUserId", vacationRequest.applicantUserId().value().toString());
+        variables.put("applicantUserId", vacationRequest.applicantUser().id().value().toString());
 
-        if (vacationRequest.substituteUserId() != null) {
-            variables.put("substituteUserId", vacationRequest.substituteUserId().value().toString());
+        if (vacationRequest.substituteUser() != null) {
+            variables.put("substituteUserId", vacationRequest.substituteUser().id().value().toString());
         }
 
         return variables;

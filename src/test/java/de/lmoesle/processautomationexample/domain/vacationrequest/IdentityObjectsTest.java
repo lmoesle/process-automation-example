@@ -1,5 +1,6 @@
 package de.lmoesle.processautomationexample.domain.vacationrequest;
 
+import de.lmoesle.processautomationexample.domain.user.UserId;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

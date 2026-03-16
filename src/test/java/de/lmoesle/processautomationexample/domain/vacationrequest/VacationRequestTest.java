@@ -15,15 +15,15 @@ class VacationRequestTest {
         VacationRequest vacationRequest = VacationRequest.submit(
             VacationRequestTestData.FROM,
             VacationRequestTestData.TO,
-            VacationRequestTestData.applicantUserId(),
-            VacationRequestTestData.substituteUserId()
+            VacationRequestTestData.applicantUser(),
+            VacationRequestTestData.substituteUser()
         );
 
         assertThat(vacationRequest.id()).isNotNull();
         assertThat(vacationRequest.period().from()).isEqualTo(VacationRequestTestData.FROM);
         assertThat(vacationRequest.period().to()).isEqualTo(VacationRequestTestData.TO);
-        assertThat(vacationRequest.applicantUserId()).isEqualTo(VacationRequestTestData.applicantUserId());
-        assertThat(vacationRequest.substituteUserId()).isEqualTo(VacationRequestTestData.substituteUserId());
+        assertThat(vacationRequest.applicantUser()).isEqualTo(VacationRequestTestData.applicantUser());
+        assertThat(vacationRequest.substituteUser()).isEqualTo(VacationRequestTestData.substituteUser());
         assertThat(vacationRequest.processInstanceId()).isNull();
     }
 
@@ -32,16 +32,16 @@ class VacationRequestTest {
         VacationRequest vacationRequest = VacationRequest.reconstitute(
             VacationRequestTestData.vacationRequestId(),
             VacationRequestTestData.vacationPeriod(),
-            VacationRequestTestData.applicantUserId(),
-            VacationRequestTestData.substituteUserId(),
+            VacationRequestTestData.applicantUser(),
+            VacationRequestTestData.substituteUser(),
             VacationRequestTestData.processInstanceId()
         );
 
         assertThat(vacationRequest.id()).isEqualTo(VacationRequestTestData.vacationRequestId());
         assertThat(vacationRequest.period().from()).isEqualTo(VacationRequestTestData.FROM);
         assertThat(vacationRequest.period().to()).isEqualTo(VacationRequestTestData.TO);
-        assertThat(vacationRequest.applicantUserId()).isEqualTo(VacationRequestTestData.applicantUserId());
-        assertThat(vacationRequest.substituteUserId()).isEqualTo(VacationRequestTestData.substituteUserId());
+        assertThat(vacationRequest.applicantUser()).isEqualTo(VacationRequestTestData.applicantUser());
+        assertThat(vacationRequest.substituteUser()).isEqualTo(VacationRequestTestData.substituteUser());
         assertThat(vacationRequest.processInstanceId()).isEqualTo(VacationRequestTestData.processInstanceId());
     }
 
@@ -50,7 +50,7 @@ class VacationRequestTest {
         assertThatThrownBy(() -> VacationRequest.submit(
             LocalDate.parse("2026-07-10"),
             LocalDate.parse("2026-07-01"),
-            VacationRequestTestData.applicantUserId(),
+            VacationRequestTestData.applicantUser(),
             null
         ))
             .isInstanceOf(IllegalArgumentException.class)
@@ -58,15 +58,15 @@ class VacationRequestTest {
     }
 
     @Test
-    void rejectsMissingApplicantUserId() {
+    void rejectsMissingApplicantUser() {
         assertThatThrownBy(() -> VacationRequest.submit(
             VacationRequestTestData.FROM,
             VacationRequestTestData.TO,
             null,
-            VacationRequestTestData.substituteUserId()
+            VacationRequestTestData.substituteUser()
         ))
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("applicantUserId must not be null");
+            .hasMessage("applicantUser must not be null");
     }
 
     @Test

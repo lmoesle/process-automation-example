@@ -1,8 +1,9 @@
 package de.lmoesle.processautomationexample.application.ports.in;
 
 import de.lmoesle.processautomationexample.domain.vacationrequest.ProcessInstanceId;
-import de.lmoesle.processautomationexample.domain.vacationrequest.UserId;
 import de.lmoesle.processautomationexample.domain.vacationrequest.VacationRequestId;
+import de.lmoesle.processautomationexample.domain.user.User;
+import de.lmoesle.processautomationexample.domain.user.UserId;
 
 import java.time.LocalDate;
 
@@ -20,7 +21,9 @@ public interface CreateVacationRequestInPort {
 
     record CreateVacationRequestResult(
         VacationRequestId vacationRequestId,
-        ProcessInstanceId processInstanceId
+        ProcessInstanceId processInstanceId,
+        User applicantUser,
+        User substituteUser
     ) {
     }
 }

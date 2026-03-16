@@ -1,7 +1,7 @@
 package de.lmoesle.processautomationexample.adapter.in.rest.dto;
 
 import de.lmoesle.processautomationexample.application.ports.in.CreateVacationRequestInPort.CreateVacationRequestCommand;
-import de.lmoesle.processautomationexample.domain.vacationrequest.UserId;
+import de.lmoesle.processautomationexample.domain.user.UserId;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.UUID;
 
-public record CreateVacationRequestRequest(
+public record CreateVacationRequestDto(
     @Schema(
         description = "Start date of the requested vacation period.",
         example = "2026-07-01"
@@ -22,12 +22,12 @@ public record CreateVacationRequestRequest(
     @NotNull LocalDate to,
     @Schema(
         description = "User id of the applicant creating the vacation request.",
-        example = "772699cf-4ebd-4eb1-bf18-0f6d7569d9bb"
+        example = "2d88b39b-e7b0-4a3f-b9c6-b3d8e6fbe100"
     )
     @NotNull UUID applicantUserId,
     @Schema(
         description = "Optional user id of the substitute during the vacation period.",
-        example = "1deec1f5-2f8d-456d-bef5-b3fb75f6f028",
+        example = "f9821988-db4f-4daa-9414-6cc5227f7102",
         nullable = true
     )
     UUID substituteUserId

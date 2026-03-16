@@ -1,4 +1,4 @@
-package de.lmoesle.processautomationexample.domain.vacationrequest;
+package de.lmoesle.processautomationexample.domain.user;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
