@@ -21,7 +21,7 @@
     <bpmn:sequenceFlow id="Flow_18do1vp" name="Nein" sourceRef="Gateway_01y0omz" targetRef="Event_1a2z938">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${gueltig == false}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:userTask id="Activity_0tid0x1" name="Genehmigung von Vorgesetztem">
+    <bpmn:userTask id="Activity_0tid0x1" name="Genehmigung von Vorgesetztem" camunda:candidateUsers="${teamLeadIds}">
       <bpmn:incoming>Flow_1sa7ezg</bpmn:incoming>
       <bpmn:outgoing>Flow_1st3ry8</bpmn:outgoing>
     </bpmn:userTask>
@@ -73,6 +73,12 @@
           <dc:Bounds x="407" y="57.5" width="66" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1a2z938_di" bpmnElement="Event_1a2z938">
+        <dc:Bounds x="602" y="222" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="595" y="265" width="50" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0casvwx_di" bpmnElement="Activity_0tid0x1">
         <dc:Bounds x="570" y="80" width="100" height="80" />
       </bpmndi:BPMNShape>
@@ -82,13 +88,10 @@
           <dc:Bounds x="773" y="71" width="54" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0onb814_di" bpmnElement="automatic_check">
-        <dc:Bounds x="260" y="80" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1a2z938_di" bpmnElement="Event_1a2z938">
-        <dc:Bounds x="602" y="222" width="36" height="36" />
+      <bpmndi:BPMNShape id="Event_1x1pzdi_di" bpmnElement="Event_1x1pzdi">
+        <dc:Bounds x="922" y="102" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="595" y="265" width="50" height="14" />
+          <dc:Bounds x="913" y="145" width="54" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0t9knc8_di" bpmnElement="Event_0t9knc8">
@@ -97,11 +100,8 @@
           <dc:Bounds x="915" y="265" width="50" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1x1pzdi_di" bpmnElement="Event_1x1pzdi">
-        <dc:Bounds x="922" y="102" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="913" y="145" width="54" height="14" />
-        </bpmndi:BPMNLabel>
+      <bpmndi:BPMNShape id="Activity_0onb814_di" bpmnElement="automatic_check">
+        <dc:Bounds x="260" y="80" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_11hl1ga_di" bpmnElement="Flow_11hl1ga">
         <di:waypoint x="209" y="120" />

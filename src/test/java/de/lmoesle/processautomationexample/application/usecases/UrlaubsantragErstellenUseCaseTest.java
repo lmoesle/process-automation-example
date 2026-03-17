@@ -4,6 +4,8 @@ import de.lmoesle.processautomationexample.application.ports.in.UrlaubsantragErs
 import de.lmoesle.processautomationexample.application.ports.out.UrlaubsantragSpeichernOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.UrlaubsantragGenehmigungsprozessStartenOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.BenutzerRepositoryOutPort;
+import de.lmoesle.processautomationexample.domain.benutzer.Benutzer;
+import de.lmoesle.processautomationexample.domain.benutzer.BenutzerTestdaten;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.ProzessinstanzId;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.Urlaubsantrag;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.UrlaubsantragStatus;
@@ -12,12 +14,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -46,6 +50,12 @@ class UrlaubsantragErstellenUseCaseTest {
 
     @Test
     void savesRequestStartsProcessAndPersistsProzessinstanzId() {
+        Benutzer antragstellerMitTeams = Benutzer.rekonstituiere(
+            UrlaubsantragTestData.antragstellerId(),
+            "Applicant Benutzer",
+            "applicant.user@example.com",
+            List.of(BenutzerTestdaten.engineeringLeadTeam(), BenutzerTestdaten.platformUserTeam())
+        );
         AtomicInteger saveInvocationCounter = new AtomicInteger();
         doAnswer(invocation -> {
             Urlaubsantrag urlaubsantrag = invocation.getArgument(0);
@@ -55,7 +65,7 @@ class UrlaubsantragErstellenUseCaseTest {
                 assertThat(urlaubsantrag.prozessinstanzId()).isNull();
             }
 
-            assertThat(urlaubsantrag.antragsteller()).isEqualTo(UrlaubsantragTestData.antragsteller());
+            assertThat(urlaubsantrag.antragsteller()).isEqualTo(antragstellerMitTeams);
             assertThat(urlaubsantrag.vertretung()).isEqualTo(UrlaubsantragTestData.vertretung());
 
             if (currentInvocation == 2) {
@@ -65,13 +75,19 @@ class UrlaubsantragErstellenUseCaseTest {
             return urlaubsantrag;
         }).when(urlaubsantragSpeichernOutPort).speichere(any(Urlaubsantrag.class));
         when(benutzerRepositoryOutPort.findeNachId(UrlaubsantragTestData.antragstellerId()))
-            .thenReturn(Optional.of(UrlaubsantragTestData.antragsteller()));
+            .thenReturn(Optional.of(antragstellerMitTeams));
         when(benutzerRepositoryOutPort.findeNachId(UrlaubsantragTestData.vertretungId()))
             .thenReturn(Optional.of(UrlaubsantragTestData.vertretung()));
-        when(genehmigungsprozessStartenOutPort.starteGenehmigungsprozessFuer(any(Urlaubsantrag.class)))
+        when(benutzerRepositoryOutPort.findeAlleLeitendenNachTeamId(BenutzerTestdaten.engineeringTeamId()))
+            .thenReturn(List.of(BenutzerTestdaten.ada()));
+        when(benutzerRepositoryOutPort.findeAlleLeitendenNachTeamId(BenutzerTestdaten.platformTeamId()))
+            .thenReturn(List.of(BenutzerTestdaten.carla()));
+        when(genehmigungsprozessStartenOutPort.starteGenehmigungsprozessFuer(any(Urlaubsantrag.class), any()))
             .thenAnswer(invocation -> {
                 Urlaubsantrag urlaubsantrag = invocation.getArgument(0);
                 assertThat(urlaubsantrag.prozessinstanzId()).isNull();
+                assertThat(invocation.<List<de.lmoesle.processautomationexample.domain.benutzer.BenutzerId>>getArgument(1))
+                    .containsExactly(BenutzerTestdaten.adaId(), BenutzerTestdaten.carlaId());
                 return UrlaubsantragTestData.prozessinstanzId();
             });
 
@@ -88,13 +104,18 @@ class UrlaubsantragErstellenUseCaseTest {
         inOrder.verify(benutzerRepositoryOutPort).findeNachId(UrlaubsantragTestData.antragstellerId());
         inOrder.verify(benutzerRepositoryOutPort).findeNachId(UrlaubsantragTestData.vertretungId());
         inOrder.verify(urlaubsantragSpeichernOutPort).speichere(any(Urlaubsantrag.class));
-        inOrder.verify(genehmigungsprozessStartenOutPort).starteGenehmigungsprozessFuer(any(Urlaubsantrag.class));
+        inOrder.verify(benutzerRepositoryOutPort).findeAlleLeitendenNachTeamId(BenutzerTestdaten.engineeringTeamId());
+        inOrder.verify(benutzerRepositoryOutPort).findeAlleLeitendenNachTeamId(BenutzerTestdaten.platformTeamId());
+        inOrder.verify(genehmigungsprozessStartenOutPort).starteGenehmigungsprozessFuer(
+            any(Urlaubsantrag.class),
+            eq(List.of(BenutzerTestdaten.adaId(), BenutzerTestdaten.carlaId()))
+        );
         inOrder.verify(urlaubsantragSpeichernOutPort).speichere(any(Urlaubsantrag.class));
         verifyNoMoreInteractions(benutzerRepositoryOutPort, urlaubsantragSpeichernOutPort, genehmigungsprozessStartenOutPort);
 
         assertThat(result.urlaubsantragId()).isNotNull();
         assertThat(result.prozessinstanzId()).isEqualTo(UrlaubsantragTestData.prozessinstanzId());
-        assertThat(result.antragsteller()).isEqualTo(UrlaubsantragTestData.antragsteller());
+        assertThat(result.antragsteller()).isEqualTo(antragstellerMitTeams);
         assertThat(result.vertretung()).isEqualTo(UrlaubsantragTestData.vertretung());
         assertThat(result.status()).isEqualTo(UrlaubsantragStatus.ANTRAG_GESTELLT);
         assertThat(result.statushistorie()).hasSize(1)
@@ -131,8 +152,11 @@ class UrlaubsantragErstellenUseCaseTest {
             .thenReturn(Optional.of(UrlaubsantragTestData.antragsteller()));
         when(urlaubsantragSpeichernOutPort.speichere(any(Urlaubsantrag.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
-        when(genehmigungsprozessStartenOutPort.starteGenehmigungsprozessFuer(any(Urlaubsantrag.class)))
-            .thenReturn(ProzessinstanzId.of("process-instance-9000"));
+        when(genehmigungsprozessStartenOutPort.starteGenehmigungsprozessFuer(any(Urlaubsantrag.class), any()))
+            .thenAnswer(invocation -> {
+                assertThat(invocation.<List<?>>getArgument(1)).isEmpty();
+                return ProzessinstanzId.of("process-instance-9000");
+            });
 
         var result = erstelleUrlaubsantragUseCase.erstelleUrlaubsantrag(
             new UrlaubsantragErstellenCommand(

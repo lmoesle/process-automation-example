@@ -45,6 +45,10 @@ class BenutzerPersistenceMapperTest {
         assertThat(benutzer.id()).isEqualTo(BenutzerTestdaten.adaId());
         assertThat(benutzer.name()).isEqualTo("Ada Lovelace");
         assertThat(benutzer.email()).isEqualTo("ada.lovelace@example.com");
+        assertThat(benutzer.teams()).extracting(team -> team.id().value()).containsExactly(
+            BenutzerTestdaten.ENGINEERING_TEAM_UUID,
+            BenutzerTestdaten.PLATFORM_TEAM_UUID
+        );
         assertThat(benutzer.teams()).containsExactly(
             BenutzerTestdaten.engineeringLeadTeam(),
             BenutzerTestdaten.platformUserTeam()

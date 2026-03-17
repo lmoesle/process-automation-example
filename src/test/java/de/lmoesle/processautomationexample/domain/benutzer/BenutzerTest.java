@@ -21,6 +21,10 @@ class BenutzerTest {
         assertThat(benutzer.id()).isEqualTo(BenutzerTestdaten.adaId());
         assertThat(benutzer.name()).isEqualTo("Ada Lovelace");
         assertThat(benutzer.email()).isEqualTo("ada.lovelace@example.com");
+        assertThat(benutzer.teams()).extracting(Team::id).containsExactly(
+            BenutzerTestdaten.engineeringTeamId(),
+            BenutzerTestdaten.platformTeamId()
+        );
         assertThat(benutzer.teams()).containsExactly(
             BenutzerTestdaten.engineeringLeadTeam(),
             BenutzerTestdaten.platformUserTeam()
@@ -41,7 +45,7 @@ class BenutzerTest {
 
     @Test
     void rejectsBlankTeamName() {
-        assertThatThrownBy(() -> new Team(" ", TeamRolle.LEITUNG))
+        assertThatThrownBy(() -> new Team(BenutzerTestdaten.engineeringTeamId(), " ", TeamRolle.LEITUNG))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("name darf nicht leer sein");
     }

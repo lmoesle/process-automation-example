@@ -14,8 +14,17 @@ Accept: application/json
   "vertretungId": "{{vertretungId}}"
 }
 
-
 ### Urlaubsantraege laden
 GET {{baseUrl}}/api/urlaubsantraege
+Content-Type: application/json
+Accept: application/json
+
+### Alle Aufgaben
+GET {{baseUrl}}/api/tasks
+Content-Type: application/json
+Accept: application/json
+
+### Aufgaben Details
+GET {{baseUrl}}/api/tasks/6bff485d-2201-11f1-be80-565e579760f4
 Content-Type: application/json
 Accept: application/json

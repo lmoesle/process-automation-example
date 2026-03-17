@@ -1,5 +1,6 @@
 package de.lmoesle.processautomationexample.adapter.out.process;
 
+import de.lmoesle.processautomationexample.domain.benutzer.BenutzerTestdaten;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.UrlaubsantragTestData;
 import dev.bpmcrafters.processengineapi.process.ProcessInformation;
 import dev.bpmcrafters.processengineapi.process.StartProcessApi;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -35,7 +37,8 @@ class CamundaUrlaubsantragGenehmigungsprozessAdapterTest {
         );
 
         var prozessinstanzId = camundaVacationApprovalProcessEngineAdapter.starteGenehmigungsprozessFuer(
-            UrlaubsantragTestData.urlaubsantrag()
+            UrlaubsantragTestData.urlaubsantrag(),
+            List.of(BenutzerTestdaten.adaId(), BenutzerTestdaten.carlaId())
         );
 
         ArgumentCaptor<StartProcessCommand> commandCaptor = ArgumentCaptor.forClass(StartProcessCommand.class);
@@ -44,7 +47,11 @@ class CamundaUrlaubsantragGenehmigungsprozessAdapterTest {
         StartProcessByDefinitionCmd command = (StartProcessByDefinitionCmd) commandCaptor.getValue();
         assertThat(command.getDefinitionKey()).isEqualTo("vacation_approval");
         assertThat(command.get())
-            .containsEntry("vacationRequestId", UrlaubsantragTestData.urlaubsantragId().value().toString());
+            .containsEntry("urlaubsantragId", UrlaubsantragTestData.urlaubsantragId().value().toString())
+            .containsEntry(
+                "teamLeadIds",
+                BenutzerTestdaten.adaId().value() + "," + BenutzerTestdaten.carlaId().value()
+            );
         assertThat(prozessinstanzId).isEqualTo(UrlaubsantragTestData.prozessinstanzId());
     }
 
@@ -53,7 +60,8 @@ class CamundaUrlaubsantragGenehmigungsprozessAdapterTest {
         when(startProcessApi.startProcess(any())).thenReturn(CompletableFuture.failedFuture(new RuntimeException("boom")));
 
         assertThatThrownBy(() -> camundaVacationApprovalProcessEngineAdapter.starteGenehmigungsprozessFuer(
-            UrlaubsantragTestData.urlaubsantrag()
+            UrlaubsantragTestData.urlaubsantrag(),
+            List.of(BenutzerTestdaten.adaId())
         ))
             .isInstanceOf(IllegalStateException.class)
             .hasMessage("Genehmigungsprozess fuer Urlaubsantrag " + UrlaubsantragTestData.urlaubsantragId().value() + " konnte nicht gestartet werden")

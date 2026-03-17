@@ -4,6 +4,7 @@ import de.lmoesle.processautomationexample.application.ports.in.UrlaubsantragErs
 import de.lmoesle.processautomationexample.application.ports.out.UrlaubsantragSpeichernOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.UrlaubsantragGenehmigungsprozessStartenOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.BenutzerRepositoryOutPort;
+import de.lmoesle.processautomationexample.domain.benutzer.Team;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.ProzessinstanzId;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.Urlaubsantrag;
 import de.lmoesle.processautomationexample.domain.benutzer.Benutzer;
@@ -11,6 +12,8 @@ import de.lmoesle.processautomationexample.domain.benutzer.BenutzerId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -37,7 +40,10 @@ public class UrlaubsantragErstellenUseCase implements UrlaubsantragErstellenInPo
 
         urlaubsantragSpeichernOutPort.speichere(urlaubsantrag);
 
-        ProzessinstanzId prozessinstanzId = genehmigungsprozessStartenOutPort.starteGenehmigungsprozessFuer(urlaubsantrag);
+        ProzessinstanzId prozessinstanzId = genehmigungsprozessStartenOutPort.starteGenehmigungsprozessFuer(
+            urlaubsantrag,
+            ermittleTeamLeadIds(antragsteller)
+        );
         urlaubsantrag.markiereGenehmigungsprozessAlsGestartet(prozessinstanzId);
         urlaubsantrag = urlaubsantragSpeichernOutPort.speichere(urlaubsantrag);
 
@@ -54,5 +60,15 @@ public class UrlaubsantragErstellenUseCase implements UrlaubsantragErstellenInPo
     private Benutzer ladeBenutzer(BenutzerId benutzerId, String feldname) {
         return benutzerRepositoryOutPort.findeNachId(benutzerId)
             .orElseThrow(() -> new IllegalArgumentException(feldname + " verweist auf keinen vorhandenen Benutzer"));
+    }
+
+    private List<BenutzerId> ermittleTeamLeadIds(Benutzer antragsteller) {
+        return antragsteller.teams().stream()
+            .map(Team::id)
+            .map(benutzerRepositoryOutPort::findeAlleLeitendenNachTeamId)
+            .flatMap(List::stream)
+            .map(Benutzer::id)
+            .distinct()
+            .toList();
     }
 }

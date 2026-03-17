@@ -32,15 +32,15 @@ public final class BenutzerTestdaten {
     }
 
     public static Team engineeringLeadTeam() {
-        return new Team(ENGINEERING_TEAM, TeamRolle.LEITUNG);
+        return new Team(engineeringTeamId(), ENGINEERING_TEAM, TeamRolle.LEITUNG);
     }
 
     public static Team platformUserTeam() {
-        return new Team(PLATFORM_TEAM, TeamRolle.MITGLIED);
+        return new Team(platformTeamId(), PLATFORM_TEAM, TeamRolle.MITGLIED);
     }
 
     public static Team platformLeadTeam() {
-        return new Team(PLATFORM_TEAM, TeamRolle.LEITUNG);
+        return new Team(platformTeamId(), PLATFORM_TEAM, TeamRolle.LEITUNG);
     }
 
     public static Benutzer ada() {

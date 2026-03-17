@@ -15,7 +15,7 @@ import java.util.Map;
 public class AutomatischePruefungProzessEngineWorker {
 
     private static final String TOPIC = "automatic_check";
-    private static final String URLAUBSANTRAG_ID_VARIABLE = "vacationRequestId";
+    private static final String URLAUBSANTRAG_ID_VARIABLE = "urlaubsantragId";
 
     private static final String GUELTIG_VARIABLE = "gueltig";
 
