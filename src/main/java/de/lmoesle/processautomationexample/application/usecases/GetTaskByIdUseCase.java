@@ -5,13 +5,11 @@ import de.lmoesle.processautomationexample.application.ports.out.TasklistReposit
 import de.lmoesle.processautomationexample.domain.tasklist.TaskNichtGefundenException;
 import de.lmoesle.processautomationexample.domain.tasklist.UserTask;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "dev.bpm-crafters.process-api.adapter.c7embedded", name = "enabled", havingValue = "true")
 public class GetTaskByIdUseCase implements GetTaskByIdInPort {
 
     private final TasklistRepositoryOutPort tasklistRepositoryOutPort;

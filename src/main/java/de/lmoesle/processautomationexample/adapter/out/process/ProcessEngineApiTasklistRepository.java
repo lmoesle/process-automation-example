@@ -12,7 +12,6 @@ import de.lmoesle.processautomationexample.domain.urlaubsantrag.UrlaubsantragId;
 import dev.bpmcrafters.processengineapi.task.TaskInformation;
 import dev.bpmcrafters.processengineapi.task.support.UserTaskSupport;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -23,7 +22,6 @@ import java.util.stream.StreamSupport;
 
 @Component
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "dev.bpm-crafters.process-api.adapter.c7embedded", name = "enabled", havingValue = "true")
 public class ProcessEngineApiTasklistRepository implements TasklistRepositoryOutPort {
 
     private final UserTaskSupport userTaskSupport;
