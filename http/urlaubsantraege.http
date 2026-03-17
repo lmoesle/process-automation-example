@@ -1,0 +1,21 @@
+@baseUrl = http://localhost:8080
+@antragstellerId = 2d88b39b-e7b0-4a3f-b9c6-b3d8e6fbe100
+@vertretungId = f9821988-db4f-4daa-9414-6cc5227f7102
+
+### Urlaubsantrag erstellen
+POST {{baseUrl}}/api/urlaubsantraege
+Content-Type: application/json
+Accept: application/json
+
+{
+  "von": "2026-07-01",
+  "bis": "2026-07-10",
+  "antragstellerId": "{{antragstellerId}}",
+  "vertretungId": "{{vertretungId}}"
+}
+
+
+### Urlaubsantraege laden
+GET {{baseUrl}}/api/urlaubsantraege
+Content-Type: application/json
+Accept: application/json

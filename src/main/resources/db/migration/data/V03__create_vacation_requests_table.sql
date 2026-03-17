@@ -1,9 +1,9 @@
-CREATE TABLE vacation_requests
+CREATE TABLE urlaubsantraege
 (
-    id                  UUID PRIMARY KEY,
-    vacation_from       DATE         NOT NULL,
-    vacation_to         DATE         NOT NULL,
-    applicant_user_id   UUID         NOT NULL,
-    substitute_user_id  UUID,
-    process_instance_id VARCHAR(255)
+    id                UUID PRIMARY KEY,
+    von               DATE         NOT NULL,
+    bis               DATE         NOT NULL,
+    antragsteller_id  UUID         NOT NULL,
+    vertretung_id     UUID,
+    prozessinstanz_id VARCHAR(255)
 );

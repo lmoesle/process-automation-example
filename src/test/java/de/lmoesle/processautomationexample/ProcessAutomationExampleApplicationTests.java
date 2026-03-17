@@ -1,9 +1,9 @@
 package de.lmoesle.processautomationexample;
 
-import de.lmoesle.processautomationexample.application.ports.out.LoadVacationRequestsOutPort;
-import de.lmoesle.processautomationexample.application.ports.out.SaveVacationRequestOutPort;
-import de.lmoesle.processautomationexample.application.ports.out.StartVacationApprovalProcessOutPort;
-import de.lmoesle.processautomationexample.application.ports.out.UserRepositoryOutPort;
+import de.lmoesle.processautomationexample.application.ports.out.UrlaubsantraegeLadenOutPort;
+import de.lmoesle.processautomationexample.application.ports.out.UrlaubsantragSpeichernOutPort;
+import de.lmoesle.processautomationexample.application.ports.out.UrlaubsantragGenehmigungsprozessStartenOutPort;
+import de.lmoesle.processautomationexample.application.ports.out.BenutzerRepositoryOutPort;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -16,16 +16,16 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 class ProcessAutomationExampleApplicationTests {
 
 	@MockitoBean
-	private SaveVacationRequestOutPort saveVacationRequestOutPort;
+	private UrlaubsantragSpeichernOutPort urlaubsantragSpeichernOutPort;
 
 	@MockitoBean
-	private StartVacationApprovalProcessOutPort startVacationApprovalProcessOutPort;
+	private UrlaubsantragGenehmigungsprozessStartenOutPort genehmigungsprozessStartenOutPort;
 
 	@MockitoBean
-	private LoadVacationRequestsOutPort loadVacationRequestsOutPort;
+	private UrlaubsantraegeLadenOutPort urlaubsantraegeLadenOutPort;
 
 	@MockitoBean
-	private UserRepositoryOutPort userRepositoryOutPort;
+	private BenutzerRepositoryOutPort benutzerRepositoryOutPort;
 
 	@Test
 	void contextLoads() {

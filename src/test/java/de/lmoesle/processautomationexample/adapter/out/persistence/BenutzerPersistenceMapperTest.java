@@ -1,0 +1,53 @@
+package de.lmoesle.processautomationexample.adapter.out.persistence;
+
+import de.lmoesle.processautomationexample.domain.benutzer.TeamRolle;
+import de.lmoesle.processautomationexample.domain.benutzer.Benutzer;
+import de.lmoesle.processautomationexample.domain.benutzer.BenutzerTestdaten;
+import org.junit.jupiter.api.Test;
+
+import java.util.LinkedHashSet;
+import static org.assertj.core.api.Assertions.assertThat;
+
+class BenutzerPersistenceMapperTest {
+
+    @Test
+    void mapsBenutzerEntityWithTeamMembershipsToDomain() {
+        TeamEntity engineeringTeam = new TeamEntity(
+            BenutzerTestdaten.ENGINEERING_TEAM_UUID,
+            BenutzerTestdaten.ENGINEERING_TEAM
+        );
+        TeamEntity platformTeam = new TeamEntity(
+            BenutzerTestdaten.PLATFORM_TEAM_UUID,
+            BenutzerTestdaten.PLATFORM_TEAM
+        );
+        BenutzerEntity benutzerEntity = new BenutzerEntity(
+            BenutzerTestdaten.ADA_UUID,
+            "Ada Lovelace",
+            "ada.lovelace@example.com",
+            new LinkedHashSet<>()
+        );
+
+        benutzerEntity.getTeamMitgliedschaften().add(new TeamMitgliedschaftEntity(
+            new TeamMitgliedschaftId(engineeringTeam.getId(), benutzerEntity.getId()),
+            engineeringTeam,
+            benutzerEntity,
+            TeamRolle.LEITUNG
+        ));
+        benutzerEntity.getTeamMitgliedschaften().add(new TeamMitgliedschaftEntity(
+            new TeamMitgliedschaftId(platformTeam.getId(), benutzerEntity.getId()),
+            platformTeam,
+            benutzerEntity,
+            TeamRolle.MITGLIED
+        ));
+
+        Benutzer benutzer = BenutzerPersistenceMapper.toDomain(benutzerEntity);
+
+        assertThat(benutzer.id()).isEqualTo(BenutzerTestdaten.adaId());
+        assertThat(benutzer.name()).isEqualTo("Ada Lovelace");
+        assertThat(benutzer.email()).isEqualTo("ada.lovelace@example.com");
+        assertThat(benutzer.teams()).containsExactly(
+            BenutzerTestdaten.engineeringLeadTeam(),
+            BenutzerTestdaten.platformUserTeam()
+        );
+    }
+}

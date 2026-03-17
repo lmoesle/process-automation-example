@@ -1,4 +1,4 @@
-CREATE TABLE users
+CREATE TABLE benutzer
 (
     id    UUID PRIMARY KEY,
     name  VARCHAR(255) NOT NULL,
@@ -11,14 +11,14 @@ CREATE TABLE teams
     name VARCHAR(255) NOT NULL UNIQUE
 );
 
-CREATE TABLE team_memberships
+CREATE TABLE team_mitgliedschaften
 (
-    team_id UUID        NOT NULL REFERENCES teams (id),
-    user_id UUID        NOT NULL REFERENCES users (id),
-    role    VARCHAR(32) NOT NULL,
-    PRIMARY KEY (team_id, user_id),
-    CONSTRAINT chk_team_memberships_role CHECK (role IN ('USER', 'LEAD'))
+    team_id      UUID        NOT NULL REFERENCES teams (id),
+    benutzer_id  UUID        NOT NULL REFERENCES benutzer (id),
+    rolle        VARCHAR(32) NOT NULL,
+    PRIMARY KEY (team_id, benutzer_id),
+    CONSTRAINT chk_team_mitgliedschaften_rolle CHECK (rolle IN ('MITGLIED', 'LEITUNG'))
 );
 
-CREATE INDEX idx_team_memberships_user_id ON team_memberships (user_id);
-CREATE INDEX idx_team_memberships_team_role ON team_memberships (team_id, role);
+CREATE INDEX idx_team_mitgliedschaften_benutzer_id ON team_mitgliedschaften (benutzer_id);
+CREATE INDEX idx_team_mitgliedschaften_team_rolle ON team_mitgliedschaften (team_id, rolle);

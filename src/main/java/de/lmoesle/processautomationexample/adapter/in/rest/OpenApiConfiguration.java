@@ -11,13 +11,13 @@ import org.springframework.context.annotation.Configuration;
     info = @Info(
         title = "Process Automation Example API",
         version = "v1",
-        description = "REST API for vacation requests and the associated BPMN approval workflow.",
+        description = "REST-API fuer Urlaubsantraege und den dazugehoerigen BPMN-Genehmigungsworkflow.",
         contact = @Contact(name = "Process Automation Example")
     ),
     tags = {
         @Tag(
-            name = "Vacation Requests",
-            description = "Create vacation requests and start the vacation approval process."
+            name = "Urlaubsanträge",
+            description = "Urlaubsantraege anlegen und den Genehmigungsprozess starten."
         )
     }
 )

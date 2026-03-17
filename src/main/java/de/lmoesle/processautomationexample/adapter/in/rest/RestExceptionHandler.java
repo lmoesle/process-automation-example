@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class RestExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ProblemDetail handleInvalidVacationRequest(IllegalArgumentException exception) {
+    public ProblemDetail behandleUngueltigeAnfrage(IllegalArgumentException exception) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
-        problemDetail.setTitle("Invalid vacation request");
+        problemDetail.setTitle("Ungueltige Anfrage");
         return problemDetail;
     }
 }
