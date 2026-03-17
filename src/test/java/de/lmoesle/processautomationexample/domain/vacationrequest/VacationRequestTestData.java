@@ -4,6 +4,7 @@ import de.lmoesle.processautomationexample.domain.user.User;
 import de.lmoesle.processautomationexample.domain.user.UserId;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -109,7 +110,19 @@ public final class VacationRequestTestData {
             vacationPeriod,
             applicantUser,
             substituteUser,
+            VacationRequestStatus.ANTRAG_GESTELLT,
+            initialStatusHistory(),
             processInstanceId
         );
+    }
+
+    public static List<VacationRequestStatusHistoryEntry> initialStatusHistory() {
+        return List.of(VacationRequestStatusHistoryEntry.withoutComment(VacationRequestStatus.ANTRAG_GESTELLT));
+    }
+
+    public static List<VacationRequestStatusHistoryEntry> statusHistory(VacationRequestStatus... statuses) {
+        return Arrays.stream(statuses)
+            .map(VacationRequestStatusHistoryEntry::withoutComment)
+            .toList();
     }
 }

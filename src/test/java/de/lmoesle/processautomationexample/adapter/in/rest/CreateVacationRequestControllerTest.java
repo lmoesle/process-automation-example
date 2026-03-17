@@ -4,6 +4,7 @@ import de.lmoesle.processautomationexample.application.ports.in.CreateVacationRe
 import de.lmoesle.processautomationexample.application.ports.in.CreateVacationRequestInPort.CreateVacationRequestResult;
 import de.lmoesle.processautomationexample.domain.user.UserTestData;
 import de.lmoesle.processautomationexample.domain.vacationrequest.VacationRequestId;
+import de.lmoesle.processautomationexample.domain.vacationrequest.VacationRequestStatus;
 import de.lmoesle.processautomationexample.domain.vacationrequest.VacationRequestTestData;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,8 @@ class CreateVacationRequestControllerTest {
             .thenReturn(new CreateVacationRequestResult(
                 VacationRequestId.of(vacationRequestId),
                 VacationRequestTestData.processInstanceId(),
+                VacationRequestStatus.ANTRAG_GESTELLT,
+                VacationRequestTestData.initialStatusHistory(),
                 UserTestData.ada(),
                 UserTestData.carla()
             ));
@@ -67,6 +70,8 @@ class CreateVacationRequestControllerTest {
             .andExpect(jsonPath("$.substituteUser.id").doesNotExist())
             .andExpect(jsonPath("$.substituteUser.name").value(UserTestData.carla().name()))
             .andExpect(jsonPath("$.substituteUser.email").value(UserTestData.carla().email()))
+            .andExpect(jsonPath("$.status").value("ANTRAG_GESTELLT"))
+            .andExpect(jsonPath("$.statusHistory[0].status").value("ANTRAG_GESTELLT"))
             .andExpect(jsonPath("$.processInstanceId").doesNotExist());
     }
 

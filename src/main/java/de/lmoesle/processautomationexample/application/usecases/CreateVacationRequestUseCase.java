@@ -44,6 +44,8 @@ public class CreateVacationRequestUseCase implements CreateVacationRequestInPort
         return new CreateVacationRequestResult(
             vacationRequest.id(),
             processInstanceId,
+            vacationRequest.status(),
+            vacationRequest.statusHistory(),
             applicantUser,
             substituteUser
         );

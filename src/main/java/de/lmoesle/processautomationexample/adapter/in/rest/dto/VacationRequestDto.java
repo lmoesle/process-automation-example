@@ -5,6 +5,7 @@ import de.lmoesle.processautomationexample.domain.vacationrequest.VacationReques
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 public record VacationRequestDto(
@@ -31,7 +32,16 @@ public record VacationRequestDto(
         description = "Resolved substitute user during the vacation period.",
         nullable = true
     )
-    UserDto substituteUser
+    UserDto substituteUser,
+    @Schema(
+        description = "Current lifecycle status of the vacation request.",
+        example = "ANTRAG_GESTELLT"
+    )
+    VacationRequestStatusDto status,
+    @Schema(
+        description = "Chronological history of the recorded vacation request statuses."
+    )
+    List<VacationRequestStatusHistoryEntryDto> statusHistory
 ) {
 
     public static VacationRequestDto fromDomain(VacationRequest vacationRequest) {
@@ -40,7 +50,11 @@ public record VacationRequestDto(
             vacationRequest.period().from(),
             vacationRequest.period().to(),
             UserDto.fromDomain(vacationRequest.applicantUser()),
-            UserDto.fromNullableDomain(vacationRequest.substituteUser())
+            UserDto.fromNullableDomain(vacationRequest.substituteUser()),
+            VacationRequestStatusDto.fromDomain(vacationRequest.status()),
+            vacationRequest.statusHistory().stream()
+                .map(VacationRequestStatusHistoryEntryDto::fromDomain)
+                .toList()
         );
     }
 
@@ -50,7 +64,11 @@ public record VacationRequestDto(
             from,
             to,
             UserDto.fromDomain(result.applicantUser()),
-            UserDto.fromNullableDomain(result.substituteUser())
+            UserDto.fromNullableDomain(result.substituteUser()),
+            VacationRequestStatusDto.fromDomain(result.status()),
+            result.statusHistory().stream()
+                .map(VacationRequestStatusHistoryEntryDto::fromDomain)
+                .toList()
         );
     }
 }

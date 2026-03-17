@@ -6,6 +6,7 @@ import de.lmoesle.processautomationexample.application.ports.out.StartVacationAp
 import de.lmoesle.processautomationexample.application.ports.out.UserRepositoryOutPort;
 import de.lmoesle.processautomationexample.domain.vacationrequest.ProcessInstanceId;
 import de.lmoesle.processautomationexample.domain.vacationrequest.VacationRequest;
+import de.lmoesle.processautomationexample.domain.vacationrequest.VacationRequestStatus;
 import de.lmoesle.processautomationexample.domain.vacationrequest.VacationRequestTestData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -95,6 +96,13 @@ class CreateVacationRequestUseCaseTest {
         assertThat(result.processInstanceId()).isEqualTo(VacationRequestTestData.processInstanceId());
         assertThat(result.applicantUser()).isEqualTo(VacationRequestTestData.applicantUser());
         assertThat(result.substituteUser()).isEqualTo(VacationRequestTestData.substituteUser());
+        assertThat(result.status()).isEqualTo(VacationRequestStatus.ANTRAG_GESTELLT);
+        assertThat(result.statusHistory()).hasSize(1)
+            .first()
+            .satisfies(entry -> {
+                assertThat(entry.status()).isEqualTo(VacationRequestStatus.ANTRAG_GESTELLT);
+                assertThat(entry.comment()).isNull();
+            });
         assertThat(saveInvocationCounter.get()).isEqualTo(2);
     }
 

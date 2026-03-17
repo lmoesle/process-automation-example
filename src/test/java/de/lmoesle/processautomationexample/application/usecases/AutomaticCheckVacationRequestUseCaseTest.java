@@ -2,8 +2,12 @@ package de.lmoesle.processautomationexample.application.usecases;
 
 import de.lmoesle.processautomationexample.application.ports.in.AutomaticCheckVacationRequestInPort.AutomaticCheckVacationRequestCommand;
 import de.lmoesle.processautomationexample.application.ports.out.LoadVacationRequestsOutPort;
+import de.lmoesle.processautomationexample.application.ports.out.SaveVacationRequestOutPort;
 import de.lmoesle.processautomationexample.domain.vacationrequest.VacationRequest;
+import de.lmoesle.processautomationexample.domain.vacationrequest.VacationRequestStatus;
+import de.lmoesle.processautomationexample.domain.vacationrequest.VacationRequestStatusHistoryEntry;
 import de.lmoesle.processautomationexample.domain.vacationrequest.VacationRequestTestData;
+import org.mockito.ArgumentCaptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -12,6 +16,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -20,12 +25,17 @@ import static org.mockito.Mockito.when;
 class AutomaticCheckVacationRequestUseCaseTest {
 
     private LoadVacationRequestsOutPort loadVacationRequestsOutPort;
+    private SaveVacationRequestOutPort saveVacationRequestOutPort;
     private AutomaticCheckVacationRequestUseCase automaticCheckVacationRequestUseCase;
 
     @BeforeEach
     void setUp() {
         loadVacationRequestsOutPort = mock(LoadVacationRequestsOutPort.class);
-        automaticCheckVacationRequestUseCase = new AutomaticCheckVacationRequestUseCase(loadVacationRequestsOutPort);
+        saveVacationRequestOutPort = mock(SaveVacationRequestOutPort.class);
+        automaticCheckVacationRequestUseCase = new AutomaticCheckVacationRequestUseCase(
+            loadVacationRequestsOutPort,
+            saveVacationRequestOutPort
+        );
     }
 
     @Test
@@ -45,7 +55,14 @@ class AutomaticCheckVacationRequestUseCaseTest {
 
         assertThat(result).isTrue();
         verify(loadVacationRequestsOutPort).findById(vacationRequestWithoutSubstitute.id());
+        ArgumentCaptor<VacationRequest> savedCaptor = ArgumentCaptor.forClass(VacationRequest.class);
+        verify(saveVacationRequestOutPort).save(savedCaptor.capture());
+        assertThat(savedCaptor.getValue().status()).isEqualTo(VacationRequestStatus.AUTOMATISCHE_PRUEFUNG);
+        assertThat(savedCaptor.getValue().statusHistory()).hasSize(2)
+            .last()
+            .satisfies(entry -> assertThat(entry.comment()).isNull());
         verifyNoMoreInteractions(loadVacationRequestsOutPort);
+        verifyNoMoreInteractions(saveVacationRequestOutPort);
     }
 
     @Test
@@ -62,7 +79,9 @@ class AutomaticCheckVacationRequestUseCaseTest {
         assertThat(result).isTrue();
         verify(loadVacationRequestsOutPort).findById(VacationRequestTestData.vacationRequestId());
         verify(loadVacationRequestsOutPort).findAllByApplicantUserId(VacationRequestTestData.substituteUserId());
+        verify(saveVacationRequestOutPort).save(any(VacationRequest.class));
         verifyNoMoreInteractions(loadVacationRequestsOutPort);
+        verifyNoMoreInteractions(saveVacationRequestOutPort);
     }
 
     @Test
@@ -86,7 +105,9 @@ class AutomaticCheckVacationRequestUseCaseTest {
         assertThat(result).isFalse();
         verify(loadVacationRequestsOutPort).findById(VacationRequestTestData.vacationRequestId());
         verify(loadVacationRequestsOutPort).findAllByApplicantUserId(VacationRequestTestData.substituteUserId());
+        verify(saveVacationRequestOutPort).save(any(VacationRequest.class));
         verifyNoMoreInteractions(loadVacationRequestsOutPort);
+        verifyNoMoreInteractions(saveVacationRequestOutPort);
     }
 
     @Test

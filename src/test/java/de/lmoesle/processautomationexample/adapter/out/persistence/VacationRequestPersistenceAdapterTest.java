@@ -5,12 +5,15 @@ import de.lmoesle.processautomationexample.domain.user.User;
 import de.lmoesle.processautomationexample.domain.user.UserTestData;
 import de.lmoesle.processautomationexample.domain.vacationrequest.VacationPeriod;
 import de.lmoesle.processautomationexample.domain.vacationrequest.VacationRequest;
+import de.lmoesle.processautomationexample.domain.vacationrequest.VacationRequestStatus;
 import de.lmoesle.processautomationexample.domain.vacationrequest.VacationRequestTestData;
 import de.lmoesle.processautomationexample.domain.vacationrequest.VacationRequestId;
+import de.lmoesle.processautomationexample.adapter.out.persistence.VacationRequestStatusHistoryEntryEmbeddable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Sort;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -78,7 +81,9 @@ class VacationRequestPersistenceAdapterTest {
             VacationRequestTestData.TO,
             UserTestData.ADA_UUID,
             UserTestData.CARLA_UUID,
-            VacationRequestTestData.PROCESS_INSTANCE_ID_VALUE
+            VacationRequestTestData.PROCESS_INSTANCE_ID_VALUE,
+            VacationRequestStatus.ANTRAG_GESTELLT,
+            history(VacationRequestStatus.ANTRAG_GESTELLT)
         );
         when(vacationRequestJpaRepository.findById(VacationRequestTestData.VACATION_REQUEST_UUID))
             .thenReturn(java.util.Optional.of(vacationRequestEntity));
@@ -96,6 +101,13 @@ class VacationRequestPersistenceAdapterTest {
             assertThat(request.applicantUser()).isEqualTo(UserTestData.ada());
             assertThat(request.substituteUser()).isEqualTo(UserTestData.carla());
             assertThat(request.processInstanceId()).isEqualTo(VacationRequestTestData.processInstanceId());
+            assertThat(request.status()).isEqualTo(VacationRequestStatus.ANTRAG_GESTELLT);
+            assertThat(request.statusHistory()).hasSize(1)
+                .first()
+                .satisfies(entry -> {
+                    assertThat(entry.status()).isEqualTo(VacationRequestStatus.ANTRAG_GESTELLT);
+                    assertThat(entry.comment()).isNull();
+                });
         });
     }
 
@@ -107,7 +119,9 @@ class VacationRequestPersistenceAdapterTest {
             VacationRequestTestData.TO,
             UserTestData.ADA_UUID,
             UserTestData.CARLA_UUID,
-            VacationRequestTestData.PROCESS_INSTANCE_ID_VALUE
+            VacationRequestTestData.PROCESS_INSTANCE_ID_VALUE,
+            VacationRequestStatus.ANTRAG_GESTELLT,
+            history(VacationRequestStatus.ANTRAG_GESTELLT)
         );
         VacationRequestEntity secondVacationRequestEntity = new VacationRequestEntity(
             VacationRequestTestData.SECOND_VACATION_REQUEST_UUID,
@@ -115,7 +129,9 @@ class VacationRequestPersistenceAdapterTest {
             VacationRequestTestData.SECOND_TO,
             UserTestData.ADA_UUID,
             null,
-            null
+            null,
+            VacationRequestStatus.ANTRAG_GESTELLT,
+            history(VacationRequestStatus.ANTRAG_GESTELLT)
         );
         when(vacationRequestJpaRepository.findAllByApplicantUserId(eq(UserTestData.ADA_UUID), any(Sort.class)))
             .thenReturn(List.of(firstVacationRequestEntity, secondVacationRequestEntity));
@@ -136,6 +152,8 @@ class VacationRequestPersistenceAdapterTest {
         assertThat(vacationRequests.get(0).applicantUser()).isEqualTo(UserTestData.ada());
         assertThat(vacationRequests.get(0).substituteUser()).isEqualTo(UserTestData.carla());
         assertThat(vacationRequests.get(0).processInstanceId()).isEqualTo(VacationRequestTestData.processInstanceId());
+        assertThat(vacationRequests.get(0).status()).isEqualTo(VacationRequestStatus.ANTRAG_GESTELLT);
+        assertThat(vacationRequests.get(0).statusHistory()).hasSize(1);
 
         assertThat(vacationRequests.get(1).id()).isEqualTo(VacationRequestTestData.secondVacationRequestId());
         assertThat(vacationRequests.get(1).period().from()).isEqualTo(VacationRequestTestData.SECOND_FROM);
@@ -143,6 +161,8 @@ class VacationRequestPersistenceAdapterTest {
         assertThat(vacationRequests.get(1).applicantUser()).isEqualTo(UserTestData.ada());
         assertThat(vacationRequests.get(1).substituteUser()).isNull();
         assertThat(vacationRequests.get(1).processInstanceId()).isNull();
+        assertThat(vacationRequests.get(1).status()).isEqualTo(VacationRequestStatus.ANTRAG_GESTELLT);
+        assertThat(vacationRequests.get(1).statusHistory()).hasSize(1);
     }
 
     @Test
@@ -167,7 +187,9 @@ class VacationRequestPersistenceAdapterTest {
             VacationRequestTestData.TO,
             UserTestData.ADA_UUID,
             UserTestData.CARLA_UUID,
-            VacationRequestTestData.PROCESS_INSTANCE_ID_VALUE
+            VacationRequestTestData.PROCESS_INSTANCE_ID_VALUE,
+            VacationRequestStatus.ANTRAG_GESTELLT,
+            history(VacationRequestStatus.ANTRAG_GESTELLT)
         );
         when(vacationRequestJpaRepository.findAllByApplicantUserId(eq(UserTestData.ADA_UUID), any(Sort.class)))
             .thenReturn(List.of(vacationRequestEntity));
@@ -214,5 +236,11 @@ class VacationRequestPersistenceAdapterTest {
             ));
         }
         return userEntity;
+    }
+
+    private static List<VacationRequestStatusHistoryEntryEmbeddable> history(VacationRequestStatus... statuses) {
+        return Arrays.stream(statuses)
+            .map(status -> new VacationRequestStatusHistoryEntryEmbeddable(status, null))
+            .toList();
     }
 }

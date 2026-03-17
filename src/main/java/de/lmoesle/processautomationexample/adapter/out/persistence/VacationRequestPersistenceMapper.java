@@ -4,6 +4,9 @@ import de.lmoesle.processautomationexample.domain.user.User;
 import de.lmoesle.processautomationexample.domain.vacationrequest.VacationRequest;
 import de.lmoesle.processautomationexample.domain.vacationrequest.VacationPeriod;
 import de.lmoesle.processautomationexample.domain.vacationrequest.VacationRequestId;
+import de.lmoesle.processautomationexample.domain.vacationrequest.VacationRequestStatusHistoryEntry;
+
+import java.util.ArrayList;
 
 public final class VacationRequestPersistenceMapper {
 
@@ -17,7 +20,14 @@ public final class VacationRequestPersistenceMapper {
             vacationRequest.period().to(),
             vacationRequest.applicantUser().id().value(),
             vacationRequest.substituteUser() == null ? null : vacationRequest.substituteUser().id().value(),
-            vacationRequest.processInstanceId() == null ? null : vacationRequest.processInstanceId().value()
+            vacationRequest.processInstanceId() == null ? null : vacationRequest.processInstanceId().value(),
+            vacationRequest.status(),
+            new ArrayList<>(vacationRequest.statusHistory().stream()
+                .map(statusHistoryEntry -> new VacationRequestStatusHistoryEntryEmbeddable(
+                    statusHistoryEntry.status(),
+                    statusHistoryEntry.comment()
+                ))
+                .toList())
         );
     }
 
@@ -31,6 +41,13 @@ public final class VacationRequestPersistenceMapper {
             VacationPeriod.of(vacationRequestEntity.getFrom(), vacationRequestEntity.getTo()),
             applicantUser,
             substituteUser,
+            vacationRequestEntity.getStatus(),
+            vacationRequestEntity.getStatusHistory().stream()
+                .map(statusHistoryEntry -> new VacationRequestStatusHistoryEntry(
+                    statusHistoryEntry.getStatus(),
+                    statusHistoryEntry.getComment()
+                ))
+                .toList(),
             vacationRequestEntity.getProcessInstanceId() == null ? null : de.lmoesle.processautomationexample.domain.vacationrequest.ProcessInstanceId.of(
                 vacationRequestEntity.getProcessInstanceId()
             )

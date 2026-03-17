@@ -60,6 +60,8 @@ class LoadVacationRequestsControllerTest {
             .andExpect(jsonPath("$[0].substituteUser.id").doesNotExist())
             .andExpect(jsonPath("$[0].substituteUser.name").value(UserTestData.carla().name()))
             .andExpect(jsonPath("$[0].substituteUser.email").value(UserTestData.carla().email()))
+            .andExpect(jsonPath("$[0].status").value("ANTRAG_GESTELLT"))
+            .andExpect(jsonPath("$[0].statusHistory[0].status").value("ANTRAG_GESTELLT"))
             .andExpect(jsonPath("$[0].processInstanceId").doesNotExist())
             .andExpect(jsonPath("$[1].id").value(VacationRequestTestData.SECOND_VACATION_REQUEST_UUID.toString()))
             .andExpect(jsonPath("$[1].from").value(VacationRequestTestData.SECOND_FROM.toString()))
@@ -68,6 +70,8 @@ class LoadVacationRequestsControllerTest {
             .andExpect(jsonPath("$[1].applicantUser.name").value(UserTestData.ada().name()))
             .andExpect(jsonPath("$[1].applicantUser.email").value(UserTestData.ada().email()))
             .andExpect(jsonPath("$[1].substituteUser").value(nullValue()))
+            .andExpect(jsonPath("$[1].status").value("ANTRAG_GESTELLT"))
+            .andExpect(jsonPath("$[1].statusHistory[0].status").value("ANTRAG_GESTELLT"))
             .andExpect(jsonPath("$[1].processInstanceId").doesNotExist());
 
         verify(loadVacationRequestsForUserInPort).loadVacationRequestsForUser(
