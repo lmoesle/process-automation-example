@@ -28,4 +28,8 @@ public final class VacationRequestId {
     public static VacationRequestId of(UUID value) {
         return new VacationRequestId(value);
     }
+
+    public static VacationRequestId of(String value) {
+        return new VacationRequestId(UUID.fromString(value));
+    }
 }

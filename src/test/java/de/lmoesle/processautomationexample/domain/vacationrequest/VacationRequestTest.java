@@ -70,6 +70,43 @@ class VacationRequestTest {
     }
 
     @Test
+    void automaticCheckIsValidWhenNoSubstituteUserIsConfigured() {
+        VacationRequest vacationRequest = VacationRequest.submit(
+            VacationRequestTestData.FROM,
+            VacationRequestTestData.TO,
+            VacationRequestTestData.applicantUser(),
+            null
+        );
+
+        assertThat(vacationRequest.isAutomaticallyValidAgainst(
+            java.util.List.of(VacationRequestTestData.secondVacationRequest(VacationRequestTestData.substituteUser(), null))
+        )).isTrue();
+    }
+
+    @Test
+    void automaticCheckIsValidWhenSubstituteUserHasNoOverlappingVacationRequest() {
+        VacationRequest vacationRequest = VacationRequestTestData.vacationRequest();
+
+        assertThat(vacationRequest.isAutomaticallyValidAgainst(
+            java.util.List.of(VacationRequestTestData.secondVacationRequest(VacationRequestTestData.substituteUser(), null))
+        )).isTrue();
+    }
+
+    @Test
+    void automaticCheckIsInvalidWhenSubstituteUserHasOverlappingVacationRequest() {
+        VacationRequest vacationRequest = VacationRequestTestData.vacationRequest();
+        VacationRequest overlappingVacationRequest = VacationRequestTestData.vacationRequest(
+            VacationRequestTestData.secondVacationRequestId(),
+            VacationRequestTestData.vacationPeriod(),
+            VacationRequestTestData.substituteUser(),
+            null,
+            VacationRequestTestData.secondProcessInstanceId()
+        );
+
+        assertThat(vacationRequest.isAutomaticallyValidAgainst(java.util.List.of(overlappingVacationRequest))).isFalse();
+    }
+
+    @Test
     void marksApprovalProcessAsStarted() {
         VacationRequest vacationRequest = VacationRequestTestData.vacationRequest();
 
@@ -94,5 +131,14 @@ class VacationRequestTest {
         assertThatThrownBy(() -> vacationRequest.markApprovalProcessStarted(ProcessInstanceId.of("process-instance-99")))
             .isInstanceOf(IllegalStateException.class)
             .hasMessage("Approval process already started.");
+    }
+
+    @Test
+    void rejectsNullVacationRequestsWhenRunningAutomaticCheck() {
+        VacationRequest vacationRequest = VacationRequestTestData.vacationRequest();
+
+        assertThatThrownBy(() -> vacationRequest.isAutomaticallyValidAgainst(null))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("substituteVacationRequests must not be null");
     }
 }

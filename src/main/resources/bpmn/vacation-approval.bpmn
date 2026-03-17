@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:message id="Message_automatic_check_result" name="automatic_check_result" />
   <bpmn:process id="vacation_approval" name="Urlaubsantrag" isExecutable="true" camunda:historyTimeToLive="180">
     <bpmn:startEvent id="StartEvent_1" name="Urlaubsantrag stellen">
       <bpmn:outgoing>Flow_11hl1ga</bpmn:outgoing>
@@ -12,13 +13,13 @@
     </bpmn:exclusiveGateway>
     <bpmn:sequenceFlow id="Flow_0sirzwj" sourceRef="automatic_check" targetRef="Gateway_01y0omz" />
     <bpmn:sequenceFlow id="Flow_1sa7ezg" name="Ja" sourceRef="Gateway_01y0omz" targetRef="Activity_0tid0x1">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${guelting == true}</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${gueltig == true}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:endEvent id="Event_1a2z938">
       <bpmn:incoming>Flow_1cargx9</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_18do1vp" name="Nein" sourceRef="Gateway_01y0omz" targetRef="send_notification_auto_declined">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${guelting == false}</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${gueltig == false}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:userTask id="Activity_0tid0x1" name="Genehmigung von Vorgesetztem">
       <bpmn:incoming>Flow_1sa7ezg</bpmn:incoming>
@@ -45,10 +46,6 @@
       <bpmn:incoming>Flow_0065gis</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_0065gis" sourceRef="send_notification_declined" targetRef="Event_0t9knc8" />
-    <bpmn:task id="automatic_check" name="Automatisch Prüfung des Antrags" camunda:asyncBefore="true">
-      <bpmn:incoming>Flow_11hl1ga</bpmn:incoming>
-      <bpmn:outgoing>Flow_0sirzwj</bpmn:outgoing>
-    </bpmn:task>
     <bpmn:task id="send_notification_auto_declined" name="Benachrichtigung versenden">
       <bpmn:incoming>Flow_18do1vp</bpmn:incoming>
       <bpmn:outgoing>Flow_1cargx9</bpmn:outgoing>
@@ -61,6 +58,21 @@
       <bpmn:incoming>Flow_0blczzw</bpmn:incoming>
       <bpmn:outgoing>Flow_05lg923</bpmn:outgoing>
     </bpmn:task>
+    <bpmn:serviceTask id="automatic_check" name="Automatisch Prüfung des Antrags" camunda:asyncBefore="true" camunda:type="external" camunda:topic="automatic_check">
+      <bpmn:extensionElements />
+      <bpmn:incoming>Flow_11hl1ga</bpmn:incoming>
+      <bpmn:outgoing>Flow_0sirzwj</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:subProcess id="EventSubProcess_automatic_check_result" triggeredByEvent="true">
+      <bpmn:startEvent id="Event_automatic_check_result" isInterrupting="false">
+        <bpmn:outgoing>Flow_automatic_check_result_event</bpmn:outgoing>
+        <bpmn:messageEventDefinition id="MessageEventDefinition_automatic_check_result" messageRef="Message_automatic_check_result" />
+      </bpmn:startEvent>
+      <bpmn:sequenceFlow id="Flow_automatic_check_result_event" sourceRef="Event_automatic_check_result" targetRef="Event_automatic_check_result_end" />
+      <bpmn:endEvent id="Event_automatic_check_result_end">
+        <bpmn:incoming>Flow_automatic_check_result_event</bpmn:incoming>
+      </bpmn:endEvent>
+    </bpmn:subProcess>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="vacation_approval">
@@ -94,9 +106,6 @@
       <bpmndi:BPMNShape id="Event_0t9knc8_di" bpmnElement="Event_0t9knc8">
         <dc:Bounds x="1102" y="222" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0u8ekwd_di" bpmnElement="automatic_check">
-        <dc:Bounds x="260" y="80" width="100" height="80" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_10g7lon_di" bpmnElement="send_notification_auto_declined">
         <dc:Bounds x="570" y="200" width="100" height="80" />
       </bpmndi:BPMNShape>
@@ -105,6 +114,9 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0tnezlt_di" bpmnElement="send_notification_approved">
         <dc:Bounds x="930" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0onb814_di" bpmnElement="automatic_check">
+        <dc:Bounds x="260" y="80" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_11hl1ga_di" bpmnElement="Flow_11hl1ga">
         <di:waypoint x="209" y="120" />

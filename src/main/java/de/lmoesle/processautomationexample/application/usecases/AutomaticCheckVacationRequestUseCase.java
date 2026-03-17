@@ -1,0 +1,32 @@
+package de.lmoesle.processautomationexample.application.usecases;
+
+import de.lmoesle.processautomationexample.application.ports.in.AutomaticCheckVacationRequestInPort;
+import de.lmoesle.processautomationexample.application.ports.out.LoadVacationRequestsOutPort;
+import de.lmoesle.processautomationexample.domain.vacationrequest.VacationRequest;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class AutomaticCheckVacationRequestUseCase implements AutomaticCheckVacationRequestInPort {
+
+    private final LoadVacationRequestsOutPort loadVacationRequestsOutPort;
+
+    @Override
+    public boolean automaticCheckVacationRequest(AutomaticCheckVacationRequestCommand command) {
+        Assert.notNull(command, "command must not be null");
+        Assert.notNull(command.vacationRequestId(), "vacationRequestId must not be null");
+
+        VacationRequest vacationRequest = loadVacationRequestsOutPort.findById(command.vacationRequestId())
+            .orElseThrow(() -> new IllegalArgumentException("vacationRequestId does not reference an existing vacation request"));
+
+        List<VacationRequest> substituteVacationRequests = vacationRequest.substituteUser() == null
+            ? List.of()
+            : loadVacationRequestsOutPort.findAllByApplicantUserId(vacationRequest.substituteUser().id());
+
+        return vacationRequest.isAutomaticallyValidAgainst(substituteVacationRequests);
+    }
+}

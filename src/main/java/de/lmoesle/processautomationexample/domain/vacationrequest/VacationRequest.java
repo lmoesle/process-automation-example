@@ -6,6 +6,7 @@ import lombok.experimental.Accessors;
 import org.springframework.util.Assert;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Accessors(fluent = true)
@@ -52,5 +53,15 @@ public final class VacationRequest {
         Assert.notNull(processInstanceId, "processInstanceId must not be null");
         Assert.state(this.processInstanceId == null, "Approval process already started.");
         this.processInstanceId = processInstanceId;
+    }
+
+    public boolean isAutomaticallyValidAgainst(List<VacationRequest> substituteVacationRequests) {
+        if (substituteUser == null) {
+            return true;
+
+        }
+        Assert.notNull(substituteVacationRequests, "substituteVacationRequests must not be null");
+        return substituteVacationRequests.stream()
+            .noneMatch(vacationRequest -> period.overlaps(vacationRequest.period()));
     }
 }

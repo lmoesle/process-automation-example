@@ -13,9 +13,32 @@ spring:
 
 camunda:
   bpm:
-    auto-deployment-enabled: false
     admin-user:
       id: ${CAMUNDA_ADMIN_USER:admin}
       password: ${CAMUNDA_ADMIN_PASSWORD:admin}
       first-name: ${CAMUNDA_ADMIN_FIRST_NAME:Admin}
       last-name: ${CAMUNDA_ADMIN_LAST_NAME:Admin}
+
+dev:
+  bpm-crafters:
+    process-api:
+      worker:
+        deployment:
+          enabled: true
+          bpmnResourcePattern: "classpath*:/bpmn/*.bpmn"
+      adapter:
+        c7embedded:
+          enabled: true
+          service-tasks:
+            delivery-strategy: embedded_scheduled
+            worker-id: embedded-worker
+            lock-time-in-seconds: 10
+            execute-initial-pull-on-startup: true
+            schedule-delivery-fixed-rate-in-seconds: 10
+            retries: 3
+            max-task-count: 100
+            retry-timeout-in-seconds: 30
+          user-tasks:
+            delivery-strategy: embedded_scheduled
+            execute-initial-pull-on-startup: true
+            schedule-delivery-fixed-rate-in-seconds: 10

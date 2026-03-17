@@ -5,6 +5,7 @@ import de.lmoesle.processautomationexample.application.ports.out.SaveVacationReq
 import de.lmoesle.processautomationexample.domain.user.User;
 import de.lmoesle.processautomationexample.domain.user.UserId;
 import de.lmoesle.processautomationexample.domain.vacationrequest.VacationRequest;
+import de.lmoesle.processautomationexample.domain.vacationrequest.VacationRequestId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import org.springframework.util.Assert;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -33,6 +35,14 @@ public class VacationRequestPersistenceAdapter implements SaveVacationRequestOut
     }
 
     @Override
+    public Optional<VacationRequest> findById(VacationRequestId vacationRequestId) {
+        Assert.notNull(vacationRequestId, "vacationRequestId must not be null");
+
+        return vacationRequestJpaRepository.findById(vacationRequestId.value())
+            .map(this::toDomain);
+    }
+
+    @Override
     public List<VacationRequest> findAllByApplicantUserId(UserId applicantUserId) {
         Assert.notNull(applicantUserId, "applicantUserId must not be null");
 
@@ -48,25 +58,40 @@ public class VacationRequestPersistenceAdapter implements SaveVacationRequestOut
             return List.of();
         }
 
+        Map<UUID, User> usersById = loadUsersById(vacationRequestEntities);
+
+        return vacationRequestEntities.stream()
+            .map(entity -> toDomain(entity, usersById))
+            .toList();
+    }
+
+    private VacationRequest toDomain(VacationRequestEntity vacationRequestEntity) {
+        Map<UUID, User> usersById = loadUsersById(List.of(vacationRequestEntity));
+        return toDomain(vacationRequestEntity, usersById);
+    }
+
+    private Map<UUID, User> loadUsersById(List<VacationRequestEntity> vacationRequestEntities) {
         Map<UUID, User> usersById = userJpaRepository.findDistinctByIdIn(
-                vacationRequestEntities.stream()
-                    .flatMap(entity -> java.util.stream.Stream.of(entity.getApplicantUserId(), entity.getSubstituteUserId()))
-                    .filter(Objects::nonNull)
-                    .distinct()
-                    .toList()
-            ).stream()
+            vacationRequestEntities.stream()
+                .flatMap(entity -> java.util.stream.Stream.of(entity.getApplicantUserId(), entity.getSubstituteUserId()))
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList()
+        ).stream()
             .map(UserPersistenceMapper::toDomain)
             .collect(toMap(user -> user.id().value(), Function.identity()));
 
-        return vacationRequestEntities.stream()
-            .map(entity -> VacationRequestPersistenceMapper.toDomain(
-                entity,
-                requireUser(usersById, entity.getApplicantUserId(), entity.getId(), "applicantUserId"),
-                entity.getSubstituteUserId() == null
-                    ? null
-                    : requireUser(usersById, entity.getSubstituteUserId(), entity.getId(), "substituteUserId")
-            ))
-            .toList();
+        return usersById;
+    }
+
+    private VacationRequest toDomain(VacationRequestEntity entity, Map<UUID, User> usersById) {
+        return VacationRequestPersistenceMapper.toDomain(
+            entity,
+            requireUser(usersById, entity.getApplicantUserId(), entity.getId(), "applicantUserId"),
+            entity.getSubstituteUserId() == null
+                ? null
+                : requireUser(usersById, entity.getSubstituteUserId(), entity.getId(), "substituteUserId")
+        );
     }
 
     private static User requireUser(Map<UUID, User> usersById, UUID userId, UUID vacationRequestId, String fieldName) {

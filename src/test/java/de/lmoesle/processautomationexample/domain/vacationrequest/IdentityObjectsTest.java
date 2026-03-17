@@ -3,6 +3,8 @@ package de.lmoesle.processautomationexample.domain.vacationrequest;
 import de.lmoesle.processautomationexample.domain.user.UserId;
 import org.junit.jupiter.api.Test;
 
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -20,8 +22,14 @@ class IdentityObjectsTest {
     }
 
     @Test
+    void createsVacationRequestIdFromText() {
+        assertThat(VacationRequestId.of(VacationRequestTestData.VACATION_REQUEST_UUID.toString()).value())
+            .isEqualTo(VacationRequestTestData.VACATION_REQUEST_UUID);
+    }
+
+    @Test
     void rejectsNullVacationRequestIdValue() {
-        assertThatThrownBy(() -> VacationRequestId.of(null))
+        assertThatThrownBy(() -> VacationRequestId.of((UUID) null))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("value must not be null");
     }

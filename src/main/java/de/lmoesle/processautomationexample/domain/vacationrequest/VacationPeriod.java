@@ -24,4 +24,9 @@ public final class VacationPeriod {
     public static VacationPeriod of(LocalDate from, LocalDate to) {
         return new VacationPeriod(from, to);
     }
+
+    public boolean overlaps(VacationPeriod other) {
+        Assert.notNull(other, "other must not be null");
+        return !from.isAfter(other.to) && !other.from.isAfter(to);
+    }
 }

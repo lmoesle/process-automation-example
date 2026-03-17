@@ -6,6 +6,7 @@ import de.lmoesle.processautomationexample.domain.user.UserTestData;
 import de.lmoesle.processautomationexample.domain.vacationrequest.VacationPeriod;
 import de.lmoesle.processautomationexample.domain.vacationrequest.VacationRequest;
 import de.lmoesle.processautomationexample.domain.vacationrequest.VacationRequestTestData;
+import de.lmoesle.processautomationexample.domain.vacationrequest.VacationRequestId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Sort;
@@ -55,6 +56,47 @@ class VacationRequestPersistenceAdapterTest {
         );
         verifyNoInteractions(userJpaRepository);
         assertThat(vacationRequests).isEmpty();
+    }
+
+    @Test
+    void returnsEmptyWhenVacationRequestDoesNotExistById() {
+        when(vacationRequestJpaRepository.findById(VacationRequestTestData.VACATION_REQUEST_UUID))
+            .thenReturn(java.util.Optional.empty());
+
+        var vacationRequest = vacationRequestPersistenceAdapter.findById(VacationRequestTestData.vacationRequestId());
+
+        verify(vacationRequestJpaRepository).findById(VacationRequestTestData.VACATION_REQUEST_UUID);
+        verifyNoInteractions(userJpaRepository);
+        assertThat(vacationRequest).isEmpty();
+    }
+
+    @Test
+    void loadsVacationRequestByIdAndMapsUsers() {
+        VacationRequestEntity vacationRequestEntity = new VacationRequestEntity(
+            VacationRequestTestData.VACATION_REQUEST_UUID,
+            VacationRequestTestData.FROM,
+            VacationRequestTestData.TO,
+            UserTestData.ADA_UUID,
+            UserTestData.CARLA_UUID,
+            VacationRequestTestData.PROCESS_INSTANCE_ID_VALUE
+        );
+        when(vacationRequestJpaRepository.findById(VacationRequestTestData.VACATION_REQUEST_UUID))
+            .thenReturn(java.util.Optional.of(vacationRequestEntity));
+        when(userJpaRepository.findDistinctByIdIn(argThat(this::containsAdaAndCarlaOnly)))
+            .thenReturn(List.of(userEntity(UserTestData.ada()), userEntity(UserTestData.carla())));
+
+        var vacationRequest = vacationRequestPersistenceAdapter.findById(VacationRequestTestData.vacationRequestId());
+
+        verify(vacationRequestJpaRepository).findById(VacationRequestTestData.VACATION_REQUEST_UUID);
+        verify(userJpaRepository).findDistinctByIdIn(argThat(this::containsAdaAndCarlaOnly));
+        assertThat(vacationRequest).hasValueSatisfying(request -> {
+            assertThat(request.id()).isEqualTo(VacationRequestTestData.vacationRequestId());
+            assertThat(request.period().from()).isEqualTo(VacationRequestTestData.FROM);
+            assertThat(request.period().to()).isEqualTo(VacationRequestTestData.TO);
+            assertThat(request.applicantUser()).isEqualTo(UserTestData.ada());
+            assertThat(request.substituteUser()).isEqualTo(UserTestData.carla());
+            assertThat(request.processInstanceId()).isEqualTo(VacationRequestTestData.processInstanceId());
+        });
     }
 
     @Test
@@ -108,6 +150,13 @@ class VacationRequestPersistenceAdapterTest {
         assertThatThrownBy(() -> vacationRequestPersistenceAdapter.findAllByApplicantUserId(null))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("applicantUserId must not be null");
+    }
+
+    @Test
+    void rejectsNullVacationRequestIdWhenLoadingVacationRequestById() {
+        assertThatThrownBy(() -> vacationRequestPersistenceAdapter.findById((VacationRequestId) null))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("vacationRequestId must not be null");
     }
 
     @Test
