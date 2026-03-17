@@ -29,19 +29,23 @@ public class ProcessEngineApiTasklistRepository implements TasklistRepositoryOut
     private final BenutzerRepositoryOutPort benutzerRepositoryOutPort;
 
     @Override
-    public List<UserTask> getAllTasks() {
+    public List<UserTask> getAllTasks(BenutzerId benutzerId) {
+        Assert.notNull(benutzerId, "benutzerId darf nicht null sein");
         return userTaskSupport.getAllTasks().stream()
             .map(taskInformation -> mapTask(taskInformation, userTaskSupport.getPayload(taskInformation.getTaskId())))
+            .filter(task -> task.istSichtbarFuer(benutzerId))
             .toList();
     }
 
     @Override
-    public Optional<UserTask> getTaskById(UserTaskId taskId) {
+    public Optional<UserTask> getTaskById(UserTaskId taskId, BenutzerId benutzerId) {
         Assert.notNull(taskId, "taskId darf nicht null sein");
+        Assert.notNull(benutzerId, "benutzerId darf nicht null sein");
 
         try {
             TaskInformation taskInformation = userTaskSupport.getTaskInformation(taskId.value());
-            return Optional.of(mapTask(taskInformation, userTaskSupport.getPayload(taskId.value())));
+            return Optional.of(mapTask(taskInformation, userTaskSupport.getPayload(taskId.value())))
+                .filter(task -> task.istSichtbarFuer(benutzerId));
         } catch (IllegalArgumentException exception) {
             return Optional.empty();
         }

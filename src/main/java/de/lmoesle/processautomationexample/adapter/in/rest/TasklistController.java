@@ -1,9 +1,10 @@
 package de.lmoesle.processautomationexample.adapter.in.rest;
 
 import de.lmoesle.processautomationexample.adapter.in.rest.dto.UserTaskDto;
-import de.lmoesle.processautomationexample.application.ports.in.GetAllTasksInPort;
-import de.lmoesle.processautomationexample.application.ports.in.GetTaskByIdInPort;
-import de.lmoesle.processautomationexample.application.ports.in.GetTaskByIdInPort.GetTaskByIdCommand;
+import de.lmoesle.processautomationexample.application.ports.in.TaskAbfragenInPort;
+import de.lmoesle.processautomationexample.application.ports.in.TaskAbfragenInPort.GetAllTasksCommand;
+import de.lmoesle.processautomationexample.application.ports.in.TaskAbfragenInPort.GetTaskByIdCommand;
+import de.lmoesle.processautomationexample.domain.benutzer.BenutzerId;
 import de.lmoesle.processautomationexample.domain.tasklist.UserTaskId;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/tasks")
@@ -26,13 +28,14 @@ import java.util.List;
 @Tag(name = "Tasklist")
 public class TasklistController {
 
-    private final GetAllTasksInPort getAllTasksInPort;
-    private final GetTaskByIdInPort getTaskByIdInPort;
+    private static final BenutzerId AKTUELLER_BENUTZER_ID = BenutzerId.of(UUID.fromString("2d88b39b-e7b0-4a3f-b9c6-b3d8e6fbe100"));
+
+    private final TaskAbfragenInPort taskAbfragenInPort;
 
     @GetMapping
     @Operation(
         summary = "Alle User Tasks laden",
-        description = "Liefert alle aktuell bekannten User Tasks aus dem registrierten UserTaskSupport."
+        description = "Liefert alle fuer den aktuell angemeldeten Benutzer sichtbaren User Tasks. Solange keine Authentifizierung existiert, ist der Benutzer im Controller fest verdrahtet."
     )
     @ApiResponses({
         @ApiResponse(
@@ -45,7 +48,7 @@ public class TasklistController {
         )
     })
     public List<UserTaskDto> getAllTasks() {
-        return getAllTasksInPort.getAllTasks().stream()
+        return taskAbfragenInPort.getAllTasks(new GetAllTasksCommand(AKTUELLER_BENUTZER_ID)).stream()
             .map(UserTaskDto::ausDomain)
             .toList();
     }
@@ -53,7 +56,7 @@ public class TasklistController {
     @GetMapping("/{taskId}")
     @Operation(
         summary = "User Task per ID laden",
-        description = "Liefert einen einzelnen User Task inklusive Payload anhand seiner technischen ID."
+        description = "Liefert einen einzelnen User Task fuer den aktuell angemeldeten Benutzer inklusive Payload anhand seiner technischen ID."
     )
     @ApiResponses({
         @ApiResponse(
@@ -64,6 +67,8 @@ public class TasklistController {
         @ApiResponse(responseCode = "404", description = "Kein User Task mit der angegebenen ID gefunden.")
     })
     public UserTaskDto getTaskById(@PathVariable("taskId") String taskId) {
-        return UserTaskDto.ausDomain(getTaskByIdInPort.getTaskById(new GetTaskByIdCommand(UserTaskId.of(taskId))));
+        return UserTaskDto.ausDomain(
+            taskAbfragenInPort.getTaskById(new GetTaskByIdCommand(UserTaskId.of(taskId), AKTUELLER_BENUTZER_ID))
+        );
     }
 }

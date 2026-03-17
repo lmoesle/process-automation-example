@@ -1,8 +1,9 @@
 package de.lmoesle.processautomationexample.adapter.in.rest;
 
-import de.lmoesle.processautomationexample.application.ports.in.GetAllTasksInPort;
-import de.lmoesle.processautomationexample.application.ports.in.GetTaskByIdInPort;
-import de.lmoesle.processautomationexample.application.ports.in.GetTaskByIdInPort.GetTaskByIdCommand;
+import de.lmoesle.processautomationexample.application.ports.in.TaskAbfragenInPort;
+import de.lmoesle.processautomationexample.application.ports.in.TaskAbfragenInPort.GetAllTasksCommand;
+import de.lmoesle.processautomationexample.application.ports.in.TaskAbfragenInPort.GetTaskByIdCommand;
+import de.lmoesle.processautomationexample.domain.benutzer.BenutzerTestdaten;
 import de.lmoesle.processautomationexample.domain.tasklist.TaskNichtGefundenException;
 import de.lmoesle.processautomationexample.domain.tasklist.UserTaskTestdaten;
 import org.junit.jupiter.api.Test;
@@ -26,14 +27,11 @@ class TasklistControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private GetAllTasksInPort getAllTasksInPort;
-
-    @MockitoBean
-    private GetTaskByIdInPort getTaskByIdInPort;
+    private TaskAbfragenInPort taskAbfragenInPort;
 
     @Test
     void loadsAllTasks() throws Exception {
-        when(getAllTasksInPort.getAllTasks()).thenReturn(List.of(
+        when(taskAbfragenInPort.getAllTasks(new GetAllTasksCommand(BenutzerTestdaten.adaId()))).thenReturn(List.of(
             UserTaskTestdaten.userTaskWithoutPayload(),
             UserTaskTestdaten.secondUserTaskWithoutPayload()
         ));
@@ -50,12 +48,12 @@ class TasklistControllerTest {
             .andExpect(jsonPath("$[1].candidateUsers[0].name").value("Carla Gomez"))
             .andExpect(jsonPath("$[1].urlaubsantrag.id").value("a91e8877-f17a-40d4-a9ee-1b0350f27b52"));
 
-        verify(getAllTasksInPort).getAllTasks();
+        verify(taskAbfragenInPort).getAllTasks(new GetAllTasksCommand(BenutzerTestdaten.adaId()));
     }
 
     @Test
     void loadsTaskById() throws Exception {
-        when(getTaskByIdInPort.getTaskById(new GetTaskByIdCommand(UserTaskTestdaten.taskId())))
+        when(taskAbfragenInPort.getTaskById(new GetTaskByIdCommand(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId())))
             .thenReturn(UserTaskTestdaten.userTask());
 
         mockMvc.perform(get("/api/tasks/{taskId}", UserTaskTestdaten.TASK_ID))
@@ -66,12 +64,12 @@ class TasklistControllerTest {
             .andExpect(jsonPath("$.candidateUsers[1].name").value("Carla Gomez"))
             .andExpect(jsonPath("$.bearbeiter.name").value("Ada Lovelace"));
 
-        verify(getTaskByIdInPort).getTaskById(new GetTaskByIdCommand(UserTaskTestdaten.taskId()));
+        verify(taskAbfragenInPort).getTaskById(new GetTaskByIdCommand(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId()));
     }
 
     @Test
     void returnsNotFoundForUnknownTaskId() throws Exception {
-        when(getTaskByIdInPort.getTaskById(new GetTaskByIdCommand(UserTaskTestdaten.taskId())))
+        when(taskAbfragenInPort.getTaskById(new GetTaskByIdCommand(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId())))
             .thenThrow(new TaskNichtGefundenException(UserTaskTestdaten.taskId()));
 
         mockMvc.perform(get("/api/tasks/{taskId}", UserTaskTestdaten.TASK_ID))

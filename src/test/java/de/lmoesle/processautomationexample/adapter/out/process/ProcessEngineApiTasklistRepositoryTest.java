@@ -43,7 +43,7 @@ class ProcessEngineApiTasklistRepositoryTest {
         liefereTask(UserTaskTestdaten.taskId(), UserTaskTestdaten.meta(), UserTaskTestdaten.payload());
         liefereTask(UserTaskTestdaten.secondTaskId(), UserTaskTestdaten.secondMeta(), UserTaskTestdaten.secondPayload());
 
-        var tasks = processEngineApiTasklistRepository.getAllTasks();
+        var tasks = processEngineApiTasklistRepository.getAllTasks(BenutzerTestdaten.carlaId());
 
         assertThat(tasks)
             .extracting(task -> task.id().value())
@@ -66,11 +66,24 @@ class ProcessEngineApiTasklistRepositoryTest {
     }
 
     @Test
+    void filtersTasksByCurrentUserVisibility() {
+        stubReferenzen();
+        liefereTask(UserTaskTestdaten.taskId(), UserTaskTestdaten.meta(), UserTaskTestdaten.payload());
+        liefereTask(UserTaskTestdaten.secondTaskId(), UserTaskTestdaten.secondMeta(), UserTaskTestdaten.secondPayload());
+
+        var tasks = processEngineApiTasklistRepository.getAllTasks(BenutzerTestdaten.adaId());
+
+        assertThat(tasks)
+            .extracting(task -> task.id().value())
+            .containsExactly(UserTaskTestdaten.TASK_ID);
+    }
+
+    @Test
     void loadsTaskByIdWithEnrichedDomainData() {
         stubReferenzen();
         liefereTask(UserTaskTestdaten.taskId(), UserTaskTestdaten.meta(), UserTaskTestdaten.payload());
 
-        var task = processEngineApiTasklistRepository.getTaskById(UserTaskTestdaten.taskId()).orElseThrow();
+        var task = processEngineApiTasklistRepository.getTaskById(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId()).orElseThrow();
 
         assertThat(task.id().value()).isEqualTo(UserTaskTestdaten.TASK_ID);
         assertThat(task.urlaubsantrag().id().value()).isEqualTo(UrlaubsantragTestData.VACATION_REQUEST_UUID);
@@ -80,15 +93,37 @@ class ProcessEngineApiTasklistRepositoryTest {
     }
 
     @Test
+    void returnsEmptyOptionalWhenTaskExistsButUserIsNotAuthorized() {
+        stubReferenzen();
+        liefereTask(UserTaskTestdaten.secondTaskId(), UserTaskTestdaten.secondMeta(), UserTaskTestdaten.secondPayload());
+
+        assertThat(processEngineApiTasklistRepository.getTaskById(UserTaskTestdaten.secondTaskId(), BenutzerTestdaten.adaId())).isEmpty();
+    }
+
+    @Test
     void returnsEmptyOptionalWhenTaskDoesNotExist() {
-        assertThat(processEngineApiTasklistRepository.getTaskById(UserTaskTestdaten.taskId())).isEmpty();
+        assertThat(processEngineApiTasklistRepository.getTaskById(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId())).isEmpty();
     }
 
     @Test
     void rejectsNullTaskId() {
-        assertThatThrownBy(() -> processEngineApiTasklistRepository.getTaskById(null))
+        assertThatThrownBy(() -> processEngineApiTasklistRepository.getTaskById(null, BenutzerTestdaten.adaId()))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("taskId darf nicht null sein");
+    }
+
+    @Test
+    void rejectsNullUserForGetTaskById() {
+        assertThatThrownBy(() -> processEngineApiTasklistRepository.getTaskById(UserTaskTestdaten.taskId(), null))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("benutzerId darf nicht null sein");
+    }
+
+    @Test
+    void rejectsNullUserForGetAllTasks() {
+        assertThatThrownBy(() -> processEngineApiTasklistRepository.getAllTasks(null))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("benutzerId darf nicht null sein");
     }
 
     private void liefereTask(

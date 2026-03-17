@@ -25,6 +25,6 @@ Content-Type: application/json
 Accept: application/json
 
 ### Aufgaben Details
-GET {{baseUrl}}/api/tasks/6bff485d-2201-11f1-be80-565e579760f4
+GET {{baseUrl}}/api/tasks/908fef6b-220c-11f1-9f8b-565e579760f4
 Content-Type: application/json
 Accept: application/json
