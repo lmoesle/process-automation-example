@@ -19,7 +19,16 @@ The repository is intended as a small, concrete reference for combining process 
 - Process-Engine-API
 - PostgreSQL 18 provided via Docker Compose
 - Flyway database migrations
-- BPMN-to-Java code generation from files in `src/main/resources/bpmn`
+- BPMN-to-Java code generation from files in `apps/backend/src/main/resources/bpmn`
+
+## Repository Structure
+
+```text
+apps/
+  backend/    Spring Boot backend
+  frontend/     Placeholder for the future React frontend
+stack/        Local infrastructure such as Docker Compose
+```
 
 ## Prerequisites
 
@@ -30,9 +39,10 @@ The Maven build is configured with `source` and `target` level `25`. If you buil
 
 ## Build The Project
 
-Use the Maven wrapper from the repository root:
+Use the Maven wrapper from the backend application directory:
 
 ```bash
+cd apps/backend
 ./mvnw clean verify
 ```
 
@@ -69,6 +79,7 @@ The database is exposed on `localhost:5432` with these default settings:
 After the database is up, start the Spring Boot application:
 
 ```bash
+cd apps/backend
 ./mvnw spring-boot:run
 ```
 

@@ -23,7 +23,8 @@ jobs:
           cache: maven
 
       - name: Ensure Maven wrapper is executable
-        run: chmod +x ./mvnw
+        run: chmod +x ./apps/backend/mvnw
 
       - name: Build with Maven
+        working-directory: ./apps/backend
         run: ./mvnw clean verify
