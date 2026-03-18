@@ -34,6 +34,11 @@ public record UrlaubsantragDto(
     )
     BenutzerDto vertretung,
     @Schema(
+        description = "Zugeordneter Vorgesetzter fuer die Pruefung des Urlaubsantrags.",
+        nullable = true
+    )
+    BenutzerDto vorgesetzter,
+    @Schema(
         description = "Aktueller Status des Urlaubsantrags.",
         example = "ANTRAG_GESTELLT"
     )
@@ -51,6 +56,7 @@ public record UrlaubsantragDto(
             urlaubsantrag.zeitraum().bis(),
             BenutzerDto.ausDomain(urlaubsantrag.antragsteller()),
             BenutzerDto.ausOptionalerDomain(urlaubsantrag.vertretung()),
+            BenutzerDto.ausOptionalerDomain(urlaubsantrag.vorgesetzter()),
             UrlaubsantragStatusDto.ausDomain(urlaubsantrag.status()),
             urlaubsantrag.statusHistorie().stream()
                 .map(UrlaubsantragStatusHistorieneintragDto::ausDomain)
@@ -65,6 +71,7 @@ public record UrlaubsantragDto(
             bis,
             BenutzerDto.ausDomain(ergebnis.antragsteller()),
             BenutzerDto.ausOptionalerDomain(ergebnis.vertretung()),
+            null,
             UrlaubsantragStatusDto.ausDomain(ergebnis.status()),
             ergebnis.statusHistorie().stream()
                 .map(UrlaubsantragStatusHistorieneintragDto::ausDomain)

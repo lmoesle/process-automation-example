@@ -67,7 +67,7 @@ public final class UrlaubsantragTestdaten {
     }
 
     public static Urlaubsantrag urlaubsantrag() {
-        return urlaubsantrag(urlaubsantragId(), urlaubszeitraum(), antragsteller(), vertretung(), null);
+        return urlaubsantrag(urlaubsantragId(), urlaubszeitraum(), antragsteller(), vertretung(), null, null);
     }
 
     public static Urlaubsantrag urlaubsantragWithStartedProcess() {
@@ -76,6 +76,7 @@ public final class UrlaubsantragTestdaten {
             urlaubszeitraum(),
             antragsteller(),
             vertretung(),
+            null,
             prozessinstanzId()
         );
     }
@@ -93,11 +94,16 @@ public final class UrlaubsantragTestdaten {
     }
 
     public static Urlaubsantrag secondUrlaubsantrag(Benutzer antragsteller, Benutzer vertretung) {
+        return secondUrlaubsantrag(antragsteller, vertretung, null);
+    }
+
+    public static Urlaubsantrag secondUrlaubsantrag(Benutzer antragsteller, Benutzer vertretung, Benutzer vorgesetzter) {
         return urlaubsantrag(
             secondUrlaubsantragId(),
             secondUrlaubszeitraum(),
             antragsteller,
             vertretung,
+            vorgesetzter,
             secondProzessinstanzId()
         );
     }
@@ -109,11 +115,23 @@ public final class UrlaubsantragTestdaten {
         Benutzer vertretung,
         ProzessinstanzId prozessinstanzId
     ) {
+        return urlaubsantrag(urlaubsantragId, urlaubszeitraum, antragsteller, vertretung, null, prozessinstanzId);
+    }
+
+    public static Urlaubsantrag urlaubsantrag(
+        UrlaubsantragId urlaubsantragId,
+        Urlaubszeitraum urlaubszeitraum,
+        Benutzer antragsteller,
+        Benutzer vertretung,
+        Benutzer vorgesetzter,
+        ProzessinstanzId prozessinstanzId
+    ) {
         return new Urlaubsantrag(
             urlaubsantragId,
             urlaubszeitraum,
             antragsteller,
             vertretung,
+            vorgesetzter,
             UrlaubsantragStatus.ANTRAG_GESTELLT,
             initialeStatusHistorie(),
             prozessinstanzId

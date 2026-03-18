@@ -36,12 +36,14 @@ class UrlaubsantraegeLadenControllerTest {
             UrlaubsantragTestData.vacationPeriod(),
             BenutzerTestdaten.ada(),
             BenutzerTestdaten.carla(),
+            BenutzerTestdaten.carla(),
             UrlaubsantragTestData.prozessinstanzId()
         );
         var secondUrlaubsantrag = UrlaubsantragTestData.urlaubsantrag(
             UrlaubsantragTestData.secondUrlaubsantragId(),
             Urlaubszeitraum.of(UrlaubsantragTestData.SECOND_FROM, UrlaubsantragTestData.SECOND_TO),
             BenutzerTestdaten.ada(),
+            null,
             null,
             null
         );
@@ -60,6 +62,9 @@ class UrlaubsantraegeLadenControllerTest {
             .andExpect(jsonPath("$[0].vertretung.id").doesNotExist())
             .andExpect(jsonPath("$[0].vertretung.name").value(BenutzerTestdaten.carla().name()))
             .andExpect(jsonPath("$[0].vertretung.email").value(BenutzerTestdaten.carla().email()))
+            .andExpect(jsonPath("$[0].vorgesetzter.id").doesNotExist())
+            .andExpect(jsonPath("$[0].vorgesetzter.name").value(BenutzerTestdaten.carla().name()))
+            .andExpect(jsonPath("$[0].vorgesetzter.email").value(BenutzerTestdaten.carla().email()))
             .andExpect(jsonPath("$[0].status").value("ANTRAG_GESTELLT"))
             .andExpect(jsonPath("$[0].statusHistorie[0].status").value("ANTRAG_GESTELLT"))
             .andExpect(jsonPath("$[0].prozessinstanzId").doesNotExist())
@@ -70,6 +75,7 @@ class UrlaubsantraegeLadenControllerTest {
             .andExpect(jsonPath("$[1].antragsteller.name").value(BenutzerTestdaten.ada().name()))
             .andExpect(jsonPath("$[1].antragsteller.email").value(BenutzerTestdaten.ada().email()))
             .andExpect(jsonPath("$[1].vertretung").value(nullValue()))
+            .andExpect(jsonPath("$[1].vorgesetzter").value(nullValue()))
             .andExpect(jsonPath("$[1].status").value("ANTRAG_GESTELLT"))
             .andExpect(jsonPath("$[1].statusHistorie[0].status").value("ANTRAG_GESTELLT"))
             .andExpect(jsonPath("$[1].prozessinstanzId").doesNotExist());

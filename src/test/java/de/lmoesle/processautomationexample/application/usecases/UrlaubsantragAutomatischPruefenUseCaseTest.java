@@ -121,6 +121,7 @@ class UrlaubsantragAutomatischPruefenUseCaseTest {
             UrlaubsantragTestData.vacationPeriod(),
             UrlaubsantragTestData.antragsteller(),
             UrlaubsantragTestData.vertretung(),
+            null,
             UrlaubsantragStatus.VORGESETZTEN_PRUEFUNG,
             UrlaubsantragTestData.statushistorie(
                 UrlaubsantragStatus.ANTRAG_GESTELLT,
@@ -149,6 +150,7 @@ class UrlaubsantragAutomatischPruefenUseCaseTest {
             UrlaubsantragTestData.vacationPeriod(),
             UrlaubsantragTestData.antragsteller(),
             UrlaubsantragTestData.vertretung(),
+            null,
             UrlaubsantragStatus.ABGELEHNT,
             UrlaubsantragTestData.statushistorie(
                 UrlaubsantragStatus.ANTRAG_GESTELLT,

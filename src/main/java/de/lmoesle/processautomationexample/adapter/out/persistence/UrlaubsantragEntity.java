@@ -46,6 +46,9 @@ public class UrlaubsantragEntity {
     @Column(name = "vertretung_id")
     private UUID vertretungId;
 
+    @Column(name = "vorgesetzter_id")
+    private UUID vorgesetzterId;
+
     @Column(name = "prozessinstanz_id")
     private String prozessinstanzId;
 

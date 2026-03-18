@@ -70,6 +70,7 @@ class UrlaubsantragErstellenControllerTest {
             .andExpect(jsonPath("$.vertretung.id").doesNotExist())
             .andExpect(jsonPath("$.vertretung.name").value(BenutzerTestdaten.carla().name()))
             .andExpect(jsonPath("$.vertretung.email").value(BenutzerTestdaten.carla().email()))
+            .andExpect(jsonPath("$.vorgesetzter").value(org.hamcrest.Matchers.nullValue()))
             .andExpect(jsonPath("$.status").value("ANTRAG_GESTELLT"))
             .andExpect(jsonPath("$.statusHistorie[0].status").value("ANTRAG_GESTELLT"))
             .andExpect(jsonPath("$.prozessinstanzId").doesNotExist());

@@ -75,6 +75,10 @@ public final class UrlaubsantragTestData {
         return UrlaubsantragTestdaten.secondUrlaubsantrag(antragsteller, vertretung);
     }
 
+    public static Urlaubsantrag secondUrlaubsantrag(Benutzer antragsteller, Benutzer vertretung, Benutzer vorgesetzter) {
+        return UrlaubsantragTestdaten.secondUrlaubsantrag(antragsteller, vertretung, vorgesetzter);
+    }
+
     public static Urlaubsantrag urlaubsantrag(
         UrlaubsantragId urlaubsantragId,
         Urlaubszeitraum vacationPeriod,
@@ -87,6 +91,24 @@ public final class UrlaubsantragTestData {
             vacationPeriod,
             antragsteller,
             vertretung,
+            prozessinstanzId
+        );
+    }
+
+    public static Urlaubsantrag urlaubsantrag(
+        UrlaubsantragId urlaubsantragId,
+        Urlaubszeitraum vacationPeriod,
+        Benutzer antragsteller,
+        Benutzer vertretung,
+        Benutzer vorgesetzter,
+        ProzessinstanzId prozessinstanzId
+    ) {
+        return UrlaubsantragTestdaten.urlaubsantrag(
+            urlaubsantragId,
+            vacationPeriod,
+            antragsteller,
+            vertretung,
+            vorgesetzter,
             prozessinstanzId
         );
     }

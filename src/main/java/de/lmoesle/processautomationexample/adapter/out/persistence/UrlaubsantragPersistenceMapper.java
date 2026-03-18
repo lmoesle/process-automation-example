@@ -20,6 +20,7 @@ public final class UrlaubsantragPersistenceMapper {
             urlaubsantrag.zeitraum().bis(),
             urlaubsantrag.antragsteller().id().value(),
             urlaubsantrag.vertretung() == null ? null : urlaubsantrag.vertretung().id().value(),
+            urlaubsantrag.vorgesetzter() == null ? null : urlaubsantrag.vorgesetzter().id().value(),
             urlaubsantrag.prozessinstanzId() == null ? null : urlaubsantrag.prozessinstanzId().value(),
             urlaubsantrag.status(),
             new ArrayList<>(urlaubsantrag.statusHistorie().stream()
@@ -34,13 +35,15 @@ public final class UrlaubsantragPersistenceMapper {
     public static Urlaubsantrag toDomain(
         UrlaubsantragEntity urlaubsantragEntity,
         Benutzer antragsteller,
-        Benutzer vertretung
+        Benutzer vertretung,
+        Benutzer vorgesetzter
     ) {
         return new Urlaubsantrag(
             UrlaubsantragId.of(urlaubsantragEntity.getId()),
             Urlaubszeitraum.of(urlaubsantragEntity.getVon(), urlaubsantragEntity.getBis()),
             antragsteller,
             vertretung,
+            vorgesetzter,
             urlaubsantragEntity.getStatus(),
             urlaubsantragEntity.getStatusHistorie().stream()
                 .map(statusHistorienEintrag -> new UrlaubsantragStatusHistorieneintrag(

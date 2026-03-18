@@ -68,6 +68,7 @@ class UrlaubsantragPersistenceAdapterTest {
             UrlaubsantragTestData.TO,
             BenutzerTestdaten.ADA_UUID,
             BenutzerTestdaten.CARLA_UUID,
+            BenutzerTestdaten.CARLA_UUID,
             UrlaubsantragTestData.PROCESS_INSTANCE_ID_VALUE,
             UrlaubsantragStatus.ANTRAG_GESTELLT,
             history(UrlaubsantragStatus.ANTRAG_GESTELLT)
@@ -87,6 +88,7 @@ class UrlaubsantragPersistenceAdapterTest {
             assertThat(request.zeitraum().bis()).isEqualTo(UrlaubsantragTestData.TO);
             assertThat(request.antragsteller()).isEqualTo(BenutzerTestdaten.ada());
             assertThat(request.vertretung()).isEqualTo(BenutzerTestdaten.carla());
+            assertThat(request.vorgesetzter()).isEqualTo(BenutzerTestdaten.carla());
             assertThat(request.prozessinstanzId()).isEqualTo(UrlaubsantragTestData.prozessinstanzId());
             assertThat(request.status()).isEqualTo(UrlaubsantragStatus.ANTRAG_GESTELLT);
             assertThat(request.statusHistorie()).hasSize(1)
@@ -106,6 +108,7 @@ class UrlaubsantragPersistenceAdapterTest {
             UrlaubsantragTestData.TO,
             BenutzerTestdaten.ADA_UUID,
             BenutzerTestdaten.CARLA_UUID,
+            BenutzerTestdaten.CARLA_UUID,
             UrlaubsantragTestData.PROCESS_INSTANCE_ID_VALUE,
             UrlaubsantragStatus.ANTRAG_GESTELLT,
             history(UrlaubsantragStatus.ANTRAG_GESTELLT)
@@ -115,6 +118,7 @@ class UrlaubsantragPersistenceAdapterTest {
             UrlaubsantragTestData.SECOND_FROM,
             UrlaubsantragTestData.SECOND_TO,
             BenutzerTestdaten.ADA_UUID,
+            null,
             null,
             null,
             UrlaubsantragStatus.ANTRAG_GESTELLT,
@@ -138,6 +142,7 @@ class UrlaubsantragPersistenceAdapterTest {
         assertThat(urlaubsantrags.get(0).zeitraum().bis()).isEqualTo(UrlaubsantragTestData.TO);
         assertThat(urlaubsantrags.get(0).antragsteller()).isEqualTo(BenutzerTestdaten.ada());
         assertThat(urlaubsantrags.get(0).vertretung()).isEqualTo(BenutzerTestdaten.carla());
+        assertThat(urlaubsantrags.get(0).vorgesetzter()).isEqualTo(BenutzerTestdaten.carla());
         assertThat(urlaubsantrags.get(0).prozessinstanzId()).isEqualTo(UrlaubsantragTestData.prozessinstanzId());
         assertThat(urlaubsantrags.get(0).status()).isEqualTo(UrlaubsantragStatus.ANTRAG_GESTELLT);
         assertThat(urlaubsantrags.get(0).statusHistorie()).hasSize(1);
@@ -147,6 +152,7 @@ class UrlaubsantragPersistenceAdapterTest {
         assertThat(urlaubsantrags.get(1).zeitraum().bis()).isEqualTo(UrlaubsantragTestData.SECOND_TO);
         assertThat(urlaubsantrags.get(1).antragsteller()).isEqualTo(BenutzerTestdaten.ada());
         assertThat(urlaubsantrags.get(1).vertretung()).isNull();
+        assertThat(urlaubsantrags.get(1).vorgesetzter()).isNull();
         assertThat(urlaubsantrags.get(1).prozessinstanzId()).isNull();
         assertThat(urlaubsantrags.get(1).status()).isEqualTo(UrlaubsantragStatus.ANTRAG_GESTELLT);
         assertThat(urlaubsantrags.get(1).statusHistorie()).hasSize(1);
@@ -174,6 +180,7 @@ class UrlaubsantragPersistenceAdapterTest {
             UrlaubsantragTestData.TO,
             BenutzerTestdaten.ADA_UUID,
             BenutzerTestdaten.CARLA_UUID,
+            null,
             UrlaubsantragTestData.PROCESS_INSTANCE_ID_VALUE,
             UrlaubsantragStatus.ANTRAG_GESTELLT,
             history(UrlaubsantragStatus.ANTRAG_GESTELLT)
@@ -186,6 +193,34 @@ class UrlaubsantragPersistenceAdapterTest {
         assertThatThrownBy(() -> urlaubsantragPersistenceAdapter.findeAlleNachAntragstellerId(BenutzerTestdaten.adaId()))
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("vertretungId")
+            .hasMessageContaining(BenutzerTestdaten.CARLA_UUID.toString())
+            .hasMessageContaining(UrlaubsantragTestData.VACATION_REQUEST_UUID.toString());
+    }
+
+    @Test
+    void failsWhenReferencedSupervisorUserCannotBeLoaded() {
+        UrlaubsantragEntity urlaubsantragEntity = new UrlaubsantragEntity(
+            UrlaubsantragTestData.VACATION_REQUEST_UUID,
+            UrlaubsantragTestData.FROM,
+            UrlaubsantragTestData.TO,
+            BenutzerTestdaten.ADA_UUID,
+            null,
+            BenutzerTestdaten.CARLA_UUID,
+            UrlaubsantragTestData.PROCESS_INSTANCE_ID_VALUE,
+            UrlaubsantragStatus.ANTRAG_GESTELLT,
+            history(UrlaubsantragStatus.ANTRAG_GESTELLT)
+        );
+        when(urlaubsantragJpaRepository.findAllByAntragstellerId(eq(BenutzerTestdaten.ADA_UUID), any(Sort.class)))
+            .thenReturn(List.of(urlaubsantragEntity));
+        when(benutzerJpaRepository.findDistinctByIdIn(argThat(benutzerIds ->
+            benutzerIds.size() == 2
+                && benutzerIds.contains(BenutzerTestdaten.ADA_UUID)
+                && benutzerIds.contains(BenutzerTestdaten.CARLA_UUID)
+        ))).thenReturn(List.of(userEntity(BenutzerTestdaten.ada())));
+
+        assertThatThrownBy(() -> urlaubsantragPersistenceAdapter.findeAlleNachAntragstellerId(BenutzerTestdaten.adaId()))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("vorgesetzterId")
             .hasMessageContaining(BenutzerTestdaten.CARLA_UUID.toString())
             .hasMessageContaining(UrlaubsantragTestData.VACATION_REQUEST_UUID.toString());
     }

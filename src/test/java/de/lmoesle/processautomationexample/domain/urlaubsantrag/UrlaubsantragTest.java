@@ -1,5 +1,6 @@
 package de.lmoesle.processautomationexample.domain.urlaubsantrag;
 
+import de.lmoesle.processautomationexample.domain.benutzer.BenutzerTestdaten;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -26,6 +27,7 @@ class UrlaubsantragTest {
         assertThat(urlaubsantrag.zeitraum().bis()).isEqualTo(UrlaubsantragTestData.TO);
         assertThat(urlaubsantrag.antragsteller()).isEqualTo(UrlaubsantragTestData.antragsteller());
         assertThat(urlaubsantrag.vertretung()).isEqualTo(UrlaubsantragTestData.vertretung());
+        assertThat(urlaubsantrag.vorgesetzter()).isNull();
         assertThat(urlaubsantrag.prozessinstanzId()).isNull();
         assertThat(urlaubsantrag.status()).isEqualTo(UrlaubsantragStatus.ANTRAG_GESTELLT);
         assertThat(urlaubsantrag.statusHistorie()).hasSize(1)
@@ -47,6 +49,7 @@ class UrlaubsantragTest {
             UrlaubsantragTestData.vacationPeriod(),
             UrlaubsantragTestData.antragsteller(),
             UrlaubsantragTestData.vertretung(),
+            BenutzerTestdaten.carla(),
             UrlaubsantragStatus.VORGESETZTEN_PRUEFUNG,
             history,
             UrlaubsantragTestData.prozessinstanzId()
@@ -57,9 +60,19 @@ class UrlaubsantragTest {
         assertThat(urlaubsantrag.zeitraum().bis()).isEqualTo(UrlaubsantragTestData.TO);
         assertThat(urlaubsantrag.antragsteller()).isEqualTo(UrlaubsantragTestData.antragsteller());
         assertThat(urlaubsantrag.vertretung()).isEqualTo(UrlaubsantragTestData.vertretung());
+        assertThat(urlaubsantrag.vorgesetzter()).isEqualTo(BenutzerTestdaten.carla());
         assertThat(urlaubsantrag.prozessinstanzId()).isEqualTo(UrlaubsantragTestData.prozessinstanzId());
         assertThat(urlaubsantrag.status()).isEqualTo(UrlaubsantragStatus.VORGESETZTEN_PRUEFUNG);
         assertThat(urlaubsantrag.statusHistorie()).isEqualTo(history);
+    }
+
+    @Test
+    void assignsSupervisor() {
+        Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
+
+        urlaubsantrag.weiseVorgesetztenZu(BenutzerTestdaten.carla());
+
+        assertThat(urlaubsantrag.vorgesetzter()).isEqualTo(BenutzerTestdaten.carla());
     }
 
     @Test

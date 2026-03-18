@@ -2,17 +2,24 @@ package de.lmoesle.processautomationexample.application.usecases;
 
 import de.lmoesle.processautomationexample.application.ports.in.BenutzeraufgabeMirZuweisenInPort;
 import de.lmoesle.processautomationexample.application.ports.out.TasklistRepositoryOutPort;
+import de.lmoesle.processautomationexample.application.ports.out.UrlaubsantragSpeichernOutPort;
+import de.lmoesle.processautomationexample.domain.benutzer.Benutzer;
+import de.lmoesle.processautomationexample.domain.benutzer.BenutzerId;
 import de.lmoesle.processautomationexample.domain.tasklist.TaskNichtGefundenException;
 import de.lmoesle.processautomationexample.domain.tasklist.TaskZugriffVerweigertException;
+import de.lmoesle.processautomationexample.domain.tasklist.UserTask;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BenutzeraufgabeMirZuweisenUseCase implements BenutzeraufgabeMirZuweisenInPort {
 
     private final TasklistRepositoryOutPort tasklistRepositoryOutPort;
+    private final UrlaubsantragSpeichernOutPort urlaubsantragSpeichernOutPort;
 
     @Override
     public void weiseBenutzeraufgabeMirZu(WeiseBenutzeraufgabeMirZuCommand command) {
@@ -28,5 +35,19 @@ public class BenutzeraufgabeMirZuweisenUseCase implements BenutzeraufgabeMirZuwe
         }
 
         tasklistRepositoryOutPort.assignTaskToUser(command.taskId(), command.benutzerId());
+
+        if (task.urlaubsantrag() != null) {
+            task.urlaubsantrag().weiseVorgesetztenZu(ermittleVorgesetzten(task, command.benutzerId()));
+            urlaubsantragSpeichernOutPort.speichere(task.urlaubsantrag());
+        }
+    }
+
+    private Benutzer ermittleVorgesetzten(UserTask task, BenutzerId benutzerId) {
+        return task.candidateUsers().stream()
+            .filter(benutzer -> benutzer.id().equals(benutzerId))
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException(
+                "Aufgabe " + task.id().value() + " enthaelt keinen Kandidaten fuer Benutzer " + benutzerId.value()
+            ));
     }
 }

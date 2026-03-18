@@ -74,7 +74,7 @@ public class UrlaubsantragPersistenceAdapter implements UrlaubsantragSpeichernOu
     private Map<UUID, Benutzer> ladeBenutzerNachId(List<UrlaubsantragEntity> urlaubsantragEntities) {
         Map<UUID, Benutzer> benutzerNachId = benutzerJpaRepository.findDistinctByIdIn(
             urlaubsantragEntities.stream()
-                .flatMap(entity -> Stream.of(entity.getAntragstellerId(), entity.getVertretungId()))
+                .flatMap(entity -> Stream.of(entity.getAntragstellerId(), entity.getVertretungId(), entity.getVorgesetzterId()))
                 .filter(Objects::nonNull)
                 .distinct()
                 .toList()
@@ -91,7 +91,10 @@ public class UrlaubsantragPersistenceAdapter implements UrlaubsantragSpeichernOu
             erfordereBenutzer(benutzerNachId, entity.getAntragstellerId(), entity.getId(), "antragstellerId"),
             entity.getVertretungId() == null
                 ? null
-                : erfordereBenutzer(benutzerNachId, entity.getVertretungId(), entity.getId(), "vertretungId")
+                : erfordereBenutzer(benutzerNachId, entity.getVertretungId(), entity.getId(), "vertretungId"),
+            entity.getVorgesetzterId() == null
+                ? null
+                : erfordereBenutzer(benutzerNachId, entity.getVorgesetzterId(), entity.getId(), "vorgesetzterId")
         );
     }
 

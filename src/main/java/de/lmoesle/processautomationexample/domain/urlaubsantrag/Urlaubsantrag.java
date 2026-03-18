@@ -17,6 +17,7 @@ public final class Urlaubsantrag {
     private final Urlaubszeitraum zeitraum;
     private final Benutzer antragsteller;
     private final Benutzer vertretung;
+    private Benutzer vorgesetzter;
     private UrlaubsantragStatus status;
     private final List<UrlaubsantragStatusHistorieneintrag> statusHistorie;
     private ProzessinstanzId prozessinstanzId;
@@ -26,6 +27,7 @@ public final class Urlaubsantrag {
         Urlaubszeitraum zeitraum,
         Benutzer antragsteller,
         Benutzer vertretung,
+        Benutzer vorgesetzter,
         UrlaubsantragStatus status,
         List<UrlaubsantragStatusHistorieneintrag> statusHistorie,
         ProzessinstanzId prozessinstanzId
@@ -43,6 +45,7 @@ public final class Urlaubsantrag {
         this.zeitraum = zeitraum;
         this.antragsteller = antragsteller;
         this.vertretung = vertretung;
+        this.vorgesetzter = vorgesetzter;
         this.status = status;
         this.statusHistorie = new ArrayList<>(statusHistorie);
         this.prozessinstanzId = prozessinstanzId;
@@ -54,6 +57,7 @@ public final class Urlaubsantrag {
             Urlaubszeitraum.of(von, bis),
             antragsteller,
             vertretung,
+            null,
             UrlaubsantragStatus.ANTRAG_GESTELLT,
             List.of(UrlaubsantragStatusHistorieneintrag.ohneKommentar(UrlaubsantragStatus.ANTRAG_GESTELLT)),
             null
@@ -111,6 +115,16 @@ public final class Urlaubsantrag {
     public void lehneDurchVorgesetztenAb(String kommentar) {
         pruefeVorgesetztenentscheidungZulaessig();
         wechsleZu(UrlaubsantragStatus.ABGELEHNT, kommentar);
+    }
+
+    public void weiseVorgesetztenZu(Benutzer vorgesetzter) {
+        Assert.notNull(vorgesetzter, "vorgesetzter darf nicht null sein");
+
+        if (vorgesetzter.equals(this.vorgesetzter)) {
+            return;
+        }
+
+        this.vorgesetzter = vorgesetzter;
     }
 
     private void pruefeVorgesetztenentscheidungZulaessig() {

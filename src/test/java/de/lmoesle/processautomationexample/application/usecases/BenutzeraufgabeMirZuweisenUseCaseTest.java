@@ -2,30 +2,39 @@ package de.lmoesle.processautomationexample.application.usecases;
 
 import de.lmoesle.processautomationexample.application.ports.in.BenutzeraufgabeMirZuweisenInPort.WeiseBenutzeraufgabeMirZuCommand;
 import de.lmoesle.processautomationexample.application.ports.out.TasklistRepositoryOutPort;
+import de.lmoesle.processautomationexample.application.ports.out.UrlaubsantragSpeichernOutPort;
 import de.lmoesle.processautomationexample.domain.benutzer.BenutzerTestdaten;
 import de.lmoesle.processautomationexample.domain.tasklist.TaskNichtGefundenException;
 import de.lmoesle.processautomationexample.domain.tasklist.TaskZugriffVerweigertException;
 import de.lmoesle.processautomationexample.domain.tasklist.UserTaskTestdaten;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 class BenutzeraufgabeMirZuweisenUseCaseTest {
 
     private TasklistRepositoryOutPort tasklistRepositoryOutPort;
+    private UrlaubsantragSpeichernOutPort urlaubsantragSpeichernOutPort;
     private BenutzeraufgabeMirZuweisenUseCase benutzeraufgabeMirZuweisenUseCase;
 
     @BeforeEach
     void setUp() {
         tasklistRepositoryOutPort = mock(TasklistRepositoryOutPort.class);
-        benutzeraufgabeMirZuweisenUseCase = new BenutzeraufgabeMirZuweisenUseCase(tasklistRepositoryOutPort);
+        urlaubsantragSpeichernOutPort = mock(UrlaubsantragSpeichernOutPort.class);
+        benutzeraufgabeMirZuweisenUseCase = new BenutzeraufgabeMirZuweisenUseCase(
+            tasklistRepositoryOutPort,
+            urlaubsantragSpeichernOutPort
+        );
     }
 
     @Test
@@ -39,6 +48,12 @@ class BenutzeraufgabeMirZuweisenUseCaseTest {
 
         verify(tasklistRepositoryOutPort).getTaskById(UserTaskTestdaten.taskId());
         verify(tasklistRepositoryOutPort).assignTaskToUser(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId());
+        ArgumentCaptor<de.lmoesle.processautomationexample.domain.urlaubsantrag.Urlaubsantrag> urlaubsantragCaptor = ArgumentCaptor.forClass(
+            de.lmoesle.processautomationexample.domain.urlaubsantrag.Urlaubsantrag.class
+        );
+        verify(urlaubsantragSpeichernOutPort).speichere(urlaubsantragCaptor.capture());
+        assertThat(urlaubsantragCaptor.getValue().vorgesetzter()).isEqualTo(BenutzerTestdaten.ada());
+        verifyNoMoreInteractions(tasklistRepositoryOutPort, urlaubsantragSpeichernOutPort);
     }
 
     @Test
@@ -50,6 +65,8 @@ class BenutzeraufgabeMirZuweisenUseCaseTest {
         ))
             .isInstanceOf(TaskNichtGefundenException.class)
             .hasMessage("taskId verweist auf keine vorhandene Aufgabe: " + UserTaskTestdaten.TASK_ID);
+
+        verifyNoInteractions(urlaubsantragSpeichernOutPort);
     }
 
     @Test
@@ -64,6 +81,8 @@ class BenutzeraufgabeMirZuweisenUseCaseTest {
             .hasMessage("Aktueller Benutzer hat keinen Zugriff auf Aufgabe: " + UserTaskTestdaten.SECOND_TASK_ID);
 
         verify(tasklistRepositoryOutPort).getTaskById(UserTaskTestdaten.secondTaskId());
+        verifyNoMoreInteractions(tasklistRepositoryOutPort);
+        verifyNoInteractions(urlaubsantragSpeichernOutPort);
     }
 
     @Test
@@ -90,6 +109,6 @@ class BenutzeraufgabeMirZuweisenUseCaseTest {
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("benutzerId darf nicht null sein");
 
-        verifyNoInteractions(tasklistRepositoryOutPort);
+        verifyNoInteractions(tasklistRepositoryOutPort, urlaubsantragSpeichernOutPort);
     }
 }
