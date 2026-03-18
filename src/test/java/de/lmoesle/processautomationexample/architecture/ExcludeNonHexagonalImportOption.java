@@ -19,8 +19,8 @@ public final class ExcludeNonHexagonalImportOption implements ImportOption {
             return false;
         }
 
-        return !uri.endsWith("/de/lmoesle/processautomationexample/shared/UserTaskSupportConfiguration.class")
-                && !uri.endsWith("/de/lmoesle/processautomationexample/shared/tasklist/ProcessAutomationExampleApplication.class")
-                && !uri.endsWith("/de/lmoesle/processautomationexample/shared/tasklist/TasklistRepository.class");
+        return !uri.endsWith("/de/lmoesle/processautomationexample/ProcessAutomationExampleApplication.class")
+            && !uri.endsWith("/de/lmoesle/processautomationexample/shared/tasklist/UserTaskSupportConfiguration.class")
+            && !uri.endsWith("/de/lmoesle/processautomationexample/shared/tasklist/TasklistRepository.class");
     }
 }
