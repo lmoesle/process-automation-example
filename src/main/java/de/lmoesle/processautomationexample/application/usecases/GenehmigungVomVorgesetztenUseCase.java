@@ -1,6 +1,7 @@
 package de.lmoesle.processautomationexample.application.usecases;
 
 import de.lmoesle.processautomationexample.application.ports.in.GenehmigungVomVorgesetztenInPort;
+import de.lmoesle.processautomationexample.application.ports.out.SendeBenachrichtigungOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.TasklistRepositoryOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.UrlaubsantragSpeichernOutPort;
 import de.lmoesle.processautomationexample.domain.tasklist.TaskNichtGefundenException;
@@ -19,6 +20,7 @@ public class GenehmigungVomVorgesetztenUseCase implements GenehmigungVomVorgeset
 
     private final TasklistRepositoryOutPort tasklistRepositoryOutPort;
     private final UrlaubsantragSpeichernOutPort urlaubsantragSpeichernOutPort;
+    private final SendeBenachrichtigungOutPort sendeBenachrichtigungOutPort;
 
     @Override
     public void entscheideGenehmigungVomVorgesetzten(GenehmigungVomVorgesetztenCommand command) {
@@ -46,6 +48,7 @@ public class GenehmigungVomVorgesetztenUseCase implements GenehmigungVomVorgeset
 
         urlaubsantragSpeichernOutPort.speichere(urlaubsantrag);
         tasklistRepositoryOutPort.completeTask(command.taskId(), command.genehmigt());
+        sendeBenachrichtigungOutPort.sendeBenachrichtigung(urlaubsantrag);
         log.info(
             "Vorgesetztenentscheidung erfolgreich abgeschlossen: urlaubsantragId={}, genehmigt={}, status={}",
             urlaubsantrag.id().value(),

@@ -1,6 +1,7 @@
 package de.lmoesle.processautomationexample.application.usecases;
 
 import de.lmoesle.processautomationexample.application.ports.in.GenehmigungVomVorgesetztenInPort.GenehmigungVomVorgesetztenCommand;
+import de.lmoesle.processautomationexample.application.ports.out.SendeBenachrichtigungOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.TasklistRepositoryOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.UrlaubsantragSpeichernOutPort;
 import de.lmoesle.processautomationexample.domain.benutzer.Benutzer;
@@ -28,15 +29,18 @@ class GenehmigungVomVorgesetztenUseCaseTest {
 
     private TasklistRepositoryOutPort tasklistRepositoryOutPort;
     private UrlaubsantragSpeichernOutPort urlaubsantragSpeichernOutPort;
+    private SendeBenachrichtigungOutPort sendeBenachrichtigungOutPort;
     private GenehmigungVomVorgesetztenUseCase genehmigungVomVorgesetztenUseCase;
 
     @BeforeEach
     void setUp() {
         tasklistRepositoryOutPort = mock(TasklistRepositoryOutPort.class);
         urlaubsantragSpeichernOutPort = mock(UrlaubsantragSpeichernOutPort.class);
+        sendeBenachrichtigungOutPort = mock(SendeBenachrichtigungOutPort.class);
         genehmigungVomVorgesetztenUseCase = new GenehmigungVomVorgesetztenUseCase(
             tasklistRepositoryOutPort,
-            urlaubsantragSpeichernOutPort
+            urlaubsantragSpeichernOutPort,
+            sendeBenachrichtigungOutPort
         );
     }
 
@@ -54,11 +58,12 @@ class GenehmigungVomVorgesetztenUseCaseTest {
             )
         );
 
-        InOrder inOrder = inOrder(tasklistRepositoryOutPort, urlaubsantragSpeichernOutPort);
+        InOrder inOrder = inOrder(tasklistRepositoryOutPort, urlaubsantragSpeichernOutPort, sendeBenachrichtigungOutPort);
         inOrder.verify(tasklistRepositoryOutPort).getTaskById(UserTaskTestdaten.taskId());
         ArgumentCaptor<Urlaubsantrag> savedCaptor = ArgumentCaptor.forClass(Urlaubsantrag.class);
         inOrder.verify(urlaubsantragSpeichernOutPort).speichere(savedCaptor.capture());
         inOrder.verify(tasklistRepositoryOutPort).completeTask(UserTaskTestdaten.taskId(), true);
+        inOrder.verify(sendeBenachrichtigungOutPort).sendeBenachrichtigung(savedCaptor.getValue());
 
         assertThat(savedCaptor.getValue().status()).isEqualTo(UrlaubsantragStatus.GENEHMIGT);
         assertThat(savedCaptor.getValue().statusHistorie()).last().satisfies(entry -> {
@@ -78,6 +83,7 @@ class GenehmigungVomVorgesetztenUseCaseTest {
 
         verify(urlaubsantragSpeichernOutPort).speichere(task.urlaubsantrag());
         verify(tasklistRepositoryOutPort).completeTask(UserTaskTestdaten.taskId(), false);
+        verify(sendeBenachrichtigungOutPort).sendeBenachrichtigung(task.urlaubsantrag());
         assertThat(task.urlaubsantrag().status()).isEqualTo(UrlaubsantragStatus.ABGELEHNT);
     }
 
@@ -94,6 +100,7 @@ class GenehmigungVomVorgesetztenUseCaseTest {
 
         verify(tasklistRepositoryOutPort).getTaskById(UserTaskTestdaten.secondTaskId());
         verifyNoInteractions(urlaubsantragSpeichernOutPort);
+        verifyNoInteractions(sendeBenachrichtigungOutPort);
         verify(tasklistRepositoryOutPort, never()).completeTask(any(), anyBoolean());
     }
 
@@ -106,6 +113,8 @@ class GenehmigungVomVorgesetztenUseCaseTest {
         ))
             .isInstanceOf(TaskNichtGefundenException.class)
             .hasMessage("taskId verweist auf keine vorhandene Aufgabe: " + UserTaskTestdaten.TASK_ID);
+
+        verifyNoInteractions(urlaubsantragSpeichernOutPort, sendeBenachrichtigungOutPort);
     }
 
     @Test
@@ -123,6 +132,8 @@ class GenehmigungVomVorgesetztenUseCaseTest {
         ))
             .isInstanceOf(IllegalStateException.class)
             .hasMessage("taskId verweist auf keinen zugeordneten Urlaubsantrag");
+
+        verifyNoInteractions(urlaubsantragSpeichernOutPort, sendeBenachrichtigungOutPort);
     }
 
     @Test
@@ -130,6 +141,8 @@ class GenehmigungVomVorgesetztenUseCaseTest {
         assertThatThrownBy(() -> genehmigungVomVorgesetztenUseCase.entscheideGenehmigungVomVorgesetzten(null))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("command darf nicht null sein");
+
+        verifyNoInteractions(tasklistRepositoryOutPort, urlaubsantragSpeichernOutPort, sendeBenachrichtigungOutPort);
     }
 
     @Test
@@ -139,6 +152,8 @@ class GenehmigungVomVorgesetztenUseCaseTest {
         ))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("taskId darf nicht null sein");
+
+        verifyNoInteractions(tasklistRepositoryOutPort, urlaubsantragSpeichernOutPort, sendeBenachrichtigungOutPort);
     }
 
     @Test
@@ -148,6 +163,8 @@ class GenehmigungVomVorgesetztenUseCaseTest {
         ))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("benutzerId darf nicht null sein");
+
+        verifyNoInteractions(tasklistRepositoryOutPort, urlaubsantragSpeichernOutPort, sendeBenachrichtigungOutPort);
     }
 
     @Test
@@ -162,6 +179,7 @@ class GenehmigungVomVorgesetztenUseCaseTest {
             .hasMessage("kommentar darf nicht leer sein");
 
         verifyNoInteractions(urlaubsantragSpeichernOutPort);
+        verifyNoInteractions(sendeBenachrichtigungOutPort);
         verify(tasklistRepositoryOutPort, never()).completeTask(any(), anyBoolean());
     }
 

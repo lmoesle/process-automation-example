@@ -1,6 +1,7 @@
 package de.lmoesle.processautomationexample.application.usecases;
 
 import de.lmoesle.processautomationexample.application.ports.in.UrlaubsantragAutomatischPruefenInPort;
+import de.lmoesle.processautomationexample.application.ports.out.SendeBenachrichtigungOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.UrlaubsantraegeLadenOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.UrlaubsantragSpeichernOutPort;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.Urlaubsantrag;
@@ -21,6 +22,7 @@ public class UrlaubsantragAutomatischPruefenUseCase implements UrlaubsantragAuto
 
     private final UrlaubsantraegeLadenOutPort urlaubsantraegeLadenOutPort;
     private final UrlaubsantragSpeichernOutPort urlaubsantragSpeichernOutPort;
+    private final SendeBenachrichtigungOutPort sendeBenachrichtigungOutPort;
 
     @Override
     public boolean pruefeUrlaubsantragAutomatisch(UrlaubsantragAutomatischPruefenCommand command) {
@@ -30,6 +32,16 @@ public class UrlaubsantragAutomatischPruefenUseCase implements UrlaubsantragAuto
         Urlaubsantrag urlaubsantrag = urlaubsantraegeLadenOutPort.findeNachId(command.urlaubsantragId())
             .orElseThrow(() -> new IllegalArgumentException("urlaubsantragId verweist auf keinen vorhandenen Urlaubsantrag"));
 
+        if (urlaubsantrag.status() == UrlaubsantragStatus.ABGELEHNT) {
+            log.info(
+                    "Automatische Pruefung erfolgreich abgeschlossen: urlaubsantragId={}, gueltig={}, status={}",
+                    urlaubsantrag.id().value(),
+                    false,
+                    urlaubsantrag.status()
+            );
+            return false;
+        }
+
         if (urlaubsantrag.status() == UrlaubsantragStatus.VORGESETZTEN_PRUEFUNG) {
             log.info(
                 "Automatische Pruefung erfolgreich abgeschlossen: urlaubsantragId={}, gueltig={}, status={}",
@@ -38,15 +50,6 @@ public class UrlaubsantragAutomatischPruefenUseCase implements UrlaubsantragAuto
                 urlaubsantrag.status()
             );
             return true;
-        }
-        if (urlaubsantrag.status() == UrlaubsantragStatus.ABGELEHNT) {
-            log.info(
-                "Automatische Pruefung erfolgreich abgeschlossen: urlaubsantragId={}, gueltig={}, status={}",
-                urlaubsantrag.id().value(),
-                false,
-                urlaubsantrag.status()
-            );
-            return false;
         }
 
         urlaubsantrag.starteAutomatischePruefung();
@@ -58,6 +61,9 @@ public class UrlaubsantragAutomatischPruefenUseCase implements UrlaubsantragAuto
         boolean gueltig = urlaubsantrag.istAutomatischGueltigGegen(vertretungsUrlaubsantraege);
         urlaubsantrag.schliesseAutomatischePruefungAb(gueltig);
         urlaubsantragSpeichernOutPort.speichere(urlaubsantrag);
+        if (urlaubsantrag.status() == UrlaubsantragStatus.ABGELEHNT) {
+            sendeBenachrichtigungOutPort.sendeBenachrichtigung(urlaubsantrag);
+        }
 
         log.info(
             "Automatische Pruefung erfolgreich abgeschlossen: urlaubsantragId={}, gueltig={}, status={}",

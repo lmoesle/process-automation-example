@@ -6,6 +6,15 @@ spring:
     username: ${POSTGRES_USER:user}
     password: ${POSTGRES_PASSWORD:secret}
     driver-class-name: org.postgresql.Driver
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    properties:
+      mail:
+        smtp:
+          connectiontimeout: 5000
+          timeout: 3000
+          writetimeout: 5000
 
   flyway:
     enabled: true
@@ -42,3 +51,10 @@ dev:
             delivery-strategy: embedded_scheduled
             execute-initial-pull-on-startup: true
             schedule-delivery-fixed-rate-in-seconds: 10
+
+de.lmoesle:
+  processautomationexample:
+    mail:
+      from-address: ${MAIL_FROM:no-reply@process-automation-example.local}
+      standard-template: classpath:mail/standard-benachrichtigung.mail.html
+      frontend-base-url: ${FRONTEND_BASE_URL:http://localhost:3000}

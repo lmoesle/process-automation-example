@@ -88,7 +88,8 @@ public final class Urlaubsantrag {
 
         Assert.notNull(vertretungsUrlaubsantraege, "vertretungsUrlaubsantraege duerfen nicht null sein");
         return vertretungsUrlaubsantraege.stream()
-            .noneMatch(urlaubsantrag -> zeitraum.ueberschneidetSichMit(urlaubsantrag.zeitraum()));
+                .filter(urlaubsantrag -> urlaubsantrag.status().equals(UrlaubsantragStatus.GENEHMIGT))
+                .noneMatch(urlaubsantrag -> zeitraum.ueberschneidetSichMit(urlaubsantrag.zeitraum()));
     }
 
     public void schliesseAutomatischePruefungAb(boolean gueltig) {

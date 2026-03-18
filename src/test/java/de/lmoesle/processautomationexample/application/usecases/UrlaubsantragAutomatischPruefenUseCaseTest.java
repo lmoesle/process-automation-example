@@ -1,6 +1,7 @@
 package de.lmoesle.processautomationexample.application.usecases;
 
 import de.lmoesle.processautomationexample.application.ports.in.UrlaubsantragAutomatischPruefenInPort.UrlaubsantragAutomatischPruefenCommand;
+import de.lmoesle.processautomationexample.application.ports.out.SendeBenachrichtigungOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.UrlaubsantraegeLadenOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.UrlaubsantragSpeichernOutPort;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.Urlaubsantrag;
@@ -15,22 +16,24 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class UrlaubsantragAutomatischPruefenUseCaseTest {
 
     private UrlaubsantraegeLadenOutPort urlaubsantraegeLadenOutPort;
     private UrlaubsantragSpeichernOutPort urlaubsantragSpeichernOutPort;
+    private SendeBenachrichtigungOutPort sendeBenachrichtigungOutPort;
     private UrlaubsantragAutomatischPruefenUseCase pruefeUrlaubsantragAutomatischUseCase;
 
     @BeforeEach
     void setUp() {
         urlaubsantraegeLadenOutPort = mock(UrlaubsantraegeLadenOutPort.class);
         urlaubsantragSpeichernOutPort = mock(UrlaubsantragSpeichernOutPort.class);
+        sendeBenachrichtigungOutPort = mock(SendeBenachrichtigungOutPort.class);
         pruefeUrlaubsantragAutomatischUseCase = new UrlaubsantragAutomatischPruefenUseCase(
             urlaubsantraegeLadenOutPort,
-            urlaubsantragSpeichernOutPort
+            urlaubsantragSpeichernOutPort,
+            sendeBenachrichtigungOutPort
         );
     }
 
@@ -63,6 +66,7 @@ class UrlaubsantragAutomatischPruefenUseCaseTest {
             );
         verifyNoMoreInteractions(urlaubsantraegeLadenOutPort);
         verifyNoMoreInteractions(urlaubsantragSpeichernOutPort);
+        verifyNoInteractions(sendeBenachrichtigungOutPort);
     }
 
     @Test
@@ -84,6 +88,7 @@ class UrlaubsantragAutomatischPruefenUseCaseTest {
         assertThat(savedCaptor.getValue().status()).isEqualTo(UrlaubsantragStatus.VORGESETZTEN_PRUEFUNG);
         verifyNoMoreInteractions(urlaubsantraegeLadenOutPort);
         verifyNoMoreInteractions(urlaubsantragSpeichernOutPort);
+        verifyNoInteractions(sendeBenachrichtigungOutPort);
     }
 
     @Test
@@ -95,6 +100,10 @@ class UrlaubsantragAutomatischPruefenUseCaseTest {
             null,
             UrlaubsantragTestData.secondProzessinstanzId()
         );
+        overlappingUrlaubsantrag.starteAutomatischePruefung();
+        overlappingUrlaubsantrag.schliesseAutomatischePruefungAb(true);
+        overlappingUrlaubsantrag.genehmigeDurchVorgesetzten(null);
+
         when(urlaubsantraegeLadenOutPort.findeNachId(UrlaubsantragTestData.urlaubsantragId()))
             .thenReturn(Optional.of(UrlaubsantragTestData.urlaubsantrag()));
         when(urlaubsantraegeLadenOutPort.findeAlleNachAntragstellerId(UrlaubsantragTestData.vertretungId()))
@@ -109,6 +118,7 @@ class UrlaubsantragAutomatischPruefenUseCaseTest {
         verify(urlaubsantraegeLadenOutPort).findeAlleNachAntragstellerId(UrlaubsantragTestData.vertretungId());
         ArgumentCaptor<Urlaubsantrag> savedCaptor = ArgumentCaptor.forClass(Urlaubsantrag.class);
         verify(urlaubsantragSpeichernOutPort).speichere(savedCaptor.capture());
+        verify(sendeBenachrichtigungOutPort).sendeBenachrichtigung(savedCaptor.getValue());
         assertThat(savedCaptor.getValue().status()).isEqualTo(UrlaubsantragStatus.ABGELEHNT);
         verifyNoMoreInteractions(urlaubsantraegeLadenOutPort);
         verifyNoMoreInteractions(urlaubsantragSpeichernOutPort);
@@ -141,6 +151,7 @@ class UrlaubsantragAutomatischPruefenUseCaseTest {
         verify(urlaubsantraegeLadenOutPort).findeNachId(UrlaubsantragTestData.urlaubsantragId());
         verifyNoMoreInteractions(urlaubsantraegeLadenOutPort);
         verifyNoInteractions(urlaubsantragSpeichernOutPort);
+        verifyNoInteractions(sendeBenachrichtigungOutPort);
     }
 
     @Test
@@ -170,6 +181,7 @@ class UrlaubsantragAutomatischPruefenUseCaseTest {
         verify(urlaubsantraegeLadenOutPort).findeNachId(UrlaubsantragTestData.urlaubsantragId());
         verifyNoMoreInteractions(urlaubsantraegeLadenOutPort);
         verifyNoInteractions(urlaubsantragSpeichernOutPort);
+        verifyNoInteractions(sendeBenachrichtigungOutPort);
     }
 
     @Test
@@ -177,6 +189,8 @@ class UrlaubsantragAutomatischPruefenUseCaseTest {
         assertThatThrownBy(() -> pruefeUrlaubsantragAutomatischUseCase.pruefeUrlaubsantragAutomatisch(null))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("command darf nicht null sein");
+
+        verifyNoInteractions(urlaubsantraegeLadenOutPort, urlaubsantragSpeichernOutPort, sendeBenachrichtigungOutPort);
     }
 
     @Test
@@ -186,6 +200,8 @@ class UrlaubsantragAutomatischPruefenUseCaseTest {
         ))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("urlaubsantragId darf nicht null sein");
+
+        verifyNoInteractions(urlaubsantraegeLadenOutPort, urlaubsantragSpeichernOutPort, sendeBenachrichtigungOutPort);
     }
 
     @Test
@@ -198,5 +214,7 @@ class UrlaubsantragAutomatischPruefenUseCaseTest {
         ))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("urlaubsantragId verweist auf keinen vorhandenen Urlaubsantrag");
+
+        verifyNoInteractions(urlaubsantragSpeichernOutPort, sendeBenachrichtigungOutPort);
     }
 }
