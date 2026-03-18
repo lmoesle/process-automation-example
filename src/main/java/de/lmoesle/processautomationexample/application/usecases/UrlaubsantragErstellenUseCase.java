@@ -10,12 +10,14 @@ import de.lmoesle.processautomationexample.domain.urlaubsantrag.Urlaubsantrag;
 import de.lmoesle.processautomationexample.domain.benutzer.Benutzer;
 import de.lmoesle.processautomationexample.domain.benutzer.BenutzerId;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 @Transactional
 public class UrlaubsantragErstellenUseCase implements UrlaubsantragErstellenInPort {
@@ -46,6 +48,13 @@ public class UrlaubsantragErstellenUseCase implements UrlaubsantragErstellenInPo
         );
         urlaubsantrag.markiereGenehmigungsprozessAlsGestartet(prozessinstanzId);
         urlaubsantrag = urlaubsantragSpeichernOutPort.speichere(urlaubsantrag);
+
+        log.info(
+            "Urlaubsantrag erfolgreich erstellt: urlaubsantragId={}, prozessinstanzId={}, status={}",
+            urlaubsantrag.id().value(),
+            prozessinstanzId.value(),
+            urlaubsantrag.status()
+        );
 
         return new UrlaubsantragErstellenErgebnis(
             urlaubsantrag.id(),

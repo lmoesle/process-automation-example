@@ -6,11 +6,13 @@ import de.lmoesle.processautomationexample.application.ports.out.UrlaubsantragSp
 import de.lmoesle.processautomationexample.domain.tasklist.TaskNichtGefundenException;
 import de.lmoesle.processautomationexample.domain.tasklist.TaskZugriffVerweigertException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 @Transactional
 public class GenehmigungVomVorgesetztenUseCase implements GenehmigungVomVorgesetztenInPort {
@@ -44,5 +46,11 @@ public class GenehmigungVomVorgesetztenUseCase implements GenehmigungVomVorgeset
 
         urlaubsantragSpeichernOutPort.speichere(urlaubsantrag);
         tasklistRepositoryOutPort.completeTask(command.taskId(), command.genehmigt());
+        log.info(
+            "Vorgesetztenentscheidung erfolgreich abgeschlossen: urlaubsantragId={}, genehmigt={}, status={}",
+            urlaubsantrag.id().value(),
+            command.genehmigt(),
+            urlaubsantrag.status()
+        );
     }
 }

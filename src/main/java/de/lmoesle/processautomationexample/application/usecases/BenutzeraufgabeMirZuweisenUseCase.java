@@ -9,11 +9,13 @@ import de.lmoesle.processautomationexample.domain.tasklist.TaskNichtGefundenExce
 import de.lmoesle.processautomationexample.domain.tasklist.TaskZugriffVerweigertException;
 import de.lmoesle.processautomationexample.domain.tasklist.UserTask;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 @Transactional
 public class BenutzeraufgabeMirZuweisenUseCase implements BenutzeraufgabeMirZuweisenInPort {
@@ -40,6 +42,13 @@ public class BenutzeraufgabeMirZuweisenUseCase implements BenutzeraufgabeMirZuwe
             task.urlaubsantrag().weiseVorgesetztenZu(ermittleVorgesetzten(task, command.benutzerId()));
             urlaubsantragSpeichernOutPort.speichere(task.urlaubsantrag());
         }
+
+        log.info(
+            "Benutzeraufgabe erfolgreich zugewiesen: taskId={}, benutzerId={}, urlaubsantragId={}",
+            command.taskId().value(),
+            command.benutzerId().value(),
+            task.urlaubsantrag() == null ? null : task.urlaubsantrag().id().value()
+        );
     }
 
     private Benutzer ermittleVorgesetzten(UserTask task, BenutzerId benutzerId) {

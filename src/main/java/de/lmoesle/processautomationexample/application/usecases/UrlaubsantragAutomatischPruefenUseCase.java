@@ -6,6 +6,7 @@ import de.lmoesle.processautomationexample.application.ports.out.UrlaubsantragSp
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.Urlaubsantrag;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.UrlaubsantragStatus;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -13,6 +14,7 @@ import org.springframework.util.Assert;
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 @Transactional
 public class UrlaubsantragAutomatischPruefenUseCase implements UrlaubsantragAutomatischPruefenInPort {
@@ -29,9 +31,21 @@ public class UrlaubsantragAutomatischPruefenUseCase implements UrlaubsantragAuto
             .orElseThrow(() -> new IllegalArgumentException("urlaubsantragId verweist auf keinen vorhandenen Urlaubsantrag"));
 
         if (urlaubsantrag.status() == UrlaubsantragStatus.VORGESETZTEN_PRUEFUNG) {
+            log.info(
+                "Automatische Pruefung erfolgreich abgeschlossen: urlaubsantragId={}, gueltig={}, status={}",
+                urlaubsantrag.id().value(),
+                true,
+                urlaubsantrag.status()
+            );
             return true;
         }
         if (urlaubsantrag.status() == UrlaubsantragStatus.ABGELEHNT) {
+            log.info(
+                "Automatische Pruefung erfolgreich abgeschlossen: urlaubsantragId={}, gueltig={}, status={}",
+                urlaubsantrag.id().value(),
+                false,
+                urlaubsantrag.status()
+            );
             return false;
         }
 
@@ -44,6 +58,13 @@ public class UrlaubsantragAutomatischPruefenUseCase implements UrlaubsantragAuto
         boolean gueltig = urlaubsantrag.istAutomatischGueltigGegen(vertretungsUrlaubsantraege);
         urlaubsantrag.schliesseAutomatischePruefungAb(gueltig);
         urlaubsantragSpeichernOutPort.speichere(urlaubsantrag);
+
+        log.info(
+            "Automatische Pruefung erfolgreich abgeschlossen: urlaubsantragId={}, gueltig={}, status={}",
+            urlaubsantrag.id().value(),
+            gueltig,
+            urlaubsantrag.status()
+        );
 
         return gueltig;
     }
