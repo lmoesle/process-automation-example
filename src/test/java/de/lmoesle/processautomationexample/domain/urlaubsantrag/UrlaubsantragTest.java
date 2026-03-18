@@ -123,7 +123,7 @@ class UrlaubsantragTest {
     }
 
     @Test
-    void automaticCheckIsInvalidWhenSubstituteUserHasOverlappingUrlaubsantrag() {
+    void automaticCheckIsValidWhenSubstituteUserHasOverlappingUnapprovedUrlaubsantrag() {
         Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
         Urlaubsantrag overlappingUrlaubsantrag = UrlaubsantragTestData.urlaubsantrag(
             UrlaubsantragTestData.secondUrlaubsantragId(),
@@ -132,6 +132,23 @@ class UrlaubsantragTest {
             null,
             UrlaubsantragTestData.secondProzessinstanzId()
         );
+
+        assertThat(urlaubsantrag.istAutomatischGueltigGegen(java.util.List.of(overlappingUrlaubsantrag))).isTrue();
+    }
+
+    @Test
+    void automaticCheckIsInvalidWhenSubstituteUserHasApprovedOverlappingUrlaubsantrag() {
+        Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
+        Urlaubsantrag overlappingUrlaubsantrag = UrlaubsantragTestData.urlaubsantrag(
+            UrlaubsantragTestData.secondUrlaubsantragId(),
+            UrlaubsantragTestData.vacationPeriod(),
+            UrlaubsantragTestData.vertretung(),
+            null,
+            UrlaubsantragTestData.secondProzessinstanzId()
+        );
+        overlappingUrlaubsantrag.starteAutomatischePruefung();
+        overlappingUrlaubsantrag.schliesseAutomatischePruefungAb(true);
+        overlappingUrlaubsantrag.genehmigeDurchVorgesetzten(null);
 
         assertThat(urlaubsantrag.istAutomatischGueltigGegen(java.util.List.of(overlappingUrlaubsantrag))).isFalse();
     }
