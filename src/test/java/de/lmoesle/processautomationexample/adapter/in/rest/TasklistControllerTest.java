@@ -88,7 +88,7 @@ class TasklistControllerTest {
 
     @Test
     void assignsTaskToCurrentUser() throws Exception {
-        mockMvc.perform(post("/api/tasks/{taskId}/assign-to-me", UserTaskTestdaten.TASK_ID))
+        mockMvc.perform(post("/api/tasks/{taskId}/zuweisen", UserTaskTestdaten.TASK_ID))
             .andExpect(status().isNoContent());
 
         verify(benutzeraufgabeMirZuweisenInPort).weiseBenutzeraufgabeMirZu(
@@ -102,7 +102,7 @@ class TasklistControllerTest {
             .when(benutzeraufgabeMirZuweisenInPort)
             .weiseBenutzeraufgabeMirZu(new WeiseBenutzeraufgabeMirZuCommand(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId()));
 
-        mockMvc.perform(post("/api/tasks/{taskId}/assign-to-me", UserTaskTestdaten.TASK_ID))
+        mockMvc.perform(post("/api/tasks/{taskId}/zuweisen", UserTaskTestdaten.TASK_ID))
             .andExpect(status().isForbidden())
             .andExpect(jsonPath("$.title").value("Zugriff auf Aufgabe verweigert"))
             .andExpect(jsonPath("$.detail").value("Aktueller Benutzer hat keinen Zugriff auf Aufgabe: " + UserTaskTestdaten.TASK_ID));
