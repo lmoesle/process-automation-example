@@ -1,5 +1,6 @@
 package de.lmoesle.processautomationexample.adapter.out.persistence;
 
+import de.lmoesle.processautomationexample.adapter.out.persistence.entities.*;
 import de.lmoesle.processautomationexample.domain.benutzer.Benutzer;
 import de.lmoesle.processautomationexample.domain.benutzer.BenutzerTestdaten;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.UrlaubsantragId;

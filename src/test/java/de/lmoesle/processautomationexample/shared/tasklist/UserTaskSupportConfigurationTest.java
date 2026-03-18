@@ -1,7 +1,6 @@
-package de.lmoesle.processautomationexample.shared;
+package de.lmoesle.processautomationexample.shared.tasklist;
 
 import de.lmoesle.processautomationexample.adapter.in.process.BenutzeraufgabenBenachrichtigungTaskHandler;
-import de.lmoesle.processautomationexample.adapter.out.process.ProcessEngineApiTasklistRepository;
 import de.lmoesle.processautomationexample.application.ports.out.BenutzerRepositoryOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.SendeBenutzeraufgabenBenachrichtigungOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.UrlaubsantraegeLadenOutPort;
@@ -39,7 +38,7 @@ class UserTaskSupportConfigurationTest {
             UserTaskSupportConfiguration.class,
             BenutzeraufgabenBenachrichtigungTaskHandler.class,
             SendeBenutzeraufgabenBenachrichtigungUseCase.class,
-            ProcessEngineApiTasklistRepository.class
+            TasklistRepository.class
         );
 
     @Test
@@ -49,7 +48,7 @@ class UserTaskSupportConfigurationTest {
             assertThat(context).hasSingleBean(UserTaskSupport.class);
             assertThat(context).hasSingleBean(BenutzeraufgabenBenachrichtigungTaskHandler.class);
             assertThat(context).hasSingleBean(SendeBenutzeraufgabenBenachrichtigungUseCase.class);
-            assertThat(context).hasSingleBean(ProcessEngineApiTasklistRepository.class);
+            assertThat(context).hasSingleBean(TasklistRepository.class);
         });
     }
 }

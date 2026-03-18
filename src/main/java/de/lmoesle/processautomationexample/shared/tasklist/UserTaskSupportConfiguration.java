@@ -1,4 +1,4 @@
-package de.lmoesle.processautomationexample.shared;
+package de.lmoesle.processautomationexample.shared.tasklist;
 
 import de.lmoesle.processautomationexample.adapter.in.process.BenutzeraufgabenBenachrichtigungTaskHandler;
 import dev.bpmcrafters.processengineapi.CommonRestrictions;

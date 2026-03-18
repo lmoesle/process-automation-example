@@ -1,5 +1,6 @@
 package de.lmoesle.processautomationexample.adapter.out.persistence;
 
+import de.lmoesle.processautomationexample.adapter.out.persistence.entities.BenutzerEntity;
 import de.lmoesle.processautomationexample.domain.benutzer.TeamRolle;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;

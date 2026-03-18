@@ -1,7 +1,11 @@
 package de.lmoesle.processautomationexample.adapter.out.persistence;
 
-import de.lmoesle.processautomationexample.domain.benutzer.TeamRolle;
+import de.lmoesle.processautomationexample.adapter.out.persistence.entities.BenutzerEntity;
+import de.lmoesle.processautomationexample.adapter.out.persistence.entities.TeamEntity;
+import de.lmoesle.processautomationexample.adapter.out.persistence.entities.TeamMitgliedschaftEntity;
+import de.lmoesle.processautomationexample.adapter.out.persistence.entities.TeamMitgliedschaftId;
 import de.lmoesle.processautomationexample.domain.benutzer.BenutzerTestdaten;
+import de.lmoesle.processautomationexample.domain.benutzer.TeamRolle;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -13,9 +17,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class BenutzerPersistenceAdapterTest {
 

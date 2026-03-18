@@ -1,5 +1,7 @@
 package de.lmoesle.processautomationexample.adapter.out.persistence;
 
+import de.lmoesle.processautomationexample.adapter.out.persistence.entities.BenutzerEntity;
+import de.lmoesle.processautomationexample.adapter.out.persistence.entities.TeamMitgliedschaftEntity;
 import de.lmoesle.processautomationexample.domain.benutzer.Benutzer;
 import de.lmoesle.processautomationexample.domain.benutzer.BenutzerId;
 import de.lmoesle.processautomationexample.domain.benutzer.Team;

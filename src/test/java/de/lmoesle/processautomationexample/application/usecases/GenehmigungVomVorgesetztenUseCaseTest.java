@@ -1,5 +1,6 @@
 package de.lmoesle.processautomationexample.application.usecases;
 
+import de.lmoesle.processautomationexample.adapter.out.process.ProcessEngineApiTasklistAdapter;
 import de.lmoesle.processautomationexample.application.ports.in.GenehmigungVomVorgesetztenInPort.GenehmigungVomVorgesetztenCommand;
 import de.lmoesle.processautomationexample.application.ports.out.SendeBenachrichtigungOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.TasklistRepositoryOutPort;
@@ -28,6 +29,7 @@ import static org.mockito.Mockito.*;
 class GenehmigungVomVorgesetztenUseCaseTest {
 
     private TasklistRepositoryOutPort tasklistRepositoryOutPort;
+    private ProcessEngineApiTasklistAdapter processEngineApiTasklistAdapter;
     private UrlaubsantragSpeichernOutPort urlaubsantragSpeichernOutPort;
     private SendeBenachrichtigungOutPort sendeBenachrichtigungOutPort;
     private GenehmigungVomVorgesetztenUseCase genehmigungVomVorgesetztenUseCase;
@@ -35,10 +37,12 @@ class GenehmigungVomVorgesetztenUseCaseTest {
     @BeforeEach
     void setUp() {
         tasklistRepositoryOutPort = mock(TasklistRepositoryOutPort.class);
+        processEngineApiTasklistAdapter = mock(ProcessEngineApiTasklistAdapter.class);
         urlaubsantragSpeichernOutPort = mock(UrlaubsantragSpeichernOutPort.class);
         sendeBenachrichtigungOutPort = mock(SendeBenachrichtigungOutPort.class);
         genehmigungVomVorgesetztenUseCase = new GenehmigungVomVorgesetztenUseCase(
             tasklistRepositoryOutPort,
+            processEngineApiTasklistAdapter,
             urlaubsantragSpeichernOutPort,
             sendeBenachrichtigungOutPort
         );
@@ -58,11 +62,11 @@ class GenehmigungVomVorgesetztenUseCaseTest {
             )
         );
 
-        InOrder inOrder = inOrder(tasklistRepositoryOutPort, urlaubsantragSpeichernOutPort, sendeBenachrichtigungOutPort);
+        InOrder inOrder = inOrder(tasklistRepositoryOutPort, urlaubsantragSpeichernOutPort, processEngineApiTasklistAdapter, sendeBenachrichtigungOutPort);
         inOrder.verify(tasklistRepositoryOutPort).getTaskById(UserTaskTestdaten.taskId());
         ArgumentCaptor<Urlaubsantrag> savedCaptor = ArgumentCaptor.forClass(Urlaubsantrag.class);
         inOrder.verify(urlaubsantragSpeichernOutPort).speichere(savedCaptor.capture());
-        inOrder.verify(tasklistRepositoryOutPort).completeTask(UserTaskTestdaten.taskId(), true);
+        inOrder.verify(processEngineApiTasklistAdapter).completeTask(UserTaskTestdaten.taskId(), true);
         inOrder.verify(sendeBenachrichtigungOutPort).sendeBenachrichtigung(savedCaptor.getValue());
 
         assertThat(savedCaptor.getValue().status()).isEqualTo(UrlaubsantragStatus.GENEHMIGT);
@@ -82,7 +86,7 @@ class GenehmigungVomVorgesetztenUseCaseTest {
         );
 
         verify(urlaubsantragSpeichernOutPort).speichere(task.urlaubsantrag());
-        verify(tasklistRepositoryOutPort).completeTask(UserTaskTestdaten.taskId(), false);
+        verify(processEngineApiTasklistAdapter).completeTask(UserTaskTestdaten.taskId(), false);
         verify(sendeBenachrichtigungOutPort).sendeBenachrichtigung(task.urlaubsantrag());
         assertThat(task.urlaubsantrag().status()).isEqualTo(UrlaubsantragStatus.ABGELEHNT);
     }
@@ -101,7 +105,7 @@ class GenehmigungVomVorgesetztenUseCaseTest {
         verify(tasklistRepositoryOutPort).getTaskById(UserTaskTestdaten.secondTaskId());
         verifyNoInteractions(urlaubsantragSpeichernOutPort);
         verifyNoInteractions(sendeBenachrichtigungOutPort);
-        verify(tasklistRepositoryOutPort, never()).completeTask(any(), anyBoolean());
+        verify(processEngineApiTasklistAdapter, never()).completeTask(any(), anyBoolean());
     }
 
     @Test
@@ -180,7 +184,7 @@ class GenehmigungVomVorgesetztenUseCaseTest {
 
         verifyNoInteractions(urlaubsantragSpeichernOutPort);
         verifyNoInteractions(sendeBenachrichtigungOutPort);
-        verify(tasklistRepositoryOutPort, never()).completeTask(any(), anyBoolean());
+        verify(processEngineApiTasklistAdapter, never()).completeTask(any(), anyBoolean());
     }
 
     private static UserTask taskMitUrlaubsantragInVorgesetztenpruefung(

@@ -1,6 +1,7 @@
 package de.lmoesle.processautomationexample.application.usecases;
 
 import de.lmoesle.processautomationexample.application.ports.in.BenutzeraufgabeMirZuweisenInPort;
+import de.lmoesle.processautomationexample.application.ports.out.AssignTaskOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.TasklistRepositoryOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.UrlaubsantragSpeichernOutPort;
 import de.lmoesle.processautomationexample.domain.benutzer.Benutzer;
@@ -21,6 +22,7 @@ import org.springframework.util.Assert;
 public class BenutzeraufgabeMirZuweisenUseCase implements BenutzeraufgabeMirZuweisenInPort {
 
     private final TasklistRepositoryOutPort tasklistRepositoryOutPort;
+    private final AssignTaskOutPort assignTaskOutPort;
     private final UrlaubsantragSpeichernOutPort urlaubsantragSpeichernOutPort;
 
     @Override
@@ -36,7 +38,7 @@ public class BenutzeraufgabeMirZuweisenUseCase implements BenutzeraufgabeMirZuwe
             throw new TaskZugriffVerweigertException(command.taskId());
         }
 
-        tasklistRepositoryOutPort.assignTaskToUser(command.taskId(), command.benutzerId());
+        assignTaskOutPort.assignTaskToUser(command.taskId(), command.benutzerId());
 
         if (task.urlaubsantrag() != null) {
             task.urlaubsantrag().weiseVorgesetztenZu(ermittleVorgesetzten(task, command.benutzerId()));

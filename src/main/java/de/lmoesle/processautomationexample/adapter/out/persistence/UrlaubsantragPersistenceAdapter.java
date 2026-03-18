@@ -1,5 +1,6 @@
 package de.lmoesle.processautomationexample.adapter.out.persistence;
 
+import de.lmoesle.processautomationexample.adapter.out.persistence.entities.UrlaubsantragEntity;
 import de.lmoesle.processautomationexample.application.ports.out.UrlaubsantraegeLadenOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.UrlaubsantragSpeichernOutPort;
 import de.lmoesle.processautomationexample.domain.benutzer.Benutzer;
@@ -11,16 +12,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import static org.springframework.data.domain.Sort.Direction.DESC;
 import static java.util.stream.Collectors.toMap;
+import static org.springframework.data.domain.Sort.Direction.DESC;
 
 @Component
 @RequiredArgsConstructor

@@ -1,10 +1,11 @@
 package de.lmoesle.processautomationexample.adapter.out.persistence;
 
+import de.lmoesle.processautomationexample.adapter.out.persistence.entities.BenutzerEntity;
 import de.lmoesle.processautomationexample.application.ports.out.BenutzerRepositoryOutPort;
-import de.lmoesle.processautomationexample.domain.benutzer.TeamId;
-import de.lmoesle.processautomationexample.domain.benutzer.TeamRolle;
 import de.lmoesle.processautomationexample.domain.benutzer.Benutzer;
 import de.lmoesle.processautomationexample.domain.benutzer.BenutzerId;
+import de.lmoesle.processautomationexample.domain.benutzer.TeamId;
+import de.lmoesle.processautomationexample.domain.benutzer.TeamRolle;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;

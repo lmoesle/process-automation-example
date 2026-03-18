@@ -1,5 +1,7 @@
 package de.lmoesle.processautomationexample.adapter.out.persistence;
 
+import de.lmoesle.processautomationexample.adapter.out.persistence.entities.UrlaubsantragEntity;
+import de.lmoesle.processautomationexample.adapter.out.persistence.entities.UrlaubsantragStatusHistorieneintragEmbeddable;
 import de.lmoesle.processautomationexample.domain.benutzer.Benutzer;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.Urlaubsantrag;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.UrlaubsantragId;

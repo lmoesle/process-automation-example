@@ -1,4 +1,4 @@
-package de.lmoesle.processautomationexample.adapter.out.persistence;
+package de.lmoesle.processautomationexample.adapter.out.persistence.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

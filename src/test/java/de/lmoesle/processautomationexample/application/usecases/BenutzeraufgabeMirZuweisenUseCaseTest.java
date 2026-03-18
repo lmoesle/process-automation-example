@@ -1,5 +1,6 @@
 package de.lmoesle.processautomationexample.application.usecases;
 
+import de.lmoesle.processautomationexample.adapter.out.process.ProcessEngineApiTasklistAdapter;
 import de.lmoesle.processautomationexample.application.ports.in.BenutzeraufgabeMirZuweisenInPort.WeiseBenutzeraufgabeMirZuCommand;
 import de.lmoesle.processautomationexample.application.ports.out.TasklistRepositoryOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.UrlaubsantragSpeichernOutPort;
@@ -15,24 +16,23 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class BenutzeraufgabeMirZuweisenUseCaseTest {
 
     private TasklistRepositoryOutPort tasklistRepositoryOutPort;
+    private ProcessEngineApiTasklistAdapter processEngineApiTasklistAdapter;
     private UrlaubsantragSpeichernOutPort urlaubsantragSpeichernOutPort;
     private BenutzeraufgabeMirZuweisenUseCase benutzeraufgabeMirZuweisenUseCase;
 
     @BeforeEach
     void setUp() {
         tasklistRepositoryOutPort = mock(TasklistRepositoryOutPort.class);
+        processEngineApiTasklistAdapter = mock(ProcessEngineApiTasklistAdapter.class);
         urlaubsantragSpeichernOutPort = mock(UrlaubsantragSpeichernOutPort.class);
         benutzeraufgabeMirZuweisenUseCase = new BenutzeraufgabeMirZuweisenUseCase(
             tasklistRepositoryOutPort,
+            processEngineApiTasklistAdapter,
             urlaubsantragSpeichernOutPort
         );
     }
@@ -47,7 +47,7 @@ class BenutzeraufgabeMirZuweisenUseCaseTest {
         );
 
         verify(tasklistRepositoryOutPort).getTaskById(UserTaskTestdaten.taskId());
-        verify(tasklistRepositoryOutPort).assignTaskToUser(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId());
+        verify(processEngineApiTasklistAdapter).assignTaskToUser(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId());
         ArgumentCaptor<de.lmoesle.processautomationexample.domain.urlaubsantrag.Urlaubsantrag> urlaubsantragCaptor = ArgumentCaptor.forClass(
             de.lmoesle.processautomationexample.domain.urlaubsantrag.Urlaubsantrag.class
         );

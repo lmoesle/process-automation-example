@@ -1,4 +1,4 @@
-package de.lmoesle.processautomationexample.adapter.out.persistence;
+package de.lmoesle.processautomationexample.adapter.out.persistence.entities;
 
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.UrlaubsantragStatus;
 import jakarta.persistence.Column;

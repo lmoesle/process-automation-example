@@ -1,6 +1,7 @@
 package de.lmoesle.processautomationexample.application.usecases;
 
 import de.lmoesle.processautomationexample.application.ports.in.GenehmigungVomVorgesetztenInPort;
+import de.lmoesle.processautomationexample.application.ports.out.CompleteTaskOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.SendeBenachrichtigungOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.TasklistRepositoryOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.UrlaubsantragSpeichernOutPort;
@@ -19,6 +20,7 @@ import org.springframework.util.Assert;
 public class GenehmigungVomVorgesetztenUseCase implements GenehmigungVomVorgesetztenInPort {
 
     private final TasklistRepositoryOutPort tasklistRepositoryOutPort;
+    private final CompleteTaskOutPort completeTaskOutPort;
     private final UrlaubsantragSpeichernOutPort urlaubsantragSpeichernOutPort;
     private final SendeBenachrichtigungOutPort sendeBenachrichtigungOutPort;
 
@@ -47,7 +49,7 @@ public class GenehmigungVomVorgesetztenUseCase implements GenehmigungVomVorgeset
         }
 
         urlaubsantragSpeichernOutPort.speichere(urlaubsantrag);
-        tasklistRepositoryOutPort.completeTask(command.taskId(), command.genehmigt());
+        completeTaskOutPort.completeTask(command.taskId(), command.genehmigt());
         sendeBenachrichtigungOutPort.sendeBenachrichtigung(urlaubsantrag);
         log.info(
             "Vorgesetztenentscheidung erfolgreich abgeschlossen: urlaubsantragId={}, genehmigt={}, status={}",

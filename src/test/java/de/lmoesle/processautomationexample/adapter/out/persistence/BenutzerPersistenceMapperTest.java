@@ -1,11 +1,16 @@
 package de.lmoesle.processautomationexample.adapter.out.persistence;
 
-import de.lmoesle.processautomationexample.domain.benutzer.TeamRolle;
+import de.lmoesle.processautomationexample.adapter.out.persistence.entities.BenutzerEntity;
+import de.lmoesle.processautomationexample.adapter.out.persistence.entities.TeamEntity;
+import de.lmoesle.processautomationexample.adapter.out.persistence.entities.TeamMitgliedschaftEntity;
+import de.lmoesle.processautomationexample.adapter.out.persistence.entities.TeamMitgliedschaftId;
 import de.lmoesle.processautomationexample.domain.benutzer.Benutzer;
 import de.lmoesle.processautomationexample.domain.benutzer.BenutzerTestdaten;
+import de.lmoesle.processautomationexample.domain.benutzer.TeamRolle;
 import org.junit.jupiter.api.Test;
 
 import java.util.LinkedHashSet;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class BenutzerPersistenceMapperTest {
