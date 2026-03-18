@@ -6,32 +6,41 @@ import de.lmoesle.processautomationexample.domain.benutzer.BenutzerTestdaten;
 import de.lmoesle.processautomationexample.domain.tasklist.UserTask;
 import de.lmoesle.processautomationexample.domain.tasklist.UserTaskTestdaten;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.UrlaubsantragTestData;
+import dev.bpmcrafters.processengineapi.task.ChangeAssignmentModifyTaskCmd.AssignTaskCmd;
+import dev.bpmcrafters.processengineapi.task.ModifyTaskCmd;
 import dev.bpmcrafters.processengineapi.task.TaskInformation;
+import dev.bpmcrafters.processengineapi.task.UserTaskModificationApi;
 import dev.bpmcrafters.processengineapi.task.support.UserTaskSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class ProcessEngineApiTasklistRepositoryTest {
 
     private ProcessEngineApiTasklistRepository processEngineApiTasklistRepository;
     private UserTaskSupport userTaskSupport;
+    private UserTaskModificationApi userTaskModificationApi;
     private UrlaubsantraegeLadenOutPort urlaubsantraegeLadenOutPort;
     private BenutzerRepositoryOutPort benutzerRepositoryOutPort;
 
     @BeforeEach
     void setUp() {
         userTaskSupport = new UserTaskSupport();
+        userTaskModificationApi = mock(UserTaskModificationApi.class);
         urlaubsantraegeLadenOutPort = mock(UrlaubsantraegeLadenOutPort.class);
         benutzerRepositoryOutPort = mock(BenutzerRepositoryOutPort.class);
         processEngineApiTasklistRepository = new ProcessEngineApiTasklistRepository(
             userTaskSupport,
+            userTaskModificationApi,
             urlaubsantraegeLadenOutPort,
             benutzerRepositoryOutPort
         );
@@ -93,6 +102,18 @@ class ProcessEngineApiTasklistRepositoryTest {
     }
 
     @Test
+    void loadsTaskByIdWithoutVisibilityFilter() {
+        stubReferenzen();
+        liefereTask(UserTaskTestdaten.secondTaskId(), UserTaskTestdaten.secondMeta(), UserTaskTestdaten.secondPayload());
+
+        var task = processEngineApiTasklistRepository.getTaskById(UserTaskTestdaten.secondTaskId()).orElseThrow();
+
+        assertThat(task.id()).isEqualTo(UserTaskTestdaten.secondTaskId());
+        assertThat(task.candidateUsers()).containsExactly(BenutzerTestdaten.carla());
+        assertThat(task.bearbeiter()).isEqualTo(BenutzerTestdaten.carla());
+    }
+
+    @Test
     void returnsEmptyOptionalWhenTaskExistsButUserIsNotAuthorized() {
         stubReferenzen();
         liefereTask(UserTaskTestdaten.secondTaskId(), UserTaskTestdaten.secondMeta(), UserTaskTestdaten.secondPayload());
@@ -106,8 +127,43 @@ class ProcessEngineApiTasklistRepositoryTest {
     }
 
     @Test
+    void assignsTaskToUserViaModificationApi() {
+        when(userTaskModificationApi.update(argThat(command ->
+            command instanceof AssignTaskCmd assignTaskCmd
+                && assignTaskCmd.getTaskId().equals(UserTaskTestdaten.TASK_ID)
+                && assignTaskCmd.getAssignee().equals(BenutzerTestdaten.ADA_UUID.toString())
+        ))).thenReturn(CompletableFuture.completedFuture(null));
+
+        processEngineApiTasklistRepository.assignTaskToUser(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId());
+
+        verify(userTaskModificationApi).update(argThat(command ->
+            command instanceof AssignTaskCmd assignTaskCmd
+                && assignTaskCmd.getTaskId().equals(UserTaskTestdaten.TASK_ID)
+                && assignTaskCmd.getAssignee().equals(BenutzerTestdaten.ADA_UUID.toString())
+        ));
+    }
+
+    @Test
+    void wrapsModificationErrorsWhenAssigningTaskToUser() {
+        when(userTaskModificationApi.update(org.mockito.ArgumentMatchers.any(ModifyTaskCmd.class)))
+            .thenReturn(CompletableFuture.failedFuture(new RuntimeException("boom")));
+
+        assertThatThrownBy(() -> processEngineApiTasklistRepository.assignTaskToUser(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId()))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("Aufgabe " + UserTaskTestdaten.TASK_ID + " konnte Benutzer " + BenutzerTestdaten.ADA_UUID + " nicht zugewiesen werden")
+            .hasRootCauseMessage("boom");
+    }
+
+    @Test
     void rejectsNullTaskId() {
         assertThatThrownBy(() -> processEngineApiTasklistRepository.getTaskById(null, BenutzerTestdaten.adaId()))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("taskId darf nicht null sein");
+    }
+
+    @Test
+    void rejectsNullTaskIdForUnfilteredLookup() {
+        assertThatThrownBy(() -> processEngineApiTasklistRepository.getTaskById(null))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("taskId darf nicht null sein");
     }
@@ -122,6 +178,20 @@ class ProcessEngineApiTasklistRepositoryTest {
     @Test
     void rejectsNullUserForGetAllTasks() {
         assertThatThrownBy(() -> processEngineApiTasklistRepository.getAllTasks(null))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("benutzerId darf nicht null sein");
+    }
+
+    @Test
+    void rejectsNullTaskIdForAssignTaskToUser() {
+        assertThatThrownBy(() -> processEngineApiTasklistRepository.assignTaskToUser(null, BenutzerTestdaten.adaId()))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("taskId darf nicht null sein");
+    }
+
+    @Test
+    void rejectsNullUserForAssignTaskToUser() {
+        assertThatThrownBy(() -> processEngineApiTasklistRepository.assignTaskToUser(UserTaskTestdaten.taskId(), null))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("benutzerId darf nicht null sein");
     }

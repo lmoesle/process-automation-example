@@ -25,6 +25,11 @@ Content-Type: application/json
 Accept: application/json
 
 ### Aufgaben Details
-GET {{baseUrl}}/api/tasks/908fef6b-220c-11f1-9f8b-565e579760f4
+GET {{baseUrl}}/api/tasks/41345433-22a6-11f1-9d1f-3eb2fd0f8e34
+Content-Type: application/json
+Accept: application/json
+
+### Aufgabe mir zuweisen
+POST {{baseUrl}}/api/tasks/41345433-22a6-11f1-9d1f-3eb2fd0f8e34/zuweisen
 Content-Type: application/json
 Accept: application/json

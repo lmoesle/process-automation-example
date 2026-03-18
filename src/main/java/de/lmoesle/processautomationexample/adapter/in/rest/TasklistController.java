@@ -1,6 +1,8 @@
 package de.lmoesle.processautomationexample.adapter.in.rest;
 
 import de.lmoesle.processautomationexample.adapter.in.rest.dto.UserTaskDto;
+import de.lmoesle.processautomationexample.application.ports.in.BenutzeraufgabeMirZuweisenInPort;
+import de.lmoesle.processautomationexample.application.ports.in.BenutzeraufgabeMirZuweisenInPort.WeiseBenutzeraufgabeMirZuCommand;
 import de.lmoesle.processautomationexample.application.ports.in.TaskAbfragenInPort;
 import de.lmoesle.processautomationexample.application.ports.in.TaskAbfragenInPort.GetAllTasksCommand;
 import de.lmoesle.processautomationexample.application.ports.in.TaskAbfragenInPort.GetTaskByIdCommand;
@@ -14,10 +16,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -31,6 +32,7 @@ public class TasklistController {
     private static final BenutzerId AKTUELLER_BENUTZER_ID = BenutzerId.of(UUID.fromString("2d88b39b-e7b0-4a3f-b9c6-b3d8e6fbe100"));
 
     private final TaskAbfragenInPort taskAbfragenInPort;
+    private final BenutzeraufgabeMirZuweisenInPort benutzeraufgabeMirZuweisenInPort;
 
     @GetMapping
     @Operation(
@@ -70,5 +72,36 @@ public class TasklistController {
         return UserTaskDto.ausDomain(
             taskAbfragenInPort.getTaskById(new GetTaskByIdCommand(UserTaskId.of(taskId), AKTUELLER_BENUTZER_ID))
         );
+    }
+
+    @PostMapping("/{taskId}/zuweisen")
+    @Operation(
+        summary = "Benutzeraufgabe mir zuweisen",
+        description = "Weist den User Task dem aktuell angemeldeten Benutzer zu, sofern dieser in den candidateUsers enthalten ist. Solange keine Authentifizierung existiert, ist der Benutzer im Controller fest verdrahtet."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "User Task erfolgreich dem aktuellen Benutzer zugewiesen."),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Der aktuelle Benutzer darf die Aufgabe nicht uebernehmen.",
+            content = @Content(
+                mediaType = "application/problem+json",
+                schema = @Schema(implementation = ProblemDetail.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Kein User Task mit der angegebenen ID gefunden.",
+            content = @Content(
+                mediaType = "application/problem+json",
+                schema = @Schema(implementation = ProblemDetail.class)
+            )
+        )
+    })
+    public ResponseEntity<Void> assignTaskToMe(@PathVariable("taskId") String taskId) {
+        benutzeraufgabeMirZuweisenInPort.weiseBenutzeraufgabeMirZu(
+            new WeiseBenutzeraufgabeMirZuCommand(UserTaskId.of(taskId), AKTUELLER_BENUTZER_ID)
+        );
+        return ResponseEntity.noContent().build();
     }
 }

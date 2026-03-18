@@ -25,7 +25,8 @@ public record UserTask(
         return istCandidateUser(benutzerId) || istBearbeiter(benutzerId);
     }
 
-    private boolean istCandidateUser(BenutzerId benutzerId) {
+    public boolean istCandidateUser(BenutzerId benutzerId) {
+        Assert.notNull(benutzerId, "benutzerId darf nicht null sein");
         return candidateUsers.stream()
             .map(Benutzer::id)
             .anyMatch(benutzerId::equals);

@@ -11,5 +11,9 @@ public interface TasklistRepositoryOutPort {
 
     List<UserTask> getAllTasks(BenutzerId benutzerId);
 
+    Optional<UserTask> getTaskById(UserTaskId taskId);
+
     Optional<UserTask> getTaskById(UserTaskId taskId, BenutzerId benutzerId);
+
+    void assignTaskToUser(UserTaskId taskId, BenutzerId benutzerId);
 }

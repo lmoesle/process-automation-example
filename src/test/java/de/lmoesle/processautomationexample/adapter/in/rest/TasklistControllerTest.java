@@ -1,10 +1,13 @@
 package de.lmoesle.processautomationexample.adapter.in.rest;
 
+import de.lmoesle.processautomationexample.application.ports.in.BenutzeraufgabeMirZuweisenInPort;
+import de.lmoesle.processautomationexample.application.ports.in.BenutzeraufgabeMirZuweisenInPort.WeiseBenutzeraufgabeMirZuCommand;
 import de.lmoesle.processautomationexample.application.ports.in.TaskAbfragenInPort;
 import de.lmoesle.processautomationexample.application.ports.in.TaskAbfragenInPort.GetAllTasksCommand;
 import de.lmoesle.processautomationexample.application.ports.in.TaskAbfragenInPort.GetTaskByIdCommand;
 import de.lmoesle.processautomationexample.domain.benutzer.BenutzerTestdaten;
 import de.lmoesle.processautomationexample.domain.tasklist.TaskNichtGefundenException;
+import de.lmoesle.processautomationexample.domain.tasklist.TaskZugriffVerweigertException;
 import de.lmoesle.processautomationexample.domain.tasklist.UserTaskTestdaten;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +17,11 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -28,6 +33,9 @@ class TasklistControllerTest {
 
     @MockitoBean
     private TaskAbfragenInPort taskAbfragenInPort;
+
+    @MockitoBean
+    private BenutzeraufgabeMirZuweisenInPort benutzeraufgabeMirZuweisenInPort;
 
     @Test
     void loadsAllTasks() throws Exception {
@@ -76,5 +84,27 @@ class TasklistControllerTest {
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.title").value("Aufgabe nicht gefunden"))
             .andExpect(jsonPath("$.detail").value("taskId verweist auf keine vorhandene Aufgabe: " + UserTaskTestdaten.TASK_ID));
+    }
+
+    @Test
+    void assignsTaskToCurrentUser() throws Exception {
+        mockMvc.perform(post("/api/tasks/{taskId}/assign-to-me", UserTaskTestdaten.TASK_ID))
+            .andExpect(status().isNoContent());
+
+        verify(benutzeraufgabeMirZuweisenInPort).weiseBenutzeraufgabeMirZu(
+            new WeiseBenutzeraufgabeMirZuCommand(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId())
+        );
+    }
+
+    @Test
+    void returnsForbiddenWhenCurrentUserCannotAssignTask() throws Exception {
+        doThrow(new TaskZugriffVerweigertException(UserTaskTestdaten.taskId()))
+            .when(benutzeraufgabeMirZuweisenInPort)
+            .weiseBenutzeraufgabeMirZu(new WeiseBenutzeraufgabeMirZuCommand(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId()));
+
+        mockMvc.perform(post("/api/tasks/{taskId}/assign-to-me", UserTaskTestdaten.TASK_ID))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.title").value("Zugriff auf Aufgabe verweigert"))
+            .andExpect(jsonPath("$.detail").value("Aktueller Benutzer hat keinen Zugriff auf Aufgabe: " + UserTaskTestdaten.TASK_ID));
     }
 }
