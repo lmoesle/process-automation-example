@@ -1,8 +1,10 @@
 package de.lmoesle.processautomationexample.adapter.in.rest;
 
+import de.lmoesle.processautomationexample.adapter.in.rest.dto.VorgesetztenentscheidungDto;
 import de.lmoesle.processautomationexample.adapter.in.rest.dto.UserTaskDto;
 import de.lmoesle.processautomationexample.application.ports.in.BenutzeraufgabeMirZuweisenInPort;
 import de.lmoesle.processautomationexample.application.ports.in.BenutzeraufgabeMirZuweisenInPort.WeiseBenutzeraufgabeMirZuCommand;
+import de.lmoesle.processautomationexample.application.ports.in.GenehmigungVomVorgesetztenInPort;
 import de.lmoesle.processautomationexample.application.ports.in.TaskAbfragenInPort;
 import de.lmoesle.processautomationexample.application.ports.in.TaskAbfragenInPort.GetAllTasksCommand;
 import de.lmoesle.processautomationexample.application.ports.in.TaskAbfragenInPort.GetTaskByIdCommand;
@@ -15,6 +17,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +36,7 @@ public class TasklistController {
 
     private final TaskAbfragenInPort taskAbfragenInPort;
     private final BenutzeraufgabeMirZuweisenInPort benutzeraufgabeMirZuweisenInPort;
+    private final GenehmigungVomVorgesetztenInPort genehmigungVomVorgesetztenInPort;
 
     @GetMapping
     @Operation(
@@ -101,6 +105,48 @@ public class TasklistController {
     public ResponseEntity<Void> assignTaskToMe(@PathVariable("taskId") String taskId) {
         benutzeraufgabeMirZuweisenInPort.weiseBenutzeraufgabeMirZu(
             new WeiseBenutzeraufgabeMirZuCommand(UserTaskId.of(taskId), AKTUELLER_BENUTZER_ID)
+        );
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{taskId}/vorgesetztenentscheidung")
+    @Operation(
+        summary = "Genehmigung vom Vorgesetzten entscheiden",
+        description = "Der aktuelle Benutzer entscheidet als Bearbeiter der Aufgabe ueber den Urlaubsantrag und kann optional einen Kommentar fuer die Statushistorie hinterlegen. Solange keine Authentifizierung existiert, ist der Benutzer im Controller fest verdrahtet."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Vorgesetztenentscheidung erfolgreich verarbeitet."),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Ungueltige Anfrage, zum Beispiel bei fehlender Entscheidung oder ungueltigem Kommentar.",
+            content = @Content(
+                mediaType = "application/problem+json",
+                schema = @Schema(implementation = ProblemDetail.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Der aktuelle Benutzer ist nicht Bearbeiter der Aufgabe.",
+            content = @Content(
+                mediaType = "application/problem+json",
+                schema = @Schema(implementation = ProblemDetail.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Kein User Task mit der angegebenen ID gefunden.",
+            content = @Content(
+                mediaType = "application/problem+json",
+                schema = @Schema(implementation = ProblemDetail.class)
+            )
+        )
+    })
+    public ResponseEntity<Void> entscheideGenehmigungVomVorgesetzten(
+        @PathVariable("taskId") String taskId,
+        @Valid @RequestBody VorgesetztenentscheidungDto request
+    ) {
+        genehmigungVomVorgesetztenInPort.entscheideGenehmigungVomVorgesetzten(
+            request.alsCommand(UserTaskId.of(taskId), AKTUELLER_BENUTZER_ID)
         );
         return ResponseEntity.noContent().build();
     }

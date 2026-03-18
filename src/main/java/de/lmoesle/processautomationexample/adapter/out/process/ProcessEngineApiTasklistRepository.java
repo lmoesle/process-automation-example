@@ -10,7 +10,9 @@ import de.lmoesle.processautomationexample.domain.tasklist.UserTaskId;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.Urlaubsantrag;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.UrlaubsantragId;
 import dev.bpmcrafters.processengineapi.task.ChangeAssignmentModifyTaskCmd.AssignTaskCmd;
+import dev.bpmcrafters.processengineapi.task.CompleteTaskCmd;
 import dev.bpmcrafters.processengineapi.task.TaskInformation;
+import dev.bpmcrafters.processengineapi.task.UserTaskCompletionApi;
 import dev.bpmcrafters.processengineapi.task.UserTaskModificationApi;
 import dev.bpmcrafters.processengineapi.task.support.UserTaskSupport;
 import lombok.RequiredArgsConstructor;
@@ -30,9 +32,11 @@ import java.util.stream.StreamSupport;
 public class ProcessEngineApiTasklistRepository implements TasklistRepositoryOutPort {
 
     private static final long TASK_MODIFICATION_TIMEOUT_SECONDS = 10;
+    private static final long TASK_COMPLETION_TIMEOUT_SECONDS = 10;
 
     private final UserTaskSupport userTaskSupport;
     private final UserTaskModificationApi userTaskModificationApi;
+    private final UserTaskCompletionApi userTaskCompletionApi;
     private final UrlaubsantraegeLadenOutPort urlaubsantraegeLadenOutPort;
     private final BenutzerRepositoryOutPort benutzerRepositoryOutPort;
 
@@ -74,6 +78,24 @@ public class ProcessEngineApiTasklistRepository implements TasklistRepositoryOut
             }
             throw new IllegalStateException(
                 "Aufgabe " + taskId.value() + " konnte Benutzer " + benutzerId.value() + " nicht zugewiesen werden",
+                exception
+            );
+        }
+    }
+
+    @Override
+    public void completeTask(UserTaskId taskId, boolean genehmigt) {
+        Assert.notNull(taskId, "taskId darf nicht null sein");
+
+        try {
+            userTaskCompletionApi.completeTask(new CompleteTaskCmd(taskId.value(), Map.of("genehmigt", genehmigt)))
+                .get(TASK_COMPLETION_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        } catch (TimeoutException | InterruptedException | IllegalStateException | ExecutionException exception) {
+            if (exception instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            throw new IllegalStateException(
+                "Aufgabe " + taskId.value() + " konnte nicht abgeschlossen werden",
                 exception
             );
         }

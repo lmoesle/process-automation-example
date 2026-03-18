@@ -185,4 +185,90 @@ class UrlaubsantragTest {
 
         assertThat(urlaubsantrag.statusHistorie()).hasSize(firstEntryCount);
     }
+
+    @Test
+    void completesAutomaticCheckWithManagerReviewStatusWhenValid() {
+        Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
+
+        urlaubsantrag.starteAutomatischePruefung();
+        urlaubsantrag.schliesseAutomatischePruefungAb(true);
+
+        assertThat(urlaubsantrag.status()).isEqualTo(UrlaubsantragStatus.VORGESETZTEN_PRUEFUNG);
+        assertThat(urlaubsantrag.statusHistorie()).hasSize(3)
+            .extracting(UrlaubsantragStatusHistorieneintrag::status)
+            .containsExactly(
+                UrlaubsantragStatus.ANTRAG_GESTELLT,
+                UrlaubsantragStatus.AUTOMATISCHE_PRUEFUNG,
+                UrlaubsantragStatus.VORGESETZTEN_PRUEFUNG
+            );
+    }
+
+    @Test
+    void completesAutomaticCheckWithRejectedStatusWhenInvalid() {
+        Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
+
+        urlaubsantrag.starteAutomatischePruefung();
+        urlaubsantrag.schliesseAutomatischePruefungAb(false);
+
+        assertThat(urlaubsantrag.status()).isEqualTo(UrlaubsantragStatus.ABGELEHNT);
+        assertThat(urlaubsantrag.statusHistorie()).hasSize(3)
+            .extracting(UrlaubsantragStatusHistorieneintrag::status)
+            .containsExactly(
+                UrlaubsantragStatus.ANTRAG_GESTELLT,
+                UrlaubsantragStatus.AUTOMATISCHE_PRUEFUNG,
+                UrlaubsantragStatus.ABGELEHNT
+            );
+    }
+
+    @Test
+    void rejectsCompletingAutomaticCheckBeforeItWasStarted() {
+        Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
+
+        assertThatThrownBy(() -> urlaubsantrag.schliesseAutomatischePruefungAb(true))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("Die automatische Pruefung kann nur aus dem Status AUTOMATISCHE_PRUEFUNG abgeschlossen werden.");
+    }
+
+    @Test
+    void approvesByManagerAddsCommentToStatusHistory() {
+        Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
+
+        urlaubsantrag.starteAutomatischePruefung();
+        urlaubsantrag.schliesseAutomatischePruefungAb(true);
+        urlaubsantrag.genehmigeDurchVorgesetzten("Vertretung ist organisiert.");
+
+        assertThat(urlaubsantrag.status()).isEqualTo(UrlaubsantragStatus.GENEHMIGT);
+        assertThat(urlaubsantrag.statusHistorie()).hasSize(4)
+            .last()
+            .satisfies(entry -> {
+                assertThat(entry.status()).isEqualTo(UrlaubsantragStatus.GENEHMIGT);
+                assertThat(entry.kommentar()).isEqualTo("Vertretung ist organisiert.");
+            });
+    }
+
+    @Test
+    void rejectsByManagerWithoutComment() {
+        Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
+
+        urlaubsantrag.starteAutomatischePruefung();
+        urlaubsantrag.schliesseAutomatischePruefungAb(true);
+        urlaubsantrag.lehneDurchVorgesetztenAb(null);
+
+        assertThat(urlaubsantrag.status()).isEqualTo(UrlaubsantragStatus.ABGELEHNT);
+        assertThat(urlaubsantrag.statusHistorie()).hasSize(4)
+            .last()
+            .satisfies(entry -> {
+                assertThat(entry.status()).isEqualTo(UrlaubsantragStatus.ABGELEHNT);
+                assertThat(entry.kommentar()).isNull();
+            });
+    }
+
+    @Test
+    void rejectsManagerDecisionOutsideManagerReviewState() {
+        Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
+
+        assertThatThrownBy(() -> urlaubsantrag.genehmigeDurchVorgesetzten("ok"))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("Die Vorgesetztenentscheidung kann nur aus dem Status VORGESETZTEN_PRUEFUNG getroffen werden.");
+    }
 }

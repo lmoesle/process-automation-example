@@ -4,6 +4,7 @@ import de.lmoesle.processautomationexample.application.ports.in.UrlaubsantragAut
 import de.lmoesle.processautomationexample.application.ports.out.UrlaubsantraegeLadenOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.UrlaubsantragSpeichernOutPort;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.Urlaubsantrag;
+import de.lmoesle.processautomationexample.domain.urlaubsantrag.UrlaubsantragStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,13 +28,23 @@ public class UrlaubsantragAutomatischPruefenUseCase implements UrlaubsantragAuto
         Urlaubsantrag urlaubsantrag = urlaubsantraegeLadenOutPort.findeNachId(command.urlaubsantragId())
             .orElseThrow(() -> new IllegalArgumentException("urlaubsantragId verweist auf keinen vorhandenen Urlaubsantrag"));
 
+        if (urlaubsantrag.status() == UrlaubsantragStatus.VORGESETZTEN_PRUEFUNG) {
+            return true;
+        }
+        if (urlaubsantrag.status() == UrlaubsantragStatus.ABGELEHNT) {
+            return false;
+        }
+
         urlaubsantrag.starteAutomatischePruefung();
-        urlaubsantragSpeichernOutPort.speichere(urlaubsantrag);
 
         List<Urlaubsantrag> vertretungsUrlaubsantraege = urlaubsantrag.vertretung() == null
             ? List.of()
             : urlaubsantraegeLadenOutPort.findeAlleNachAntragstellerId(urlaubsantrag.vertretung().id());
 
-        return urlaubsantrag.istAutomatischGueltigGegen(vertretungsUrlaubsantraege);
+        boolean gueltig = urlaubsantrag.istAutomatischGueltigGegen(vertretungsUrlaubsantraege);
+        urlaubsantrag.schliesseAutomatischePruefungAb(gueltig);
+        urlaubsantragSpeichernOutPort.speichere(urlaubsantrag);
+
+        return gueltig;
     }
 }

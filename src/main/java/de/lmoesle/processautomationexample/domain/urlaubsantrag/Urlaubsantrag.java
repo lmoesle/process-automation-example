@@ -87,6 +87,39 @@ public final class Urlaubsantrag {
             .noneMatch(urlaubsantrag -> zeitraum.ueberschneidetSichMit(urlaubsantrag.zeitraum()));
     }
 
+    public void schliesseAutomatischePruefungAb(boolean gueltig) {
+        UrlaubsantragStatus neuerStatus = gueltig
+            ? UrlaubsantragStatus.VORGESETZTEN_PRUEFUNG
+            : UrlaubsantragStatus.ABGELEHNT;
+
+        if (status == neuerStatus) {
+            return;
+        }
+
+        Assert.state(
+            status == UrlaubsantragStatus.AUTOMATISCHE_PRUEFUNG,
+            "Die automatische Pruefung kann nur aus dem Status AUTOMATISCHE_PRUEFUNG abgeschlossen werden."
+        );
+        wechsleZu(neuerStatus, null);
+    }
+
+    public void genehmigeDurchVorgesetzten(String kommentar) {
+        pruefeVorgesetztenentscheidungZulaessig();
+        wechsleZu(UrlaubsantragStatus.GENEHMIGT, kommentar);
+    }
+
+    public void lehneDurchVorgesetztenAb(String kommentar) {
+        pruefeVorgesetztenentscheidungZulaessig();
+        wechsleZu(UrlaubsantragStatus.ABGELEHNT, kommentar);
+    }
+
+    private void pruefeVorgesetztenentscheidungZulaessig() {
+        Assert.state(
+            status == UrlaubsantragStatus.VORGESETZTEN_PRUEFUNG,
+            "Die Vorgesetztenentscheidung kann nur aus dem Status VORGESETZTEN_PRUEFUNG getroffen werden."
+        );
+    }
+
     private void wechsleZu(UrlaubsantragStatus neuerStatus, String kommentar) {
         status = neuerStatus;
         statusHistorie.add(new UrlaubsantragStatusHistorieneintrag(neuerStatus, kommentar));

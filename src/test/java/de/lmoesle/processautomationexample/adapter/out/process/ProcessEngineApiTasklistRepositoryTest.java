@@ -7,8 +7,10 @@ import de.lmoesle.processautomationexample.domain.tasklist.UserTask;
 import de.lmoesle.processautomationexample.domain.tasklist.UserTaskTestdaten;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.UrlaubsantragTestData;
 import dev.bpmcrafters.processengineapi.task.ChangeAssignmentModifyTaskCmd.AssignTaskCmd;
+import dev.bpmcrafters.processengineapi.task.CompleteTaskCmd;
 import dev.bpmcrafters.processengineapi.task.ModifyTaskCmd;
 import dev.bpmcrafters.processengineapi.task.TaskInformation;
+import dev.bpmcrafters.processengineapi.task.UserTaskCompletionApi;
 import dev.bpmcrafters.processengineapi.task.UserTaskModificationApi;
 import dev.bpmcrafters.processengineapi.task.support.UserTaskSupport;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +31,7 @@ class ProcessEngineApiTasklistRepositoryTest {
     private ProcessEngineApiTasklistRepository processEngineApiTasklistRepository;
     private UserTaskSupport userTaskSupport;
     private UserTaskModificationApi userTaskModificationApi;
+    private UserTaskCompletionApi userTaskCompletionApi;
     private UrlaubsantraegeLadenOutPort urlaubsantraegeLadenOutPort;
     private BenutzerRepositoryOutPort benutzerRepositoryOutPort;
 
@@ -36,11 +39,13 @@ class ProcessEngineApiTasklistRepositoryTest {
     void setUp() {
         userTaskSupport = new UserTaskSupport();
         userTaskModificationApi = mock(UserTaskModificationApi.class);
+        userTaskCompletionApi = mock(UserTaskCompletionApi.class);
         urlaubsantraegeLadenOutPort = mock(UrlaubsantraegeLadenOutPort.class);
         benutzerRepositoryOutPort = mock(BenutzerRepositoryOutPort.class);
         processEngineApiTasklistRepository = new ProcessEngineApiTasklistRepository(
             userTaskSupport,
             userTaskModificationApi,
+            userTaskCompletionApi,
             urlaubsantraegeLadenOutPort,
             benutzerRepositoryOutPort
         );
@@ -155,6 +160,32 @@ class ProcessEngineApiTasklistRepositoryTest {
     }
 
     @Test
+    void completesTaskViaCompletionApi() {
+        when(userTaskCompletionApi.completeTask(argThat(command ->
+            command.getTaskId().equals(UserTaskTestdaten.TASK_ID)
+                && command.get().get("genehmigt").equals(true)
+        ))).thenReturn(CompletableFuture.completedFuture(null));
+
+        processEngineApiTasklistRepository.completeTask(UserTaskTestdaten.taskId(), true);
+
+        verify(userTaskCompletionApi).completeTask(argThat(command ->
+            command.getTaskId().equals(UserTaskTestdaten.TASK_ID)
+                && command.get().get("genehmigt").equals(true)
+        ));
+    }
+
+    @Test
+    void wrapsCompletionErrorsWhenCompletingTask() {
+        when(userTaskCompletionApi.completeTask(org.mockito.ArgumentMatchers.any(CompleteTaskCmd.class)))
+            .thenReturn(CompletableFuture.failedFuture(new RuntimeException("boom")));
+
+        assertThatThrownBy(() -> processEngineApiTasklistRepository.completeTask(UserTaskTestdaten.taskId(), false))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("Aufgabe " + UserTaskTestdaten.TASK_ID + " konnte nicht abgeschlossen werden")
+            .hasRootCauseMessage("boom");
+    }
+
+    @Test
     void rejectsNullTaskId() {
         assertThatThrownBy(() -> processEngineApiTasklistRepository.getTaskById(null, BenutzerTestdaten.adaId()))
             .isInstanceOf(IllegalArgumentException.class)
@@ -194,6 +225,13 @@ class ProcessEngineApiTasklistRepositoryTest {
         assertThatThrownBy(() -> processEngineApiTasklistRepository.assignTaskToUser(UserTaskTestdaten.taskId(), null))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("benutzerId darf nicht null sein");
+    }
+
+    @Test
+    void rejectsNullTaskIdForCompleteTask() {
+        assertThatThrownBy(() -> processEngineApiTasklistRepository.completeTask(null, true))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("taskId darf nicht null sein");
     }
 
     private void liefereTask(

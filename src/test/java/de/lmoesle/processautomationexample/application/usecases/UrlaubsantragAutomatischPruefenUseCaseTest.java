@@ -53,10 +53,14 @@ class UrlaubsantragAutomatischPruefenUseCaseTest {
         verify(urlaubsantraegeLadenOutPort).findeNachId(urlaubsantragWithoutSubstitute.id());
         ArgumentCaptor<Urlaubsantrag> savedCaptor = ArgumentCaptor.forClass(Urlaubsantrag.class);
         verify(urlaubsantragSpeichernOutPort).speichere(savedCaptor.capture());
-        assertThat(savedCaptor.getValue().status()).isEqualTo(UrlaubsantragStatus.AUTOMATISCHE_PRUEFUNG);
-        assertThat(savedCaptor.getValue().statusHistorie()).hasSize(2)
-            .last()
-            .satisfies(entry -> assertThat(entry.kommentar()).isNull());
+        assertThat(savedCaptor.getValue().status()).isEqualTo(UrlaubsantragStatus.VORGESETZTEN_PRUEFUNG);
+        assertThat(savedCaptor.getValue().statusHistorie()).hasSize(3)
+            .extracting(entry -> entry.status())
+            .containsExactly(
+                UrlaubsantragStatus.ANTRAG_GESTELLT,
+                UrlaubsantragStatus.AUTOMATISCHE_PRUEFUNG,
+                UrlaubsantragStatus.VORGESETZTEN_PRUEFUNG
+            );
         verifyNoMoreInteractions(urlaubsantraegeLadenOutPort);
         verifyNoMoreInteractions(urlaubsantragSpeichernOutPort);
     }
@@ -75,7 +79,9 @@ class UrlaubsantragAutomatischPruefenUseCaseTest {
         assertThat(result).isTrue();
         verify(urlaubsantraegeLadenOutPort).findeNachId(UrlaubsantragTestData.urlaubsantragId());
         verify(urlaubsantraegeLadenOutPort).findeAlleNachAntragstellerId(UrlaubsantragTestData.vertretungId());
-        verify(urlaubsantragSpeichernOutPort).speichere(any(Urlaubsantrag.class));
+        ArgumentCaptor<Urlaubsantrag> savedCaptor = ArgumentCaptor.forClass(Urlaubsantrag.class);
+        verify(urlaubsantragSpeichernOutPort).speichere(savedCaptor.capture());
+        assertThat(savedCaptor.getValue().status()).isEqualTo(UrlaubsantragStatus.VORGESETZTEN_PRUEFUNG);
         verifyNoMoreInteractions(urlaubsantraegeLadenOutPort);
         verifyNoMoreInteractions(urlaubsantragSpeichernOutPort);
     }
@@ -101,9 +107,67 @@ class UrlaubsantragAutomatischPruefenUseCaseTest {
         assertThat(result).isFalse();
         verify(urlaubsantraegeLadenOutPort).findeNachId(UrlaubsantragTestData.urlaubsantragId());
         verify(urlaubsantraegeLadenOutPort).findeAlleNachAntragstellerId(UrlaubsantragTestData.vertretungId());
-        verify(urlaubsantragSpeichernOutPort).speichere(any(Urlaubsantrag.class));
+        ArgumentCaptor<Urlaubsantrag> savedCaptor = ArgumentCaptor.forClass(Urlaubsantrag.class);
+        verify(urlaubsantragSpeichernOutPort).speichere(savedCaptor.capture());
+        assertThat(savedCaptor.getValue().status()).isEqualTo(UrlaubsantragStatus.ABGELEHNT);
         verifyNoMoreInteractions(urlaubsantraegeLadenOutPort);
         verifyNoMoreInteractions(urlaubsantragSpeichernOutPort);
+    }
+
+    @Test
+    void returnsTrueWithoutSavingWhenAutomaticCheckWasAlreadyCompletedSuccessfully() {
+        Urlaubsantrag bereitsGepruefterUrlaubsantrag = new Urlaubsantrag(
+            UrlaubsantragTestData.urlaubsantragId(),
+            UrlaubsantragTestData.vacationPeriod(),
+            UrlaubsantragTestData.antragsteller(),
+            UrlaubsantragTestData.vertretung(),
+            UrlaubsantragStatus.VORGESETZTEN_PRUEFUNG,
+            UrlaubsantragTestData.statushistorie(
+                UrlaubsantragStatus.ANTRAG_GESTELLT,
+                UrlaubsantragStatus.AUTOMATISCHE_PRUEFUNG,
+                UrlaubsantragStatus.VORGESETZTEN_PRUEFUNG
+            ),
+            UrlaubsantragTestData.prozessinstanzId()
+        );
+        when(urlaubsantraegeLadenOutPort.findeNachId(UrlaubsantragTestData.urlaubsantragId()))
+            .thenReturn(Optional.of(bereitsGepruefterUrlaubsantrag));
+
+        boolean result = pruefeUrlaubsantragAutomatischUseCase.pruefeUrlaubsantragAutomatisch(
+            new UrlaubsantragAutomatischPruefenCommand(UrlaubsantragTestData.urlaubsantragId())
+        );
+
+        assertThat(result).isTrue();
+        verify(urlaubsantraegeLadenOutPort).findeNachId(UrlaubsantragTestData.urlaubsantragId());
+        verifyNoMoreInteractions(urlaubsantraegeLadenOutPort);
+        verifyNoInteractions(urlaubsantragSpeichernOutPort);
+    }
+
+    @Test
+    void returnsFalseWithoutSavingWhenAutomaticCheckWasAlreadyCompletedWithRejection() {
+        Urlaubsantrag bereitsAbgelehnterUrlaubsantrag = new Urlaubsantrag(
+            UrlaubsantragTestData.urlaubsantragId(),
+            UrlaubsantragTestData.vacationPeriod(),
+            UrlaubsantragTestData.antragsteller(),
+            UrlaubsantragTestData.vertretung(),
+            UrlaubsantragStatus.ABGELEHNT,
+            UrlaubsantragTestData.statushistorie(
+                UrlaubsantragStatus.ANTRAG_GESTELLT,
+                UrlaubsantragStatus.AUTOMATISCHE_PRUEFUNG,
+                UrlaubsantragStatus.ABGELEHNT
+            ),
+            UrlaubsantragTestData.prozessinstanzId()
+        );
+        when(urlaubsantraegeLadenOutPort.findeNachId(UrlaubsantragTestData.urlaubsantragId()))
+            .thenReturn(Optional.of(bereitsAbgelehnterUrlaubsantrag));
+
+        boolean result = pruefeUrlaubsantragAutomatischUseCase.pruefeUrlaubsantragAutomatisch(
+            new UrlaubsantragAutomatischPruefenCommand(UrlaubsantragTestData.urlaubsantragId())
+        );
+
+        assertThat(result).isFalse();
+        verify(urlaubsantraegeLadenOutPort).findeNachId(UrlaubsantragTestData.urlaubsantragId());
+        verifyNoMoreInteractions(urlaubsantraegeLadenOutPort);
+        verifyNoInteractions(urlaubsantragSpeichernOutPort);
     }
 
     @Test

@@ -32,7 +32,8 @@ public record UserTask(
             .anyMatch(benutzerId::equals);
     }
 
-    private boolean istBearbeiter(BenutzerId benutzerId) {
+    public boolean istBearbeiter(BenutzerId benutzerId) {
+        Assert.notNull(benutzerId, "benutzerId darf nicht null sein");
         return bearbeiter != null && benutzerId.equals(bearbeiter.id());
     }
 }

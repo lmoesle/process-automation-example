@@ -20,8 +20,25 @@ class UserTaskTest {
     }
 
     @Test
+    void identifiesBearbeiter() {
+        assertThat(UserTaskTestdaten.userTask().istBearbeiter(BenutzerTestdaten.adaId())).isTrue();
+    }
+
+    @Test
+    void returnsFalseForNonBearbeiter() {
+        assertThat(UserTaskTestdaten.userTask().istBearbeiter(BenutzerTestdaten.carlaId())).isFalse();
+    }
+
+    @Test
     void rejectsNullCandidateUserCheck() {
         assertThatThrownBy(() -> UserTaskTestdaten.userTask().istCandidateUser(null))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("benutzerId darf nicht null sein");
+    }
+
+    @Test
+    void rejectsNullBearbeiterCheck() {
+        assertThatThrownBy(() -> UserTaskTestdaten.userTask().istBearbeiter(null))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("benutzerId darf nicht null sein");
     }
