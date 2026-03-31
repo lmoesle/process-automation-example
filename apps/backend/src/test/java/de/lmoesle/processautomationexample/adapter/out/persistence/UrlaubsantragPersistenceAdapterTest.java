@@ -3,7 +3,6 @@ package de.lmoesle.processautomationexample.adapter.out.persistence;
 import de.lmoesle.processautomationexample.adapter.out.persistence.entities.*;
 import de.lmoesle.processautomationexample.domain.benutzer.Benutzer;
 import de.lmoesle.processautomationexample.domain.benutzer.BenutzerTestdaten;
-import de.lmoesle.processautomationexample.domain.urlaubsantrag.UrlaubsantragId;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.UrlaubsantragStatus;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.UrlaubsantragTestData;
 import org.junit.jupiter.api.BeforeEach;
@@ -138,39 +137,25 @@ class UrlaubsantragPersistenceAdapterTest {
         );
         verify(benutzerJpaRepository).findDistinctByIdIn(argThat(this::containsAdaAndCarlaOnly));
         assertThat(urlaubsantrags).hasSize(2);
-        assertThat(urlaubsantrags.get(0).id()).isEqualTo(UrlaubsantragTestData.urlaubsantragId());
-        assertThat(urlaubsantrags.get(0).zeitraum().von()).isEqualTo(UrlaubsantragTestData.FROM);
-        assertThat(urlaubsantrags.get(0).zeitraum().bis()).isEqualTo(UrlaubsantragTestData.TO);
-        assertThat(urlaubsantrags.get(0).antragsteller()).isEqualTo(BenutzerTestdaten.ada());
-        assertThat(urlaubsantrags.get(0).vertretung()).isEqualTo(BenutzerTestdaten.carla());
-        assertThat(urlaubsantrags.get(0).vorgesetzter()).isEqualTo(BenutzerTestdaten.carla());
-        assertThat(urlaubsantrags.get(0).prozessinstanzId()).isEqualTo(UrlaubsantragTestData.prozessinstanzId());
-        assertThat(urlaubsantrags.get(0).status()).isEqualTo(UrlaubsantragStatus.ANTRAG_GESTELLT);
-        assertThat(urlaubsantrags.get(0).statusHistorie()).hasSize(1);
+        assertThat(urlaubsantrags.getFirst().id()).isEqualTo(UrlaubsantragTestData.urlaubsantragId());
+        assertThat(urlaubsantrags.getFirst().zeitraum().von()).isEqualTo(UrlaubsantragTestData.FROM);
+        assertThat(urlaubsantrags.getFirst().zeitraum().bis()).isEqualTo(UrlaubsantragTestData.TO);
+        assertThat(urlaubsantrags.getFirst().antragsteller()).isEqualTo(BenutzerTestdaten.ada());
+        assertThat(urlaubsantrags.getFirst().vertretung()).isEqualTo(BenutzerTestdaten.carla());
+        assertThat(urlaubsantrags.getFirst().vorgesetzter()).isEqualTo(BenutzerTestdaten.carla());
+        assertThat(urlaubsantrags.getFirst().prozessinstanzId()).isEqualTo(UrlaubsantragTestData.prozessinstanzId());
+        assertThat(urlaubsantrags.getFirst().status()).isEqualTo(UrlaubsantragStatus.ANTRAG_GESTELLT);
+        assertThat(urlaubsantrags.getFirst().statusHistorie()).hasSize(1);
 
-        assertThat(urlaubsantrags.get(1).id()).isEqualTo(UrlaubsantragTestData.secondUrlaubsantragId());
-        assertThat(urlaubsantrags.get(1).zeitraum().von()).isEqualTo(UrlaubsantragTestData.SECOND_FROM);
-        assertThat(urlaubsantrags.get(1).zeitraum().bis()).isEqualTo(UrlaubsantragTestData.SECOND_TO);
-        assertThat(urlaubsantrags.get(1).antragsteller()).isEqualTo(BenutzerTestdaten.ada());
-        assertThat(urlaubsantrags.get(1).vertretung()).isNull();
-        assertThat(urlaubsantrags.get(1).vorgesetzter()).isNull();
-        assertThat(urlaubsantrags.get(1).prozessinstanzId()).isNull();
-        assertThat(urlaubsantrags.get(1).status()).isEqualTo(UrlaubsantragStatus.ANTRAG_GESTELLT);
-        assertThat(urlaubsantrags.get(1).statusHistorie()).hasSize(1);
-    }
-
-    @Test
-    void rejectsNullApplicantBenutzerIdWhenLoadingUrlaubsantrags() {
-        assertThatThrownBy(() -> urlaubsantragPersistenceAdapter.findeAlleNachAntragstellerId(null))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("antragstellerId darf nicht null sein");
-    }
-
-    @Test
-    void rejectsNullUrlaubsantragIdWhenLoadingUrlaubsantragById() {
-        assertThatThrownBy(() -> urlaubsantragPersistenceAdapter.findeNachId((UrlaubsantragId) null))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("urlaubsantragId darf nicht null sein");
+        assertThat(urlaubsantrags.getLast().id()).isEqualTo(UrlaubsantragTestData.secondUrlaubsantragId());
+        assertThat(urlaubsantrags.getLast().zeitraum().von()).isEqualTo(UrlaubsantragTestData.SECOND_FROM);
+        assertThat(urlaubsantrags.getLast().zeitraum().bis()).isEqualTo(UrlaubsantragTestData.SECOND_TO);
+        assertThat(urlaubsantrags.getLast().antragsteller()).isEqualTo(BenutzerTestdaten.ada());
+        assertThat(urlaubsantrags.getLast().vertretung()).isNull();
+        assertThat(urlaubsantrags.getLast().vorgesetzter()).isNull();
+        assertThat(urlaubsantrags.getLast().prozessinstanzId()).isNull();
+        assertThat(urlaubsantrags.getLast().status()).isEqualTo(UrlaubsantragStatus.ANTRAG_GESTELLT);
+        assertThat(urlaubsantrags.getLast().statusHistorie()).hasSize(1);
     }
 
     @Test

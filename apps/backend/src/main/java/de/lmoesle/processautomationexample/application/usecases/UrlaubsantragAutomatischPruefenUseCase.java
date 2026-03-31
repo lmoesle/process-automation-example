@@ -33,22 +33,10 @@ public class UrlaubsantragAutomatischPruefenUseCase implements UrlaubsantragAuto
             .orElseThrow(() -> new IllegalArgumentException("urlaubsantragId verweist auf keinen vorhandenen Urlaubsantrag"));
 
         if (urlaubsantrag.status() == UrlaubsantragStatus.ABGELEHNT) {
-            log.info(
-                    "Automatische Pruefung erfolgreich abgeschlossen: urlaubsantragId={}, gueltig={}, status={}",
-                    urlaubsantrag.id().value(),
-                    false,
-                    urlaubsantrag.status()
-            );
             return false;
         }
 
         if (urlaubsantrag.status() == UrlaubsantragStatus.VORGESETZTEN_PRUEFUNG) {
-            log.info(
-                "Automatische Pruefung erfolgreich abgeschlossen: urlaubsantragId={}, gueltig={}, status={}",
-                urlaubsantrag.id().value(),
-                true,
-                urlaubsantrag.status()
-            );
             return true;
         }
 

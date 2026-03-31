@@ -10,7 +10,6 @@ import dev.bpmcrafters.processengineapi.task.UserTaskCompletionApi;
 import dev.bpmcrafters.processengineapi.task.UserTaskModificationApi;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -29,9 +28,6 @@ public class ProcessEngineApiTasklistAdapter implements CompleteTaskOutPort, Ass
 
     @Override
     public void assignTaskToUser(UserTaskId taskId, BenutzerId benutzerId) {
-        Assert.notNull(taskId, "taskId darf nicht null sein");
-        Assert.notNull(benutzerId, "benutzerId darf nicht null sein");
-
         try {
             userTaskModificationApi.update(new AssignTaskCmd(taskId.value(), benutzerId.value().toString()))
                 .get(TASK_MODIFICATION_TIMEOUT_SECONDS, TimeUnit.SECONDS);
@@ -48,8 +44,6 @@ public class ProcessEngineApiTasklistAdapter implements CompleteTaskOutPort, Ass
 
     @Override
     public void completeTask(UserTaskId taskId, boolean genehmigt) {
-        Assert.notNull(taskId, "taskId darf nicht null sein");
-
         try {
             userTaskCompletionApi.completeTask(new CompleteTaskCmd(taskId.value(), Map.of("genehmigt", genehmigt)))
                 .get(TASK_COMPLETION_TIMEOUT_SECONDS, TimeUnit.SECONDS);

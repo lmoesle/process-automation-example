@@ -85,25 +85,4 @@ class ProcessEngineApiTasklistAdapterTest {
             .hasMessage("Aufgabe " + UserTaskTestdaten.TASK_ID + " konnte nicht abgeschlossen werden")
             .hasRootCauseMessage("boom");
     }
-
-    @Test
-    void rejectsNullTaskIdForAssignTaskToUser() {
-        assertThatThrownBy(() -> processEngineApiTasklistAdapter.assignTaskToUser(null, BenutzerTestdaten.adaId()))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("taskId darf nicht null sein");
-    }
-
-    @Test
-    void rejectsNullUserForAssignTaskToUser() {
-        assertThatThrownBy(() -> processEngineApiTasklistAdapter.assignTaskToUser(UserTaskTestdaten.taskId(), null))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("benutzerId darf nicht null sein");
-    }
-
-    @Test
-    void rejectsNullTaskIdForCompleteTask() {
-        assertThatThrownBy(() -> processEngineApiTasklistAdapter.completeTask(null, true))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("taskId darf nicht null sein");
-    }
 }

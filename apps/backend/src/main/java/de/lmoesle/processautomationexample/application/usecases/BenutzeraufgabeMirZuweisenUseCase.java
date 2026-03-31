@@ -53,12 +53,12 @@ public class BenutzeraufgabeMirZuweisenUseCase implements BenutzeraufgabeMirZuwe
         );
     }
 
-    private Benutzer ermittleVorgesetzten(UserTask task, BenutzerId benutzerId) {
+    private Benutzer ermittleVorgesetzten(UserTask task, BenutzerId vorgesetztenId) {
         return task.candidateUsers().stream()
-            .filter(benutzer -> benutzer.id().equals(benutzerId))
+            .filter(benutzer -> benutzer.id().equals(vorgesetztenId))
             .findFirst()
             .orElseThrow(() -> new IllegalStateException(
-                "Aufgabe " + task.id().value() + " enthaelt keinen Kandidaten fuer Benutzer " + benutzerId.value()
+                "Aufgabe " + task.id().value() + " enthaelt keinen Kandidaten fuer Benutzer " + vorgesetztenId.value()
             ));
     }
 }

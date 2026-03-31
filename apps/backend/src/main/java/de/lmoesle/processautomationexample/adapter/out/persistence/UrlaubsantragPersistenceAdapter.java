@@ -10,7 +10,6 @@ import de.lmoesle.processautomationexample.domain.urlaubsantrag.UrlaubsantragId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 
 import java.util.*;
 import java.util.function.Function;
@@ -34,16 +33,12 @@ public class UrlaubsantragPersistenceAdapter implements UrlaubsantragSpeichernOu
 
     @Override
     public Optional<Urlaubsantrag> findeNachId(UrlaubsantragId urlaubsantragId) {
-        Assert.notNull(urlaubsantragId, "urlaubsantragId darf nicht null sein");
-
         return urlaubsantragJpaRepository.findById(urlaubsantragId.value())
             .map(this::toDomain);
     }
 
     @Override
     public List<Urlaubsantrag> findeAlleNachAntragstellerId(BenutzerId antragstellerId) {
-        Assert.notNull(antragstellerId, "antragstellerId darf nicht null sein");
-
         List<UrlaubsantragEntity> urlaubsantragEntities = urlaubsantragJpaRepository.findAllByAntragstellerId(
             antragstellerId.value(),
             Sort.by(
