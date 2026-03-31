@@ -15,7 +15,8 @@ public final class ExcludeNonHexagonalImportOption implements ImportOption {
     public boolean includes(final Location location) {
         final String uri = location.asURI().toString();
 
-        if (uri.contains("/de/lmoesle/processautomationexample/bpmn/")) {
+        if (uri.contains("/de/lmoesle/processautomationexample/bpmn/")
+            || uri.contains("/de/lmoesle/processautomationexample/shared/bpmn/")) {
             return false;
         }
 
