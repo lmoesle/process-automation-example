@@ -9,6 +9,7 @@ import de.lmoesle.processautomationexample.domain.tasklist.UserTask;
 import de.lmoesle.processautomationexample.domain.tasklist.UserTaskId;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.Urlaubsantrag;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.UrlaubsantragId;
+import de.lmoesle.processautomationexample.shared.bpmn.VacationApprovalBpmnApi;
 import dev.bpmcrafters.processengineapi.task.TaskInformation;
 import dev.bpmcrafters.processengineapi.task.support.UserTaskSupport;
 import lombok.RequiredArgsConstructor;
@@ -71,12 +72,12 @@ public class TasklistRepository implements TasklistRepositoryOutPort {
     }
 
     private Optional<Urlaubsantrag> ladeUrlaubsantrag(Map<String, Object> payload) {
-        return parseUrlaubsantragId(payload.get("urlaubsantragId"))
+        return parseUrlaubsantragId(payload.get(VacationApprovalBpmnApi.PROCESS_VARIABLE_VACATION_REQUEST_ID))
             .flatMap(urlaubsantraegeLadenOutPort::findeNachId);
     }
 
     private List<Benutzer> ladeCandidateUsers(Map<String, Object> payload) {
-        return extrahiereBenutzerIds(payload.get("teamLeadIds")).stream()
+        return extrahiereBenutzerIds(payload.get(VacationApprovalBpmnApi.PROCESS_VARIABLE_TEAM_LEAD_IDS)).stream()
             .map(benutzerRepositoryOutPort::findeNachId)
             .flatMap(Optional::stream)
             .toList();

@@ -4,6 +4,7 @@ import de.lmoesle.processautomationexample.application.ports.out.AssignTaskOutPo
 import de.lmoesle.processautomationexample.application.ports.out.CompleteTaskOutPort;
 import de.lmoesle.processautomationexample.domain.benutzer.BenutzerId;
 import de.lmoesle.processautomationexample.domain.tasklist.UserTaskId;
+import de.lmoesle.processautomationexample.shared.bpmn.VacationApprovalBpmnApi;
 import dev.bpmcrafters.processengineapi.task.ChangeAssignmentModifyTaskCmd.AssignTaskCmd;
 import dev.bpmcrafters.processengineapi.task.CompleteTaskCmd;
 import dev.bpmcrafters.processengineapi.task.UserTaskCompletionApi;
@@ -51,7 +52,10 @@ public class ProcessEngineApiTasklistAdapter implements CompleteTaskOutPort, Ass
         Assert.notNull(taskId, "taskId darf nicht null sein");
 
         try {
-            userTaskCompletionApi.completeTask(new CompleteTaskCmd(taskId.value(), Map.of("genehmigt", genehmigt)))
+            userTaskCompletionApi.completeTask(new CompleteTaskCmd(
+                taskId.value(),
+                Map.of(VacationApprovalBpmnApi.PROCESS_VARIABLE_APPROVED, genehmigt)
+            ))
                 .get(TASK_COMPLETION_TIMEOUT_SECONDS, TimeUnit.SECONDS);
         } catch (TimeoutException | InterruptedException | IllegalStateException | ExecutionException exception) {
             if (exception instanceof InterruptedException) {

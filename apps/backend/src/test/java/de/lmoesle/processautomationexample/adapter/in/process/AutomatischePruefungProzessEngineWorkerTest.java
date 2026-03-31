@@ -3,6 +3,7 @@ package de.lmoesle.processautomationexample.adapter.in.process;
 import de.lmoesle.processautomationexample.application.ports.in.UrlaubsantragAutomatischPruefenInPort;
 import de.lmoesle.processautomationexample.application.ports.in.UrlaubsantragAutomatischPruefenInPort.UrlaubsantragAutomatischPruefenCommand;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.UrlaubsantragTestData;
+import de.lmoesle.processautomationexample.shared.bpmn.VacationApprovalBpmnApi;
 import dev.bpmcrafters.processengine.worker.registrar.ReflectionUtilsKt;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,7 +35,7 @@ class AutomatischePruefungProzessEngineWorkerTest {
         var result = automatischePruefungProzessEngineWorker.pruefeAutomatisch(urlaubsantragId);
 
         assertThat(result)
-            .containsEntry("gueltig", true)
+            .containsEntry(VacationApprovalBpmnApi.PROCESS_VARIABLE_VALID, true)
             .hasSize(1);
         verify(pruefeUrlaubsantragAutomatischInPort).pruefeUrlaubsantragAutomatisch(
             new UrlaubsantragAutomatischPruefenCommand(UrlaubsantragTestData.urlaubsantragId())

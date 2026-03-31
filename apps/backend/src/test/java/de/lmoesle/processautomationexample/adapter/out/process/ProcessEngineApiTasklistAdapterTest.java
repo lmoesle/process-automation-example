@@ -2,6 +2,7 @@ package de.lmoesle.processautomationexample.adapter.out.process;
 
 import de.lmoesle.processautomationexample.domain.benutzer.BenutzerTestdaten;
 import de.lmoesle.processautomationexample.domain.tasklist.UserTaskTestdaten;
+import de.lmoesle.processautomationexample.shared.bpmn.VacationApprovalBpmnApi;
 import dev.bpmcrafters.processengineapi.task.ChangeAssignmentModifyTaskCmd.AssignTaskCmd;
 import dev.bpmcrafters.processengineapi.task.CompleteTaskCmd;
 import dev.bpmcrafters.processengineapi.task.ModifyTaskCmd;
@@ -64,14 +65,14 @@ class ProcessEngineApiTasklistAdapterTest {
     void completesTaskViaCompletionApi() {
         when(userTaskCompletionApi.completeTask(argThat(command ->
             command.getTaskId().equals(UserTaskTestdaten.TASK_ID)
-                && command.get().get("genehmigt").equals(true)
+                && command.get().get(VacationApprovalBpmnApi.PROCESS_VARIABLE_APPROVED).equals(true)
         ))).thenReturn(CompletableFuture.completedFuture(null));
 
         processEngineApiTasklistAdapter.completeTask(UserTaskTestdaten.taskId(), true);
 
         verify(userTaskCompletionApi).completeTask(argThat(command ->
             command.getTaskId().equals(UserTaskTestdaten.TASK_ID)
-                && command.get().get("genehmigt").equals(true)
+                && command.get().get(VacationApprovalBpmnApi.PROCESS_VARIABLE_APPROVED).equals(true)
         ));
     }
 

@@ -2,6 +2,7 @@ package de.lmoesle.processautomationexample.adapter.out.process;
 
 import de.lmoesle.processautomationexample.domain.benutzer.BenutzerTestdaten;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.UrlaubsantragTestData;
+import de.lmoesle.processautomationexample.shared.bpmn.VacationApprovalBpmnApi;
 import dev.bpmcrafters.processengineapi.process.ProcessInformation;
 import dev.bpmcrafters.processengineapi.process.StartProcessApi;
 import dev.bpmcrafters.processengineapi.process.StartProcessByDefinitionCmd;
@@ -45,11 +46,14 @@ class CamundaUrlaubsantragGenehmigungsprozessAdapterTest {
         verify(startProcessApi).startProcess(commandCaptor.capture());
 
         StartProcessByDefinitionCmd command = (StartProcessByDefinitionCmd) commandCaptor.getValue();
-        assertThat(command.getDefinitionKey()).isEqualTo("vacation_approval");
+        assertThat(command.getDefinitionKey()).isEqualTo(VacationApprovalBpmnApi.PROCESS_ID);
         assertThat(command.get())
-            .containsEntry("urlaubsantragId", UrlaubsantragTestData.urlaubsantragId().value().toString())
             .containsEntry(
-                "teamLeadIds",
+                VacationApprovalBpmnApi.PROCESS_VARIABLE_VACATION_REQUEST_ID,
+                UrlaubsantragTestData.urlaubsantragId().value().toString()
+            )
+            .containsEntry(
+                VacationApprovalBpmnApi.PROCESS_VARIABLE_TEAM_LEAD_IDS,
                 BenutzerTestdaten.adaId().value() + "," + BenutzerTestdaten.carlaId().value()
             );
         assertThat(prozessinstanzId).isEqualTo(UrlaubsantragTestData.prozessinstanzId());
