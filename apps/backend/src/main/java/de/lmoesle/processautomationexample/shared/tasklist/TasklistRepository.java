@@ -3,6 +3,7 @@ package de.lmoesle.processautomationexample.shared.tasklist;
 import de.lmoesle.processautomationexample.application.ports.out.BenutzerRepositoryOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.TasklistRepositoryOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.UrlaubsantraegeLadenOutPort;
+import de.lmoesle.processautomationexample.bpmn.VacationApprovalProcessApi;
 import de.lmoesle.processautomationexample.domain.benutzer.Benutzer;
 import de.lmoesle.processautomationexample.domain.benutzer.BenutzerId;
 import de.lmoesle.processautomationexample.domain.tasklist.UserTask;
@@ -71,7 +72,7 @@ public class TasklistRepository implements TasklistRepositoryOutPort {
     }
 
     private Optional<Urlaubsantrag> ladeUrlaubsantrag(Map<String, Object> payload) {
-        return parseUrlaubsantragId(payload.get("urlaubsantragId"))
+        return parseUrlaubsantragId(payload.get(VacationApprovalProcessApi.Variables.URLAUBSANTRAG_ID))
             .flatMap(urlaubsantraegeLadenOutPort::findeNachId);
     }
 

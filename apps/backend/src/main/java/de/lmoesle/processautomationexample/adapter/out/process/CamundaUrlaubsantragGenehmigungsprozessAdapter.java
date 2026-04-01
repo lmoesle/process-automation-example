@@ -1,6 +1,7 @@
 package de.lmoesle.processautomationexample.adapter.out.process;
 
 import de.lmoesle.processautomationexample.application.ports.out.UrlaubsantragGenehmigungsprozessStartenOutPort;
+import de.lmoesle.processautomationexample.bpmn.VacationApprovalProcessApi;
 import de.lmoesle.processautomationexample.domain.benutzer.BenutzerId;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.ProzessinstanzId;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.Urlaubsantrag;
@@ -21,8 +22,6 @@ import java.util.concurrent.TimeoutException;
 public class CamundaUrlaubsantragGenehmigungsprozessAdapter implements UrlaubsantragGenehmigungsprozessStartenOutPort {
 
     private static final long PROCESS_START_TIMEOUT_SECONDS = 10;
-    private static final String PROCESS_DEFINITION_KEY = "vacation_approval";
-    private static final String URLAUBSANTRAG_ID_VARIABLE = "urlaubsantragId";
     private static final String TEAM_LEAD_VARIABLE = "teamLeadIds";
 
     private final StartProcessApi startProcessApi;
@@ -30,9 +29,9 @@ public class CamundaUrlaubsantragGenehmigungsprozessAdapter implements Urlaubsan
     @Override
     public ProzessinstanzId starteGenehmigungsprozessFuer(Urlaubsantrag urlaubsantrag, List<BenutzerId> teamLeadIds) {
         final var prozessinstanzInfo = startProcessApi.startProcess(new StartProcessByDefinitionCmd(
-            PROCESS_DEFINITION_KEY,
+            VacationApprovalProcessApi.PROCESS_ID,
             () -> Map.of(
-                URLAUBSANTRAG_ID_VARIABLE, urlaubsantrag.id().value().toString(),
+                VacationApprovalProcessApi.Variables.URLAUBSANTRAG_ID, urlaubsantrag.id().value().toString(),
                 TEAM_LEAD_VARIABLE, mapTeamLeadIds(teamLeadIds)
             ),
             Map.of()

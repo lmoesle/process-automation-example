@@ -1,5 +1,6 @@
 package de.lmoesle.processautomationexample.adapter.out.process;
 
+import de.lmoesle.processautomationexample.bpmn.VacationApprovalProcessApi;
 import de.lmoesle.processautomationexample.domain.benutzer.BenutzerTestdaten;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.UrlaubsantragTestData;
 import dev.bpmcrafters.processengineapi.process.ProcessInformation;
@@ -45,9 +46,12 @@ class CamundaUrlaubsantragGenehmigungsprozessAdapterTest {
         verify(startProcessApi).startProcess(commandCaptor.capture());
 
         StartProcessByDefinitionCmd command = (StartProcessByDefinitionCmd) commandCaptor.getValue();
-        assertThat(command.getDefinitionKey()).isEqualTo("vacation_approval");
+        assertThat(command.getDefinitionKey()).isEqualTo(VacationApprovalProcessApi.PROCESS_ID);
         assertThat(command.get())
-            .containsEntry("urlaubsantragId", UrlaubsantragTestData.urlaubsantragId().value().toString())
+            .containsEntry(
+                VacationApprovalProcessApi.Variables.URLAUBSANTRAG_ID,
+                UrlaubsantragTestData.urlaubsantragId().value().toString()
+            )
             .containsEntry(
                 "teamLeadIds",
                 BenutzerTestdaten.adaId().value() + "," + BenutzerTestdaten.carlaId().value()

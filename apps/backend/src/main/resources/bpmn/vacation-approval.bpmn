@@ -44,7 +44,12 @@
       <bpmn:incoming>Flow_1cyfud8</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:serviceTask id="automatic_check" name="Automatisch Prüfung des Antrags" camunda:asyncBefore="true" camunda:type="external" camunda:topic="automatic_check">
-      <bpmn:extensionElements />
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="urlaubsantragId">${urlaubsantragId}</camunda:inputParameter>
+          <camunda:outputParameter name="gueltig" />
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_11hl1ga</bpmn:incoming>
       <bpmn:outgoing>Flow_0sirzwj</bpmn:outgoing>
     </bpmn:serviceTask>

@@ -1,5 +1,6 @@
 package de.lmoesle.processautomationexample.domain.tasklist;
 
+import de.lmoesle.processautomationexample.bpmn.VacationApprovalProcessApi;
 import de.lmoesle.processautomationexample.domain.benutzer.BenutzerTestdaten;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.UrlaubsantragTestData;
 
@@ -25,7 +26,7 @@ public final class UserTaskTestdaten {
 
     public static Map<String, String> meta() {
         LinkedHashMap<String, String> meta = new LinkedHashMap<>();
-        meta.put("processDefinitionKey", "vacation_approval");
+        meta.put("processDefinitionKey", VacationApprovalProcessApi.PROCESS_ID);
         meta.put("assignee", BenutzerTestdaten.ADA_UUID.toString());
         meta.put("formKey", "embedded:app:forms/vacation-approval.html");
         return meta;
@@ -33,7 +34,7 @@ public final class UserTaskTestdaten {
 
     public static Map<String, String> secondMeta() {
         LinkedHashMap<String, String> meta = new LinkedHashMap<>();
-        meta.put("processDefinitionKey", "vacation_approval");
+        meta.put("processDefinitionKey", VacationApprovalProcessApi.PROCESS_ID);
         meta.put("assignee", BenutzerTestdaten.CARLA_UUID.toString());
         meta.put("formKey", "embedded:app:forms/vacation-approval.html");
         return meta;
@@ -41,7 +42,7 @@ public final class UserTaskTestdaten {
 
     public static Map<String, Object> payload() {
         LinkedHashMap<String, Object> payload = new LinkedHashMap<>();
-        payload.put("urlaubsantragId", UrlaubsantragTestData.VACATION_REQUEST_UUID.toString());
+        payload.put(VacationApprovalProcessApi.Variables.URLAUBSANTRAG_ID, UrlaubsantragTestData.VACATION_REQUEST_UUID.toString());
         payload.put("teamLeadIds", List.of(BenutzerTestdaten.ADA_UUID.toString(), BenutzerTestdaten.CARLA_UUID.toString()));
         payload.put("requester", "Ada Lovelace");
         payload.put("days", 5);
@@ -50,7 +51,7 @@ public final class UserTaskTestdaten {
 
     public static Map<String, Object> secondPayload() {
         LinkedHashMap<String, Object> payload = new LinkedHashMap<>();
-        payload.put("urlaubsantragId", UrlaubsantragTestData.SECOND_VACATION_REQUEST_UUID.toString());
+        payload.put(VacationApprovalProcessApi.Variables.URLAUBSANTRAG_ID, UrlaubsantragTestData.SECOND_VACATION_REQUEST_UUID.toString());
         payload.put("teamLeadIds", List.of(BenutzerTestdaten.CARLA_UUID.toString()));
         payload.put("requester", "Grace Hopper");
         payload.put("days", 10);
