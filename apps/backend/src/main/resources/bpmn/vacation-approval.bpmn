@@ -47,7 +47,7 @@
       <bpmn:extensionElements>
         <camunda:inputOutput>
           <camunda:inputParameter name="urlaubsantragId">${urlaubsantragId}</camunda:inputParameter>
-          <camunda:outputParameter name="gueltig" />
+          <camunda:outputParameter name="gueltig">${gueltig}</camunda:outputParameter>
         </camunda:inputOutput>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_11hl1ga</bpmn:incoming>
