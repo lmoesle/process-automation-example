@@ -22,6 +22,10 @@ const requests: VacationRequest[] = [
         status: "ANTRAG_GESTELLT",
         kommentar: "Vertretung ist organisiert.",
       },
+      {
+        status: "GENEHMIGT",
+        kommentar: null,
+      },
     ],
   },
 ];
@@ -34,5 +38,6 @@ describe("VacationRequestList", () => {
     expect(screen.getByText("Grace Hopper")).toBeInTheDocument();
     expect(screen.getAllByText("Antrag gestellt")[0]).toBeInTheDocument();
     expect(screen.getByText("Vertretung ist organisiert.")).toBeInTheDocument();
+    expect(screen.queryByText("Kein Kommentar hinterlegt.")).not.toBeInTheDocument();
   });
 });

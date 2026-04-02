@@ -29,9 +29,8 @@ export const TasksPage = () => {
 
   return (
     <Page
-      title="Aufgaben"
-      subtitle="Das Taskboard kombiniert die offene Taskliste mit einer Detailansicht und den wichtigsten Bearbeitungsaktionen."
-      actions={<Chip color="secondary" label={`${tasksQuery.data?.length ?? 0} Aufgaben`} />}
+      title="Genehmigungen"
+      actions={<Chip color="secondary" label={`${tasksQuery.data?.length ?? 0} Genehmigungen`} />}
     >
       <Stack spacing={3}>
         {managerDecisionMutation.error ? <Alert severity="error">{managerDecisionMutation.error.message}</Alert> : null}
@@ -43,8 +42,8 @@ export const TasksPage = () => {
               loading={tasksQuery.isLoading}
               error={tasksQuery.error}
               isEmpty={(tasksQuery.data?.length ?? 0) === 0}
-              emptyTitle="Keine offenen Aufgaben"
-              emptyDescription="Sobald im Backend ein User Task entstanden ist, erscheint er hier automatisch."
+              emptyTitle="Keine offenen Genehmigungen"
+              emptyDescription=""
             >
               <TaskList
                 tasks={tasksQuery.data ?? []}

@@ -13,14 +13,12 @@ export const VacationRequestsPage = () => {
 
   return (
     <Page
-      title="Urlaubsantraege"
-      subtitle="Antraege werden direkt gegen die REST-Endpunkte des Backends erstellt und ueber TanStack Query aktualisiert."
+      title="Urlaubsanträge"
       actions={<Chip color="secondary" label={`${vacationRequestsQuery.data?.length ?? 0} Eintraege`} />}
     >
       <Stack direction={{ xs: "column", xl: "row" }} spacing={3} alignItems="flex-start">
         <Stack sx={{ flex: { xs: 1, xl: "0 0 360px" }, width: "100%" }}>
           <VacationRequestForm
-            applicantId={runtimeConfig.applicantId}
             isPending={createVacationRequestMutation.isPending}
             onSubmit={(values) => {
               createVacationRequestMutation.mutate(
@@ -52,8 +50,8 @@ export const VacationRequestsPage = () => {
             loading={vacationRequestsQuery.isLoading}
             error={vacationRequestsQuery.error}
             isEmpty={(vacationRequestsQuery.data?.length ?? 0) === 0}
-            emptyTitle="Noch keine Urlaubsantraege"
-            emptyDescription="Lege links den ersten Demo-Antrag an oder starte den Backend-Prozess ueber die HTTP-Samples."
+            emptyTitle="Noch keine Urlaubsanträge"
+            emptyDescription=""
           >
             <VacationRequestList requests={vacationRequestsQuery.data ?? []} />
           </AsyncState>

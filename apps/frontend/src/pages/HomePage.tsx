@@ -24,10 +24,7 @@ export const HomePage = () => {
   ).length;
 
   return (
-    <Page
-      title="Uebersicht"
-      subtitle="Ein kompakter Einstieg in den Demo-Prozess. Die Startseite zeigt die aktuelle Last auf dem Taskboard und den Stand der Urlaubsantraege."
-    >
+    <Page title="Übersicht">
       <Stack spacing={3}>
         {(vacationRequestsQuery.error || tasksQuery.error) ? (
           <Alert severity="error">
@@ -43,21 +40,21 @@ export const HomePage = () => {
           sx={{ "& > *": { flex: "1 1 280px" } }}
         >
           <MetricCard
-            label="Offene Aufgaben"
+            label="Offene Genehmigungen"
             value={tasksQuery.isLoading ? "..." : String(tasks.length)}
-            helperText="User Tasks, die im Backend fuer den aktuellen Demo-Benutzer sichtbar sind."
+            helperText="Alle offenen Genehmigungen"
             icon={<TaskRoundedIcon color="primary" />}
           />
           <MetricCard
-            label="Aktive Antraege"
+            label="Aktive Anträge"
             value={vacationRequestsQuery.isLoading ? "..." : String(inProgressCount)}
-            helperText="Antraege, die noch nicht final genehmigt oder abgelehnt wurden."
+            helperText="Offene Anträge"
             icon={<BeachAccessRoundedIcon color="secondary" />}
           />
           <MetricCard
             label="Genehmigt"
             value={vacationRequestsQuery.isLoading ? "..." : String(approvedCount)}
-            helperText="Bereits erfolgreich abgeschlossene Urlaubsantraege."
+            helperText="Bereits erfolgreich abgeschlossene Urlaubsanträge."
             icon={<AssignmentTurnedInRoundedIcon color="success" />}
           />
         </Stack>
@@ -67,7 +64,7 @@ export const HomePage = () => {
             <CardContent>
               <Stack spacing={2}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
-                  <Typography variant="h5">Neueste Antraege</Typography>
+                  <Typography variant="h5">Neueste Anträge</Typography>
                   <Typography component={RouterLink} to="/urlaubsantraege" color="secondary.main">
                     Alle anzeigen
                   </Typography>
@@ -81,9 +78,9 @@ export const HomePage = () => {
             <CardContent>
               <Stack spacing={2}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
-                  <Typography variant="h5">Aktuelle Aufgaben</Typography>
+                  <Typography variant="h5">Aktuelle Genehmigungen</Typography>
                   <Typography component={RouterLink} to="/tasks" color="secondary.main">
-                    Zum Taskboard
+                    Meine Genehmigungen
                   </Typography>
                 </Stack>
                 <TaskList

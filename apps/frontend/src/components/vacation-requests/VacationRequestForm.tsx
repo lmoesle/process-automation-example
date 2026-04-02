@@ -8,12 +8,11 @@ type VacationRequestFormValues = {
 };
 
 type VacationRequestFormProps = {
-  applicantId: string;
   isPending: boolean;
   onSubmit: (values: VacationRequestFormValues) => void;
 };
 
-export const VacationRequestForm = ({ applicantId, isPending, onSubmit }: VacationRequestFormProps) => {
+export const VacationRequestForm = ({ isPending, onSubmit }: VacationRequestFormProps) => {
   const [von, setVon] = useState("");
   const [bis, setBis] = useState("");
   const [vertretungId, setVertretungId] = useState("");
@@ -43,9 +42,6 @@ export const VacationRequestForm = ({ applicantId, isPending, onSubmit }: Vacati
         >
           <Stack spacing={0.5}>
             <Typography variant="h5">Neuen Urlaubsantrag stellen</Typography>
-            <Typography color="text.secondary">
-              Die Demo arbeitet mit einer festen Antragsteller-ID aus dem Backend: {applicantId}
-            </Typography>
           </Stack>
 
           <TextField

@@ -44,9 +44,6 @@ export const ManagerDecisionForm = ({
         >
           <Stack spacing={0.5}>
             <Typography variant="h5">Aktionen</Typography>
-            <Typography color="text.secondary">
-              Uebernehme die Aufgabe oder sende direkt eine Vorgesetztenentscheidung an das Backend.
-            </Typography>
           </Stack>
 
           <Button variant="outlined" onClick={onAssignToMe} disabled={!task || isAssigning}>

@@ -3,9 +3,9 @@ import { alpha } from "@mui/material/styles";
 import { Link as RouterLink, useLocation } from "react-router";
 
 const navigationItems = [
-  { label: "Uebersicht", to: "/" },
-  { label: "Urlaubsantraege", to: "/urlaubsantraege" },
-  { label: "Aufgaben", to: "/tasks" },
+  { label: "Übersicht", to: "/" },
+  { label: "Urlaubsanträge", to: "/urlaubsantraege" },
+  { label: "Genehmigungen", to: "/tasks" },
 ];
 
 const isActive = (pathname: string, target: string) => {
@@ -49,7 +49,6 @@ export const Navbar = () => {
             <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.14em" }}>
               Process Automation Example
             </Typography>
-            <Typography variant="h5">Operative Sicht auf Antraege und Aufgaben</Typography>
           </Stack>
 
           <Stack direction="row" spacing={1} sx={{ overflowX: "auto", pb: { xs: 0.5, md: 0 } }}>

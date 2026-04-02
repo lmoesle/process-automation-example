@@ -12,8 +12,7 @@ export const TaskDetailsCard = ({ task }: TaskDetailsCardProps) => {
     return (
       <Card variant="outlined">
         <CardContent>
-          <Typography variant="h6">Keine Aufgabe ausgewaehlt</Typography>
-          <Typography color="text.secondary">Waehle links eine Aufgabe aus, um Details und Aktionen zu sehen.</Typography>
+          <Typography variant="h6">Keine Genehmigung ausgewählt</Typography>
         </CardContent>
       </Card>
     );
@@ -24,7 +23,7 @@ export const TaskDetailsCard = ({ task }: TaskDetailsCardProps) => {
       <CardContent>
         <Stack spacing={2.5}>
           <Stack spacing={0.5}>
-            <Typography variant="h5">Aufgabe {task.taskId}</Typography>
+            <Typography variant="h5">Genehmigung {task.taskId}</Typography>
             <Typography color="text.secondary">
               {task.bearbeiter ? `Aktueller Bearbeiter: ${task.bearbeiter.name}` : "Die Aufgabe ist aktuell noch unzugewiesen."}
             </Typography>
@@ -53,7 +52,9 @@ export const TaskDetailsCard = ({ task }: TaskDetailsCardProps) => {
                 {task.urlaubsantrag.statusHistorie.map((entry, index) => (
                   <Stack key={`${task.taskId}-${entry.status}-${index}`} direction={{ xs: "column", md: "row" }} spacing={1}>
                     <Chip size="small" variant="outlined" label={formatVacationStatus(entry.status)} />
-                    <Typography color="text.secondary">{entry.kommentar?.trim() || "Kein Kommentar hinterlegt."}</Typography>
+                    {entry.kommentar?.trim() ? (
+                      <Typography color="text.secondary">{entry.kommentar.trim()}</Typography>
+                    ) : null}
                   </Stack>
                 ))}
               </Stack>

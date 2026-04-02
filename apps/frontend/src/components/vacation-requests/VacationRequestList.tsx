@@ -52,7 +52,9 @@ export const VacationRequestList = ({ requests, maxItems }: VacationRequestListP
                 {request.statusHistorie.map((entry, index) => (
                   <Stack key={`${request.id}-${entry.status}-${index}`} direction={{ xs: "column", md: "row" }} spacing={1} alignItems={{ xs: "flex-start", md: "center" }}>
                     <Chip size="small" variant="outlined" label={formatVacationStatus(entry.status)} />
-                    <Typography color="text.secondary">{entry.kommentar?.trim() || "Kein Kommentar hinterlegt."}</Typography>
+                    {entry.kommentar?.trim() ? (
+                      <Typography color="text.secondary">{entry.kommentar.trim()}</Typography>
+                    ) : null}
                   </Stack>
                 ))}
               </Stack>

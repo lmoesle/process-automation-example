@@ -9,7 +9,7 @@ export const NotFoundPage = () => (
   >
     <Stack spacing={2} alignItems="flex-start">
       <Typography color="text.secondary">
-        Die App besitzt aktuell nur die Bereiche Uebersicht, Urlaubsantraege und Aufgaben.
+        Die App besitzt aktuell nur die Bereiche Übersicht, Urlaubsanträge und Genehmigungen.
       </Typography>
       <Button component={RouterLink} to="/" variant="contained" color="secondary">
         Zur Startseite
