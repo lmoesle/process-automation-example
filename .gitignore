@@ -3,6 +3,7 @@ target/
 **/.mvn/wrapper/maven-wrapper.jar
 apps/frontend/node_modules/
 apps/frontend/dist/
+apps/frontend/coverage/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
