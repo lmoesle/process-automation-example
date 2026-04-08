@@ -1,20 +1,27 @@
 import { useState } from "react";
-import { Alert, Button, Card, CardContent, FormControlLabel, Radio, RadioGroup, Stack, TextField, Typography } from "@mui/material";
+import {
+    Alert,
+    Button,
+    Card,
+    CardContent,
+    FormControlLabel,
+    Radio,
+    RadioGroup,
+    Stack,
+    TextField,
+    Typography
+} from "@mui/material";
 import type { ManagerDecisionInput, UserTask } from "../../api/client";
 
 type ManagerDecisionFormProps = {
   task?: UserTask | undefined;
-  isAssigning: boolean;
   isSubmitting: boolean;
-  onAssignToMe: () => void;
   onSubmitDecision: (body: ManagerDecisionInput) => void;
 };
 
 export const ManagerDecisionForm = ({
   task,
-  isAssigning,
   isSubmitting,
-  onAssignToMe,
   onSubmitDecision,
 }: ManagerDecisionFormProps) => {
   const [decision, setDecision] = useState<"approve" | "reject">("approve");
@@ -45,10 +52,6 @@ export const ManagerDecisionForm = ({
           <Stack spacing={0.5}>
             <Typography variant="h5">Aktionen</Typography>
           </Stack>
-
-          <Button variant="outlined" onClick={onAssignToMe} disabled={!task || isAssigning}>
-            {isAssigning ? "Weise zu..." : "Mir zuweisen"}
-          </Button>
 
           <RadioGroup value={decision} onChange={(_event, value) => setDecision(value as "approve" | "reject")}>
             <FormControlLabel value="approve" control={<Radio />} label="Genehmigen" />

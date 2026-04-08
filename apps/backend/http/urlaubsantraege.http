@@ -29,11 +29,6 @@ GET {{baseUrl}}/api/tasks/a4049fe1-22b4-11f1-a1a1-3eb2fd0f8e34
 Content-Type: application/json
 Accept: application/json
 
-### Aufgabe mir zuweisen
-POST {{baseUrl}}/api/tasks/a4049fe1-22b4-11f1-a1a1-3eb2fd0f8e34/zuweisen
-Content-Type: application/json
-Accept: application/json
-
 ### Vorgesetztenentscheidung
 POST {{baseUrl}}/api/tasks/a4049fe1-22b4-11f1-a1a1-3eb2fd0f8e34/vorgesetztenentscheidung
 Content-Type: application/json

@@ -36,7 +36,7 @@ export const TaskList = ({ tasks, selectedTaskId, onSelectTask, maxItems }: Task
                   <Chip
                     size="small"
                     color={task.bearbeiter ? "secondary" : "default"}
-                    label={task.bearbeiter ? `Bearbeiter: ${task.bearbeiter.name}` : "Unzugewiesen"}
+                    label={task.bearbeiter ? `Bearbeiter: ${task.bearbeiter.name}` : "Automatische Uebernahme"}
                   />
                 </Stack>
               }

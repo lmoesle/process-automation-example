@@ -25,7 +25,9 @@ export const TaskDetailsCard = ({ task }: TaskDetailsCardProps) => {
           <Stack spacing={0.5}>
             <Typography variant="h5">Genehmigung {task.taskId}</Typography>
             <Typography color="text.secondary">
-              {task.bearbeiter ? `Aktueller Bearbeiter: ${task.bearbeiter.name}` : "Die Aufgabe ist aktuell noch unzugewiesen."}
+              {task.bearbeiter
+                ? `Aktueller Bearbeiter: ${task.bearbeiter.name}`
+                : "Die Aufgabe ist aktuell unzugewiesen und wird beim Senden der Entscheidung automatisch uebernommen."}
             </Typography>
           </Stack>
 

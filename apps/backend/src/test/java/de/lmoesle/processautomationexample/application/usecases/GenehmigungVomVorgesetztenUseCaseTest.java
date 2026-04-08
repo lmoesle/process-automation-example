@@ -49,8 +49,8 @@ class GenehmigungVomVorgesetztenUseCaseTest {
     }
 
     @Test
-    void approvesVacationRequestWhenCurrentUserIsBearbeiter() {
-        UserTask task = taskMitUrlaubsantragInVorgesetztenpruefung(UserTaskTestdaten.taskId(), BenutzerTestdaten.ada());
+    void approvesVacationRequestWhenCurrentUserIsCandidateUserWithoutManualAssignment() {
+        UserTask task = taskMitUrlaubsantragInVorgesetztenpruefung(UserTaskTestdaten.taskId(), null);
         when(tasklistRepositoryOutPort.getTaskById(UserTaskTestdaten.taskId())).thenReturn(Optional.of(task));
 
         genehmigungVomVorgesetztenUseCase.entscheideGenehmigungVomVorgesetzten(
@@ -66,10 +66,11 @@ class GenehmigungVomVorgesetztenUseCaseTest {
         inOrder.verify(tasklistRepositoryOutPort).getTaskById(UserTaskTestdaten.taskId());
         ArgumentCaptor<Urlaubsantrag> savedCaptor = ArgumentCaptor.forClass(Urlaubsantrag.class);
         inOrder.verify(urlaubsantragSpeichernOutPort).speichere(savedCaptor.capture());
-        inOrder.verify(processEngineApiTasklistAdapter).completeTask(UserTaskTestdaten.taskId(), true);
+        inOrder.verify(processEngineApiTasklistAdapter).completeTask(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId(), true);
         inOrder.verify(sendeBenachrichtigungOutPort).sendeBenachrichtigung(savedCaptor.getValue());
 
         assertThat(savedCaptor.getValue().status()).isEqualTo(UrlaubsantragStatus.GENEHMIGT);
+        assertThat(savedCaptor.getValue().vorgesetzter()).isEqualTo(BenutzerTestdaten.ada());
         assertThat(savedCaptor.getValue().statusHistorie()).last().satisfies(entry -> {
             assertThat(entry.status()).isEqualTo(UrlaubsantragStatus.GENEHMIGT);
             assertThat(entry.kommentar()).isEqualTo("Vertretung ist organisiert.");
@@ -86,15 +87,19 @@ class GenehmigungVomVorgesetztenUseCaseTest {
         );
 
         verify(urlaubsantragSpeichernOutPort).speichere(task.urlaubsantrag());
-        verify(processEngineApiTasklistAdapter).completeTask(UserTaskTestdaten.taskId(), false);
+        verify(processEngineApiTasklistAdapter).completeTask(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId(), false);
         verify(sendeBenachrichtigungOutPort).sendeBenachrichtigung(task.urlaubsantrag());
         assertThat(task.urlaubsantrag().status()).isEqualTo(UrlaubsantragStatus.ABGELEHNT);
     }
 
     @Test
-    void throwsWhenCurrentUserIsNotBearbeiter() {
+    void throwsWhenCurrentUserCannotSeeTask() {
         when(tasklistRepositoryOutPort.getTaskById(UserTaskTestdaten.secondTaskId()))
-            .thenReturn(Optional.of(taskMitUrlaubsantragInVorgesetztenpruefung(UserTaskTestdaten.secondTaskId(), BenutzerTestdaten.carla())));
+            .thenReturn(Optional.of(taskMitUrlaubsantragInVorgesetztenpruefung(
+                UserTaskTestdaten.secondTaskId(),
+                List.of(BenutzerTestdaten.carla()),
+                BenutzerTestdaten.carla()
+            )));
 
         assertThatThrownBy(() -> genehmigungVomVorgesetztenUseCase.entscheideGenehmigungVomVorgesetzten(
             new GenehmigungVomVorgesetztenCommand(UserTaskTestdaten.secondTaskId(), BenutzerTestdaten.adaId(), true, "ok")
@@ -105,7 +110,7 @@ class GenehmigungVomVorgesetztenUseCaseTest {
         verify(tasklistRepositoryOutPort).getTaskById(UserTaskTestdaten.secondTaskId());
         verifyNoInteractions(urlaubsantragSpeichernOutPort);
         verifyNoInteractions(sendeBenachrichtigungOutPort);
-        verify(processEngineApiTasklistAdapter, never()).completeTask(any(), anyBoolean());
+        verify(processEngineApiTasklistAdapter, never()).completeTask(any(), any(), anyBoolean());
     }
 
     @Test
@@ -184,11 +189,23 @@ class GenehmigungVomVorgesetztenUseCaseTest {
 
         verifyNoInteractions(urlaubsantragSpeichernOutPort);
         verifyNoInteractions(sendeBenachrichtigungOutPort);
-        verify(processEngineApiTasklistAdapter, never()).completeTask(any(), anyBoolean());
+        verify(processEngineApiTasklistAdapter, never()).completeTask(any(), any(), anyBoolean());
     }
 
     private static UserTask taskMitUrlaubsantragInVorgesetztenpruefung(
         de.lmoesle.processautomationexample.domain.tasklist.UserTaskId taskId,
+        Benutzer bearbeiter
+    ) {
+        return taskMitUrlaubsantragInVorgesetztenpruefung(
+            taskId,
+            List.of(BenutzerTestdaten.ada(), BenutzerTestdaten.carla()),
+            bearbeiter
+        );
+    }
+
+    private static UserTask taskMitUrlaubsantragInVorgesetztenpruefung(
+        de.lmoesle.processautomationexample.domain.tasklist.UserTaskId taskId,
+        List<Benutzer> candidateUsers,
         Benutzer bearbeiter
     ) {
         Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantragWithStartedProcess();
@@ -197,7 +214,7 @@ class GenehmigungVomVorgesetztenUseCaseTest {
         return new UserTask(
             taskId,
             urlaubsantrag,
-            List.of(BenutzerTestdaten.ada(), BenutzerTestdaten.carla()),
+            candidateUsers,
             bearbeiter
         );
     }

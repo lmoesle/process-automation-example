@@ -189,18 +189,6 @@ export const getTask = async (taskId: string): Promise<UserTask> => {
   return normalizeUserTask(expectData(result));
 };
 
-export const assignTaskToMe = async (taskId: string): Promise<void> => {
-  const result = await apiClient.POST("/api/tasks/{taskId}/zuweisen", {
-    params: {
-      path: {
-        taskId,
-      },
-    },
-  });
-
-  expectNoContent(result);
-};
-
 export const submitManagerDecision = async (taskId: string, body: ManagerDecisionInput): Promise<void> => {
   const result = await apiClient.POST("/api/tasks/{taskId}/vorgesetztenentscheidung", {
     params: {

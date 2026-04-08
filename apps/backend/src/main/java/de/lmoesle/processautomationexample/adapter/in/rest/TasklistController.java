@@ -2,8 +2,6 @@ package de.lmoesle.processautomationexample.adapter.in.rest;
 
 import de.lmoesle.processautomationexample.adapter.in.rest.dto.VorgesetztenentscheidungDto;
 import de.lmoesle.processautomationexample.adapter.in.rest.dto.UserTaskDto;
-import de.lmoesle.processautomationexample.application.ports.in.BenutzeraufgabeMirZuweisenInPort;
-import de.lmoesle.processautomationexample.application.ports.in.BenutzeraufgabeMirZuweisenInPort.WeiseBenutzeraufgabeMirZuCommand;
 import de.lmoesle.processautomationexample.application.ports.in.GenehmigungVomVorgesetztenInPort;
 import de.lmoesle.processautomationexample.application.ports.in.TaskAbfragenInPort;
 import de.lmoesle.processautomationexample.application.ports.in.TaskAbfragenInPort.GetAllTasksCommand;
@@ -35,7 +33,6 @@ public class TasklistController {
     private static final BenutzerId AKTUELLER_BENUTZER_ID = BenutzerId.of(UUID.fromString("2d88b39b-e7b0-4a3f-b9c6-b3d8e6fbe100"));
 
     private final TaskAbfragenInPort taskAbfragenInPort;
-    private final BenutzeraufgabeMirZuweisenInPort benutzeraufgabeMirZuweisenInPort;
     private final GenehmigungVomVorgesetztenInPort genehmigungVomVorgesetztenInPort;
 
     @GetMapping
@@ -78,41 +75,10 @@ public class TasklistController {
         );
     }
 
-    @PostMapping("/{taskId}/zuweisen")
-    @Operation(
-        summary = "Benutzeraufgabe mir zuweisen",
-        description = "Weist den User Task dem aktuell angemeldeten Benutzer zu, sofern dieser in den candidateUsers enthalten ist. Solange keine Authentifizierung existiert, ist der Benutzer im Controller fest verdrahtet."
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "204", description = "User Task erfolgreich dem aktuellen Benutzer zugewiesen."),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Der aktuelle Benutzer darf die Aufgabe nicht uebernehmen.",
-            content = @Content(
-                mediaType = "application/problem+json",
-                schema = @Schema(implementation = ProblemDetail.class)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Kein User Task mit der angegebenen ID gefunden.",
-            content = @Content(
-                mediaType = "application/problem+json",
-                schema = @Schema(implementation = ProblemDetail.class)
-            )
-        )
-    })
-    public ResponseEntity<Void> assignTaskToMe(@PathVariable("taskId") String taskId) {
-        benutzeraufgabeMirZuweisenInPort.weiseBenutzeraufgabeMirZu(
-            new WeiseBenutzeraufgabeMirZuCommand(UserTaskId.of(taskId), AKTUELLER_BENUTZER_ID)
-        );
-        return ResponseEntity.noContent().build();
-    }
-
     @PostMapping("/{taskId}/vorgesetztenentscheidung")
     @Operation(
         summary = "Genehmigung vom Vorgesetzten entscheiden",
-        description = "Der aktuelle Benutzer entscheidet als Bearbeiter der Aufgabe ueber den Urlaubsantrag und kann optional einen Kommentar fuer die Statushistorie hinterlegen. Solange keine Authentifizierung existiert, ist der Benutzer im Controller fest verdrahtet."
+        description = "Der aktuelle Benutzer entscheidet ueber den sichtbaren User Task und kann optional einen Kommentar fuer die Statushistorie hinterlegen. Beim Abschluss wird die Aufgabe automatisch dem aktuellen Benutzer zugewiesen und danach abgeschlossen. Solange keine Authentifizierung existiert, ist der Benutzer im Controller fest verdrahtet."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Vorgesetztenentscheidung erfolgreich verarbeitet."),
@@ -126,7 +92,7 @@ public class TasklistController {
         ),
         @ApiResponse(
             responseCode = "403",
-            description = "Der aktuelle Benutzer ist nicht Bearbeiter der Aufgabe.",
+            description = "Der aktuelle Benutzer darf die Aufgabe nicht abschliessen.",
             content = @Content(
                 mediaType = "application/problem+json",
                 schema = @Schema(implementation = ProblemDetail.class)

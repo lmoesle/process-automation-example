@@ -1,7 +1,5 @@
 package de.lmoesle.processautomationexample.adapter.in.rest;
 
-import de.lmoesle.processautomationexample.application.ports.in.BenutzeraufgabeMirZuweisenInPort;
-import de.lmoesle.processautomationexample.application.ports.in.BenutzeraufgabeMirZuweisenInPort.WeiseBenutzeraufgabeMirZuCommand;
 import de.lmoesle.processautomationexample.application.ports.in.GenehmigungVomVorgesetztenInPort;
 import de.lmoesle.processautomationexample.application.ports.in.GenehmigungVomVorgesetztenInPort.GenehmigungVomVorgesetztenCommand;
 import de.lmoesle.processautomationexample.application.ports.in.TaskAbfragenInPort;
@@ -35,9 +33,6 @@ class TasklistControllerTest {
 
     @MockitoBean
     private TaskAbfragenInPort taskAbfragenInPort;
-
-    @MockitoBean
-    private BenutzeraufgabeMirZuweisenInPort benutzeraufgabeMirZuweisenInPort;
 
     @MockitoBean
     private GenehmigungVomVorgesetztenInPort genehmigungVomVorgesetztenInPort;
@@ -92,28 +87,6 @@ class TasklistControllerTest {
     }
 
     @Test
-    void assignsTaskToCurrentUser() throws Exception {
-        mockMvc.perform(post("/api/tasks/{taskId}/zuweisen", UserTaskTestdaten.TASK_ID))
-            .andExpect(status().isNoContent());
-
-        verify(benutzeraufgabeMirZuweisenInPort).weiseBenutzeraufgabeMirZu(
-            new WeiseBenutzeraufgabeMirZuCommand(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId())
-        );
-    }
-
-    @Test
-    void returnsForbiddenWhenCurrentUserCannotAssignTask() throws Exception {
-        doThrow(new TaskZugriffVerweigertException(UserTaskTestdaten.taskId()))
-            .when(benutzeraufgabeMirZuweisenInPort)
-            .weiseBenutzeraufgabeMirZu(new WeiseBenutzeraufgabeMirZuCommand(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId()));
-
-        mockMvc.perform(post("/api/tasks/{taskId}/zuweisen", UserTaskTestdaten.TASK_ID))
-            .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.title").value("Zugriff auf Aufgabe verweigert"))
-            .andExpect(jsonPath("$.detail").value("Aktueller Benutzer hat keinen Zugriff auf Aufgabe: " + UserTaskTestdaten.TASK_ID));
-    }
-
-    @Test
     void processesManagerDecision() throws Exception {
         mockMvc.perform(post("/api/tasks/{taskId}/vorgesetztenentscheidung", UserTaskTestdaten.TASK_ID)
                 .contentType("application/json")
@@ -136,7 +109,7 @@ class TasklistControllerTest {
     }
 
     @Test
-    void returnsForbiddenWhenCurrentUserIsNotBearbeiter() throws Exception {
+    void returnsForbiddenWhenCurrentUserCannotCompleteTask() throws Exception {
         doThrow(new TaskZugriffVerweigertException(UserTaskTestdaten.taskId()))
             .when(genehmigungVomVorgesetztenInPort)
             .entscheideGenehmigungVomVorgesetzten(

@@ -43,7 +43,8 @@ public class ProcessEngineApiTasklistAdapter implements CompleteTaskOutPort, Ass
     }
 
     @Override
-    public void completeTask(UserTaskId taskId, boolean genehmigt) {
+    public void completeTask(UserTaskId taskId, BenutzerId benutzerId, boolean genehmigt) {
+        assignTaskToUser(taskId, benutzerId);
         try {
             userTaskCompletionApi.completeTask(new CompleteTaskCmd(taskId.value(), Map.of("genehmigt", genehmigt)))
                 .get(TASK_COMPLETION_TIMEOUT_SECONDS, TimeUnit.SECONDS);

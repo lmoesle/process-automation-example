@@ -9,6 +9,7 @@ import dev.bpmcrafters.processengineapi.task.UserTaskCompletionApi;
 import dev.bpmcrafters.processengineapi.task.UserTaskModificationApi;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -61,15 +62,26 @@ class ProcessEngineApiTasklistAdapterTest {
     }
 
     @Test
-    void completesTaskViaCompletionApi() {
+    void assignsTaskBeforeCompletingIt() {
+        when(userTaskModificationApi.update(argThat(command ->
+            command instanceof AssignTaskCmd assignTaskCmd
+                && assignTaskCmd.getTaskId().equals(UserTaskTestdaten.TASK_ID)
+                && assignTaskCmd.getAssignee().equals(BenutzerTestdaten.ADA_UUID.toString())
+        ))).thenReturn(CompletableFuture.completedFuture(null));
         when(userTaskCompletionApi.completeTask(argThat(command ->
             command.getTaskId().equals(UserTaskTestdaten.TASK_ID)
                 && command.get().get("genehmigt").equals(true)
         ))).thenReturn(CompletableFuture.completedFuture(null));
 
-        processEngineApiTasklistAdapter.completeTask(UserTaskTestdaten.taskId(), true);
+        processEngineApiTasklistAdapter.completeTask(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId(), true);
 
-        verify(userTaskCompletionApi).completeTask(argThat(command ->
+        InOrder inOrder = inOrder(userTaskModificationApi, userTaskCompletionApi);
+        inOrder.verify(userTaskModificationApi).update(argThat(command ->
+            command instanceof AssignTaskCmd assignTaskCmd
+                && assignTaskCmd.getTaskId().equals(UserTaskTestdaten.TASK_ID)
+                && assignTaskCmd.getAssignee().equals(BenutzerTestdaten.ADA_UUID.toString())
+        ));
+        inOrder.verify(userTaskCompletionApi).completeTask(argThat(command ->
             command.getTaskId().equals(UserTaskTestdaten.TASK_ID)
                 && command.get().get("genehmigt").equals(true)
         ));
@@ -77,10 +89,12 @@ class ProcessEngineApiTasklistAdapterTest {
 
     @Test
     void wrapsCompletionErrorsWhenCompletingTask() {
+        when(userTaskModificationApi.update(org.mockito.ArgumentMatchers.any(ModifyTaskCmd.class)))
+            .thenReturn(CompletableFuture.completedFuture(null));
         when(userTaskCompletionApi.completeTask(org.mockito.ArgumentMatchers.any(CompleteTaskCmd.class)))
             .thenReturn(CompletableFuture.failedFuture(new RuntimeException("boom")));
 
-        assertThatThrownBy(() -> processEngineApiTasklistAdapter.completeTask(UserTaskTestdaten.taskId(), false))
+        assertThatThrownBy(() -> processEngineApiTasklistAdapter.completeTask(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId(), false))
             .isInstanceOf(IllegalStateException.class)
             .hasMessage("Aufgabe " + UserTaskTestdaten.TASK_ID + " konnte nicht abgeschlossen werden")
             .hasRootCauseMessage("boom");

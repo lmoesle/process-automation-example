@@ -55,29 +55,9 @@ export interface paths {
         put?: never;
         /**
          * Genehmigung vom Vorgesetzten entscheiden
-         * @description Der aktuelle Benutzer entscheidet als Bearbeiter der Aufgabe ueber den Urlaubsantrag und kann optional einen Kommentar fuer die Statushistorie hinterlegen. Solange keine Authentifizierung existiert, ist der Benutzer im Controller fest verdrahtet.
+         * @description Der aktuelle Benutzer entscheidet ueber den sichtbaren User Task und kann optional einen Kommentar fuer die Statushistorie hinterlegen. Beim Abschluss wird die Aufgabe automatisch dem aktuellen Benutzer zugewiesen und danach abgeschlossen. Solange keine Authentifizierung existiert, ist der Benutzer im Controller fest verdrahtet.
          */
         post: operations["entscheideGenehmigungVomVorgesetzten"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/tasks/{taskId}/zuweisen": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Benutzeraufgabe mir zuweisen
-         * @description Weist den User Task dem aktuell angemeldeten Benutzer zu, sofern dieser in den candidateUsers enthalten ist. Solange keine Authentifizierung existiert, ist der Benutzer im Controller fest verdrahtet.
-         */
-        post: operations["assignTaskToMe"];
         delete?: never;
         options?: never;
         head?: never;
@@ -331,45 +311,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetail"];
                 };
             };
-            /** @description Der aktuelle Benutzer ist nicht Bearbeiter der Aufgabe. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetail"];
-                };
-            };
-            /** @description Kein User Task mit der angegebenen ID gefunden. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetail"];
-                };
-            };
-        };
-    };
-    assignTaskToMe: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                taskId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description User Task erfolgreich dem aktuellen Benutzer zugewiesen. */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Der aktuelle Benutzer darf die Aufgabe nicht uebernehmen. */
+            /** @description Der aktuelle Benutzer darf die Aufgabe nicht abschliessen. */
             403: {
                 headers: {
                     [name: string]: unknown;

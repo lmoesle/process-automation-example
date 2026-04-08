@@ -5,8 +5,11 @@ import de.lmoesle.processautomationexample.application.ports.out.CompleteTaskOut
 import de.lmoesle.processautomationexample.application.ports.out.SendeBenachrichtigungOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.TasklistRepositoryOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.UrlaubsantragSpeichernOutPort;
+import de.lmoesle.processautomationexample.domain.benutzer.Benutzer;
+import de.lmoesle.processautomationexample.domain.benutzer.BenutzerId;
 import de.lmoesle.processautomationexample.domain.tasklist.TaskNichtGefundenException;
 import de.lmoesle.processautomationexample.domain.tasklist.TaskZugriffVerweigertException;
+import de.lmoesle.processautomationexample.domain.tasklist.UserTask;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,7 +36,7 @@ public class GenehmigungVomVorgesetztenUseCase implements GenehmigungVomVorgeset
         var task = tasklistRepositoryOutPort.getTaskById(command.taskId())
             .orElseThrow(() -> new TaskNichtGefundenException(command.taskId()));
 
-        if (!task.istBearbeiter(command.benutzerId())) {
+        if (!task.istSichtbarFuer(command.benutzerId())) {
             throw new TaskZugriffVerweigertException(command.taskId());
         }
 
@@ -42,6 +45,8 @@ public class GenehmigungVomVorgesetztenUseCase implements GenehmigungVomVorgeset
             throw new IllegalStateException("taskId verweist auf keinen zugeordneten Urlaubsantrag");
         }
 
+        urlaubsantrag.weiseVorgesetztenZu(ermittleEntscheidendenVorgesetzten(task, command.benutzerId()));
+
         if (command.genehmigt()) {
             urlaubsantrag.genehmigeDurchVorgesetzten(command.kommentar());
         } else {
@@ -49,7 +54,7 @@ public class GenehmigungVomVorgesetztenUseCase implements GenehmigungVomVorgeset
         }
 
         urlaubsantragSpeichernOutPort.speichere(urlaubsantrag);
-        completeTaskOutPort.completeTask(command.taskId(), command.genehmigt());
+        completeTaskOutPort.completeTask(command.taskId(), command.benutzerId(), command.genehmigt());
         sendeBenachrichtigungOutPort.sendeBenachrichtigung(urlaubsantrag);
         log.info(
             "Vorgesetztenentscheidung erfolgreich abgeschlossen: urlaubsantragId={}, genehmigt={}, status={}",
@@ -57,5 +62,18 @@ public class GenehmigungVomVorgesetztenUseCase implements GenehmigungVomVorgeset
             command.genehmigt(),
             urlaubsantrag.status()
         );
+    }
+
+    private Benutzer ermittleEntscheidendenVorgesetzten(UserTask task, BenutzerId benutzerId) {
+        if (task.bearbeiter() != null && task.bearbeiter().id().equals(benutzerId)) {
+            return task.bearbeiter();
+        }
+
+        return task.candidateUsers().stream()
+            .filter(benutzer -> benutzer.id().equals(benutzerId))
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException(
+                "Aufgabe " + task.id().value() + " enthaelt keinen Kandidaten fuer Benutzer " + benutzerId.value()
+            ));
     }
 }
