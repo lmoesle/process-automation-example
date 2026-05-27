@@ -21,6 +21,7 @@
 		<process-engine-worker.version>0.7.1</process-engine-worker.version>
 		<springdoc.openapi.version>2.8.14</springdoc.openapi.version>
 		<camunda.bpm.data.version>2025.12.2</camunda.bpm.data.version>
+		<camunda.platform.7.autologin.version>2025.12.2</camunda.platform.7.autologin.version>
 		<postgresql.version>42.7.9</postgresql.version>
 		<flyway.version>11.20.2</flyway.version>
 		<lombok.version>1.18.42</lombok.version>
@@ -74,6 +75,11 @@
 		<dependency>
 			<groupId>org.camunda.bpm.springboot</groupId>
 			<artifactId>camunda-bpm-spring-boot-starter-rest</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.holunda</groupId>
+			<artifactId>camunda-platform-7-autologin</artifactId>
+			<version>${camunda.platform.7.autologin.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.holunda.data</groupId>

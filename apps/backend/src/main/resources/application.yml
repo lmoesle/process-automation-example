@@ -27,6 +27,10 @@ camunda:
       password: ${CAMUNDA_ADMIN_PASSWORD:admin}
       first-name: ${CAMUNDA_ADMIN_FIRST_NAME:Admin}
       last-name: ${CAMUNDA_ADMIN_LAST_NAME:Admin}
+    # cockpit autologin
+    login:
+      enabled: true
+      user-id: admin
 
 dev:
   bpm-crafters:
