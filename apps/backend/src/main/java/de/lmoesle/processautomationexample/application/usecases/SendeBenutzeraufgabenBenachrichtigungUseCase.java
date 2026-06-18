@@ -31,7 +31,8 @@ public class SendeBenutzeraufgabenBenachrichtigungUseCase implements Benutzerauf
         Assert.notNull(command, "command darf nicht null sein");
         Assert.notNull(command.taskId(), "taskId darf nicht null sein");
 
-        if (!aktiveBenutzeraufgabenOutPort.speichereWennNeu(command.taskId())) {
+        final var isNewUsertask = aktiveBenutzeraufgabenOutPort.speichereWennNeu(command.taskId());
+        if (!isNewUsertask) {
             log.debug("Benutzeraufgabe {} ist bereits registriert, es wird keine Benachrichtigung versendet", command.taskId().value());
             return;
         }
