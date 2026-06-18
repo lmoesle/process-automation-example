@@ -4,7 +4,7 @@ import { Alert, Button, Card, CardContent, Stack, TextField, Typography } from "
 type VacationRequestFormValues = {
   von: string;
   bis: string;
-  vertretungId?: string | undefined;
+  vertretungId?: string;
 };
 
 type VacationRequestFormProps = {

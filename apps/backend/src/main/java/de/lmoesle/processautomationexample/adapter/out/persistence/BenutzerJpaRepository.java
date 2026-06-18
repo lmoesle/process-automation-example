@@ -16,6 +16,9 @@ public interface BenutzerJpaRepository extends JpaRepository<BenutzerEntity, UUI
     @EntityGraph(attributePaths = {"teamMitgliedschaften", "teamMitgliedschaften.team"})
     Optional<BenutzerEntity> findById(UUID benutzerId);
 
+    @EntityGraph(attributePaths = {"teamMitgliedschaften", "teamMitgliedschaften.team"})
+    Optional<BenutzerEntity> findByBenutzername(String benutzername);
+
     List<BenutzerEntity> findDistinctByTeamMitgliedschaftenIdTeamIdAndTeamMitgliedschaftenRolle(UUID teamId, TeamRolle rolle);
 
     @EntityGraph(attributePaths = {"teamMitgliedschaften", "teamMitgliedschaften.team"})

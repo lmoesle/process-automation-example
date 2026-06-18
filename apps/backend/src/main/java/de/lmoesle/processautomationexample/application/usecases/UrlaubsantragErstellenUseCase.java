@@ -76,6 +76,7 @@ public class UrlaubsantragErstellenUseCase implements UrlaubsantragErstellenInPo
             .map(Team::id)
             .map(benutzerRepositoryOutPort::findeAlleLeitendenNachTeamId)
             .flatMap(List::stream)
+            .filter(benutzer -> !benutzer.id().equals(antragsteller.id()))
             .map(Benutzer::id)
             .distinct()
             .toList();

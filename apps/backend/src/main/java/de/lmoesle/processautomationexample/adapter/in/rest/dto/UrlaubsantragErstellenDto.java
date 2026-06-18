@@ -21,10 +21,10 @@ public record UrlaubsantragErstellenDto(
     )
     @NotNull LocalDate bis,
     @Schema(
-        description = "Benutzer-ID des Antragstellers.",
+        description = "Optionale Benutzer-ID des Antragstellers. Der REST-Adapter verwendet den authentifizierten Benutzer.",
         example = "2d88b39b-e7b0-4a3f-b9c6-b3d8e6fbe100"
     )
-    @NotNull UUID antragstellerId,
+    UUID antragstellerId,
     @Schema(
         description = "Optionale Benutzer-ID der Vertretung waehrend des Urlaubszeitraums.",
         example = "f9821988-db4f-4daa-9414-6cc5227f7102",
@@ -33,11 +33,11 @@ public record UrlaubsantragErstellenDto(
     UUID vertretungId
 ) {
 
-    public UrlaubsantragErstellenCommand alsCommand() {
+    public UrlaubsantragErstellenCommand alsCommand(BenutzerId antragstellerId) {
         return new UrlaubsantragErstellenCommand(
             von,
             bis,
-            BenutzerId.of(antragstellerId),
+            antragstellerId,
             vertretungId == null ? null : BenutzerId.of(vertretungId)
         );
     }

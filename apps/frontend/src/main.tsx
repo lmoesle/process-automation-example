@@ -6,6 +6,7 @@ import { CssBaseline, ThemeProvider } from "@mui/material";
 import { HashRouter } from "react-router";
 import { queryClient } from "./config/queryClient";
 import { AppRoutes } from "./components/layout/AppRoutes";
+import { CurrentUserProvider } from "./auth/CurrentUserProvider";
 import { theme } from "./theme";
 import "./index.css";
 
@@ -18,12 +19,14 @@ if (!rootElement) {
 ReactDOM.createRoot(rootElement).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <HashRouter>
-          <AppRoutes />
-        </HashRouter>
-      </ThemeProvider>
+      <CurrentUserProvider>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <HashRouter>
+            <AppRoutes />
+          </HashRouter>
+        </ThemeProvider>
+      </CurrentUserProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   </StrictMode>,

@@ -29,6 +29,13 @@ public class BenutzerPersistenceAdapter implements BenutzerRepositoryOutPort {
     }
 
     @Override
+    public Optional<Benutzer> findeNachBenutzername(String benutzername) {
+        Assert.hasText(benutzername, "benutzername darf nicht leer sein");
+        return benutzerJpaRepository.findByBenutzername(benutzername)
+            .map(BenutzerPersistenceMapper::toDomain);
+    }
+
+    @Override
     public List<Benutzer> findeAlleLeitendenNachTeamId(TeamId teamId) {
         Assert.notNull(teamId, "teamId darf nicht null sein");
 

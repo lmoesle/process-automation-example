@@ -173,6 +173,31 @@ class UrlaubsantragErstellenUseCaseTest {
     }
 
     @Test
+    void excludesApplicantFromTeamLeadCandidates() {
+        when(benutzerRepositoryOutPort.findeNachId(BenutzerTestdaten.adaId()))
+            .thenReturn(Optional.of(BenutzerTestdaten.ada()));
+        when(benutzerRepositoryOutPort.findeAlleLeitendenNachTeamId(BenutzerTestdaten.engineeringTeamId()))
+            .thenReturn(List.of(BenutzerTestdaten.ada()));
+        when(benutzerRepositoryOutPort.findeAlleLeitendenNachTeamId(BenutzerTestdaten.platformTeamId()))
+            .thenReturn(List.of(BenutzerTestdaten.carla()));
+        when(urlaubsantragSpeichernOutPort.speichere(any(Urlaubsantrag.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+        when(genehmigungsprozessStartenOutPort.starteGenehmigungsprozessFuer(any(Urlaubsantrag.class), any()))
+            .thenAnswer(invocation -> {
+                assertThat(invocation.<List<de.lmoesle.processautomationexample.domain.benutzer.BenutzerId>>getArgument(1))
+                    .containsExactly(BenutzerTestdaten.carlaId());
+                return UrlaubsantragTestData.prozessinstanzId();
+            });
+
+        erstelleUrlaubsantragUseCase.erstelleUrlaubsantrag(new UrlaubsantragErstellenCommand(
+            UrlaubsantragTestData.FROM,
+            UrlaubsantragTestData.TO,
+            BenutzerTestdaten.adaId(),
+            null
+        ));
+    }
+
+    @Test
     void rejectsMissingApplicantUser() {
         when(benutzerRepositoryOutPort.findeNachId(UrlaubsantragTestData.antragstellerId())).thenReturn(Optional.empty());
 

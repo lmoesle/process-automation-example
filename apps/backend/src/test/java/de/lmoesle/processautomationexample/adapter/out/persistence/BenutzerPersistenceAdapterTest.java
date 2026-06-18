@@ -64,6 +64,37 @@ class BenutzerPersistenceAdapterTest {
     }
 
     @Test
+    void findsUserByUsernameIncludingTeams() {
+        BenutzerEntity adaEntity = userEntity(
+            BenutzerTestdaten.ADA_UUID,
+            "Ada Lovelace",
+            "ada.lovelace@example.com",
+            new MembershipRecord(
+                BenutzerTestdaten.ENGINEERING_TEAM_UUID,
+                BenutzerTestdaten.ENGINEERING_TEAM,
+                TeamRolle.LEITUNG
+            ),
+            new MembershipRecord(
+                BenutzerTestdaten.PLATFORM_TEAM_UUID,
+                BenutzerTestdaten.PLATFORM_TEAM,
+                TeamRolle.MITGLIED
+            )
+        );
+        when(benutzerJpaRepository.findByBenutzername("ada")).thenReturn(Optional.of(adaEntity));
+
+        var geladenerBenutzer = benutzerPersistenceAdapter.findeNachBenutzername("ada");
+
+        assertThat(geladenerBenutzer).contains(BenutzerTestdaten.ada());
+    }
+
+    @Test
+    void rejectsMissingUsername() {
+        assertThatThrownBy(() -> benutzerPersistenceAdapter.findeNachBenutzername(" "))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("benutzername darf nicht leer sein");
+    }
+
+    @Test
     void findsAllLeadsOfATeam() {
         BenutzerEntity leiterKandidat = userEntity(
             BenutzerTestdaten.ADA_UUID,

@@ -11,5 +11,7 @@ public interface BenutzerRepositoryOutPort {
 
     Optional<Benutzer> findeNachId(BenutzerId benutzerId);
 
+    Optional<Benutzer> findeNachBenutzername(String benutzername);
+
     List<Benutzer> findeAlleLeitendenNachTeamId(TeamId teamId);
 }

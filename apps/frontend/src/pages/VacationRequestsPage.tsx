@@ -3,7 +3,6 @@ import { AsyncState } from "../components/common/AsyncState";
 import { Page } from "../components/layout/Page";
 import { VacationRequestForm } from "../components/vacation-requests/VacationRequestForm";
 import { VacationRequestList } from "../components/vacation-requests/VacationRequestList";
-import { runtimeConfig } from "../config/runtimeConfig";
 import { useCreateVacationRequestMutation } from "../hooks/useCreateVacationRequestMutation";
 import { useVacationRequestsQuery } from "../hooks/useVacationRequestsQuery";
 
@@ -21,20 +20,7 @@ export const VacationRequestsPage = () => {
           <VacationRequestForm
             isPending={createVacationRequestMutation.isPending}
             onSubmit={(values) => {
-              createVacationRequestMutation.mutate(
-                values.vertretungId
-                  ? {
-                      antragstellerId: runtimeConfig.applicantId,
-                      bis: values.bis,
-                      von: values.von,
-                      vertretungId: values.vertretungId,
-                    }
-                  : {
-                      antragstellerId: runtimeConfig.applicantId,
-                      bis: values.bis,
-                      von: values.von,
-                    },
-              );
+              createVacationRequestMutation.mutate(values);
             }}
           />
 
