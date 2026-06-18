@@ -17,6 +17,7 @@ public class UserTaskSupportConfiguration {
     ) {
         UserTaskSupport support = new UserTaskSupport();
         support.addHandler(benutzeraufgabenBenachrichtigungTaskHandler);
+        support.addTerminationHandler(benutzeraufgabenBenachrichtigungTaskHandler);
         support.subscribe(
                 taskSubscriptionApi,
                 CommonRestrictions.builder().build(),

@@ -1,6 +1,7 @@
 package de.lmoesle.processautomationexample.shared.tasklist;
 
 import de.lmoesle.processautomationexample.adapter.in.process.BenutzeraufgabenBenachrichtigungTaskHandler;
+import de.lmoesle.processautomationexample.application.ports.out.AktiveBenutzeraufgabenOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.BenutzerRepositoryOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.SendeBenutzeraufgabenBenachrichtigungOutPort;
 import de.lmoesle.processautomationexample.application.ports.out.UrlaubsantraegeLadenOutPort;
@@ -33,6 +34,7 @@ class UserTaskSupportConfigurationTest {
         .withBean(UserTaskCompletionApi.class, () -> mock(UserTaskCompletionApi.class))
         .withBean(UrlaubsantraegeLadenOutPort.class, () -> mock(UrlaubsantraegeLadenOutPort.class))
         .withBean(BenutzerRepositoryOutPort.class, () -> mock(BenutzerRepositoryOutPort.class))
+        .withBean(AktiveBenutzeraufgabenOutPort.class, () -> mock(AktiveBenutzeraufgabenOutPort.class))
         .withBean(SendeBenutzeraufgabenBenachrichtigungOutPort.class, () -> mock(SendeBenutzeraufgabenBenachrichtigungOutPort.class))
         .withUserConfiguration(
             UserTaskSupportConfiguration.class,

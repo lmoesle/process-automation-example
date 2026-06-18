@@ -1,10 +1,12 @@
 package de.lmoesle.processautomationexample.adapter.in.process;
 
-import de.lmoesle.processautomationexample.application.ports.in.SendeBenutzeraufgabenBenachrichtigungInPort;
-import de.lmoesle.processautomationexample.application.ports.in.SendeBenutzeraufgabenBenachrichtigungInPort.SendeBenutzeraufgabenBenachrichtigungCommand;
+import de.lmoesle.processautomationexample.application.ports.in.BenutzeraufgabenLifecycleInPort;
+import de.lmoesle.processautomationexample.application.ports.in.BenutzeraufgabenLifecycleInPort.AktiveBenutzeraufgabeCommand;
+import de.lmoesle.processautomationexample.application.ports.in.BenutzeraufgabenLifecycleInPort.EntfernteBenutzeraufgabeCommand;
 import de.lmoesle.processautomationexample.domain.tasklist.UserTaskId;
 import dev.bpmcrafters.processengineapi.task.TaskHandler;
 import dev.bpmcrafters.processengineapi.task.TaskInformation;
+import dev.bpmcrafters.processengineapi.task.TaskTerminationHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
@@ -16,25 +18,62 @@ import java.util.Map;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class BenutzeraufgabenBenachrichtigungTaskHandler implements TaskHandler {
+public class BenutzeraufgabenBenachrichtigungTaskHandler implements TaskHandler, TaskTerminationHandler {
 
-    private final ObjectProvider<SendeBenutzeraufgabenBenachrichtigungInPort> sendeBenutzeraufgabenBenachrichtigungInPortProvider;
+    private final ObjectProvider<BenutzeraufgabenLifecycleInPort> benutzeraufgabenLifecycleInPortProvider;
 
     @Override
     public void accept(TaskInformation taskInformation, Map<String, ? extends Object> payload) {
-        Assert.notNull(taskInformation, "taskInformation darf nicht null sein");
-        Assert.hasText(taskInformation.getTaskId(), "taskInformation.taskId darf nicht leer sein");
+        validiere(taskInformation);
 
         try {
-            sendeBenutzeraufgabenBenachrichtigungInPortProvider.getObject().sendeBenutzeraufgabenBenachrichtigung(
-                new SendeBenutzeraufgabenBenachrichtigungCommand(UserTaskId.of(taskInformation.getTaskId()))
-            );
+            verarbeiteTaskEvent(taskInformation);
         } catch (RuntimeException exception) {
             log.error(
-                "Benutzeraufgabenbenachrichtigung fuer taskId={} konnte nicht versendet werden",
+                "Benutzeraufgaben-Lifecycle fuer taskId={} konnte nicht verarbeitet werden",
                 taskInformation.getTaskId(),
                 exception
             );
+            throw exception;
         }
+    }
+
+    @Override
+    public void accept(TaskInformation taskInformation) {
+        validiere(taskInformation);
+
+        try {
+            verarbeiteEntfernteBenutzeraufgabe(taskInformation);
+        } catch (RuntimeException exception) {
+            log.error(
+                "Entfernte Benutzeraufgabe fuer taskId={} konnte nicht verarbeitet werden",
+                taskInformation.getTaskId(),
+                exception
+            );
+            throw exception;
+        }
+    }
+
+    private void verarbeiteTaskEvent(TaskInformation taskInformation) {
+        String reason = taskInformation.getMeta().get(TaskInformation.REASON);
+        if (TaskInformation.COMPLETE.equals(reason) || TaskInformation.DELETE.equals(reason)) {
+            verarbeiteEntfernteBenutzeraufgabe(taskInformation);
+            return;
+        }
+
+        benutzeraufgabenLifecycleInPortProvider.getObject().verarbeiteAktiveBenutzeraufgabe(
+            new AktiveBenutzeraufgabeCommand(UserTaskId.of(taskInformation.getTaskId()))
+        );
+    }
+
+    private void verarbeiteEntfernteBenutzeraufgabe(TaskInformation taskInformation) {
+        benutzeraufgabenLifecycleInPortProvider.getObject().verarbeiteEntfernteBenutzeraufgabe(
+            new EntfernteBenutzeraufgabeCommand(UserTaskId.of(taskInformation.getTaskId()))
+        );
+    }
+
+    private void validiere(TaskInformation taskInformation) {
+        Assert.notNull(taskInformation, "taskInformation darf nicht null sein");
+        Assert.hasText(taskInformation.getTaskId(), "taskInformation.taskId darf nicht leer sein");
     }
 }
