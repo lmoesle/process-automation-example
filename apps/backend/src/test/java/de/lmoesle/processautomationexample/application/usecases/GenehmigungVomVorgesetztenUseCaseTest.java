@@ -50,7 +50,7 @@ class GenehmigungVomVorgesetztenUseCaseTest {
 
     @Test
     void approvesVacationRequestWhenCurrentUserIsCandidateUserWithoutManualAssignment() {
-        UserTask task = taskMitUrlaubsantragInVorgesetztenpruefung(UserTaskTestdaten.taskId(), null);
+        final UserTask task = taskMitUrlaubsantragInVorgesetztenpruefung(UserTaskTestdaten.taskId(), null);
         when(tasklistRepositoryOutPort.getTaskById(UserTaskTestdaten.taskId())).thenReturn(Optional.of(task));
 
         genehmigungVomVorgesetztenUseCase.entscheideGenehmigungVomVorgesetzten(
@@ -62,9 +62,9 @@ class GenehmigungVomVorgesetztenUseCaseTest {
             )
         );
 
-        InOrder inOrder = inOrder(tasklistRepositoryOutPort, urlaubsantragSpeichernOutPort, processEngineApiTasklistAdapter, sendeBenachrichtigungOutPort);
+        final InOrder inOrder = inOrder(tasklistRepositoryOutPort, urlaubsantragSpeichernOutPort, processEngineApiTasklistAdapter, sendeBenachrichtigungOutPort);
         inOrder.verify(tasklistRepositoryOutPort).getTaskById(UserTaskTestdaten.taskId());
-        ArgumentCaptor<Urlaubsantrag> savedCaptor = ArgumentCaptor.forClass(Urlaubsantrag.class);
+        final ArgumentCaptor<Urlaubsantrag> savedCaptor = ArgumentCaptor.forClass(Urlaubsantrag.class);
         inOrder.verify(urlaubsantragSpeichernOutPort).speichere(savedCaptor.capture());
         inOrder.verify(processEngineApiTasklistAdapter).completeTask(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId(), true);
         inOrder.verify(sendeBenachrichtigungOutPort).sendeBenachrichtigung(savedCaptor.getValue());
@@ -79,7 +79,7 @@ class GenehmigungVomVorgesetztenUseCaseTest {
 
     @Test
     void rejectsVacationRequestWhenCurrentUserIsBearbeiter() {
-        UserTask task = taskMitUrlaubsantragInVorgesetztenpruefung(UserTaskTestdaten.taskId(), BenutzerTestdaten.ada());
+        final UserTask task = taskMitUrlaubsantragInVorgesetztenpruefung(UserTaskTestdaten.taskId(), BenutzerTestdaten.ada());
         when(tasklistRepositoryOutPort.getTaskById(UserTaskTestdaten.taskId())).thenReturn(Optional.of(task));
 
         genehmigungVomVorgesetztenUseCase.entscheideGenehmigungVomVorgesetzten(
@@ -208,7 +208,7 @@ class GenehmigungVomVorgesetztenUseCaseTest {
         List<Benutzer> candidateUsers,
         Benutzer bearbeiter
     ) {
-        Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantragWithStartedProcess();
+        final Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantragWithStartedProcess();
         urlaubsantrag.starteAutomatischePruefung();
         urlaubsantrag.schliesseAutomatischePruefungAb(true);
         return new UserTask(

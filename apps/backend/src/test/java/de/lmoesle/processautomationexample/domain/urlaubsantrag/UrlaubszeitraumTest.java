@@ -11,7 +11,7 @@ class UrlaubszeitraumTest {
 
     @Test
     void createsUrlaubszeitraum() {
-        Urlaubszeitraum urlaubszeitraum = Urlaubszeitraum.of(
+        final Urlaubszeitraum urlaubszeitraum = Urlaubszeitraum.of(
             UrlaubsantragTestData.FROM,
             UrlaubsantragTestData.TO
         );

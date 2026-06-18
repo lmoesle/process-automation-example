@@ -31,7 +31,7 @@ class UrlaubsantraegeLadenControllerTest {
 
     @Test
     void loadsUrlaubsantragsForHardcodedCurrentUser() throws Exception {
-        var firstUrlaubsantrag = UrlaubsantragTestData.urlaubsantrag(
+        final var firstUrlaubsantrag = UrlaubsantragTestData.urlaubsantrag(
             UrlaubsantragTestData.urlaubsantragId(),
             UrlaubsantragTestData.vacationPeriod(),
             BenutzerTestdaten.ada(),
@@ -39,7 +39,7 @@ class UrlaubsantraegeLadenControllerTest {
             BenutzerTestdaten.carla(),
             UrlaubsantragTestData.prozessinstanzId()
         );
-        var secondUrlaubsantrag = UrlaubsantragTestData.urlaubsantrag(
+        final var secondUrlaubsantrag = UrlaubsantragTestData.urlaubsantrag(
             UrlaubsantragTestData.secondUrlaubsantragId(),
             Urlaubszeitraum.of(UrlaubsantragTestData.SECOND_FROM, UrlaubsantragTestData.SECOND_TO),
             BenutzerTestdaten.ada(),

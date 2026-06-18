@@ -38,7 +38,7 @@ class UrlaubsantragPersistenceAdapterTest {
         when(urlaubsantragJpaRepository.findAllByAntragstellerId(eq(BenutzerTestdaten.ADA_UUID), any(Sort.class)))
             .thenReturn(List.of());
 
-        var urlaubsantrags = urlaubsantragPersistenceAdapter.findeAlleNachAntragstellerId(BenutzerTestdaten.adaId());
+        final var urlaubsantrags = urlaubsantragPersistenceAdapter.findeAlleNachAntragstellerId(BenutzerTestdaten.adaId());
 
         verify(urlaubsantragJpaRepository).findAllByAntragstellerId(
             eq(BenutzerTestdaten.ADA_UUID),
@@ -53,7 +53,7 @@ class UrlaubsantragPersistenceAdapterTest {
         when(urlaubsantragJpaRepository.findById(UrlaubsantragTestData.VACATION_REQUEST_UUID))
             .thenReturn(java.util.Optional.empty());
 
-        var urlaubsantrag = urlaubsantragPersistenceAdapter.findeNachId(UrlaubsantragTestData.urlaubsantragId());
+        final var urlaubsantrag = urlaubsantragPersistenceAdapter.findeNachId(UrlaubsantragTestData.urlaubsantragId());
 
         verify(urlaubsantragJpaRepository).findById(UrlaubsantragTestData.VACATION_REQUEST_UUID);
         verifyNoInteractions(benutzerJpaRepository);
@@ -62,7 +62,7 @@ class UrlaubsantragPersistenceAdapterTest {
 
     @Test
     void loadsUrlaubsantragByIdAndMapsUsers() {
-        UrlaubsantragEntity urlaubsantragEntity = new UrlaubsantragEntity(
+        final UrlaubsantragEntity urlaubsantragEntity = new UrlaubsantragEntity(
             UrlaubsantragTestData.VACATION_REQUEST_UUID,
             UrlaubsantragTestData.FROM,
             UrlaubsantragTestData.TO,
@@ -78,7 +78,7 @@ class UrlaubsantragPersistenceAdapterTest {
         when(benutzerJpaRepository.findDistinctByIdIn(argThat(this::containsAdaAndCarlaOnly)))
             .thenReturn(List.of(userEntity(BenutzerTestdaten.ada()), userEntity(BenutzerTestdaten.carla())));
 
-        var urlaubsantrag = urlaubsantragPersistenceAdapter.findeNachId(UrlaubsantragTestData.urlaubsantragId());
+        final var urlaubsantrag = urlaubsantragPersistenceAdapter.findeNachId(UrlaubsantragTestData.urlaubsantragId());
 
         verify(urlaubsantragJpaRepository).findById(UrlaubsantragTestData.VACATION_REQUEST_UUID);
         verify(benutzerJpaRepository).findDistinctByIdIn(argThat(this::containsAdaAndCarlaOnly));
@@ -102,7 +102,7 @@ class UrlaubsantragPersistenceAdapterTest {
 
     @Test
     void loadsUrlaubsantragsForApplicantAndMapsUsers() {
-        UrlaubsantragEntity firstUrlaubsantragEntity = new UrlaubsantragEntity(
+        final UrlaubsantragEntity firstUrlaubsantragEntity = new UrlaubsantragEntity(
             UrlaubsantragTestData.VACATION_REQUEST_UUID,
             UrlaubsantragTestData.FROM,
             UrlaubsantragTestData.TO,
@@ -113,7 +113,7 @@ class UrlaubsantragPersistenceAdapterTest {
             UrlaubsantragStatus.ANTRAG_GESTELLT,
             history(UrlaubsantragStatus.ANTRAG_GESTELLT)
         );
-        UrlaubsantragEntity secondUrlaubsantragEntity = new UrlaubsantragEntity(
+        final UrlaubsantragEntity secondUrlaubsantragEntity = new UrlaubsantragEntity(
             UrlaubsantragTestData.SECOND_VACATION_REQUEST_UUID,
             UrlaubsantragTestData.SECOND_FROM,
             UrlaubsantragTestData.SECOND_TO,
@@ -129,7 +129,7 @@ class UrlaubsantragPersistenceAdapterTest {
         when(benutzerJpaRepository.findDistinctByIdIn(argThat(this::containsAdaAndCarlaOnly)))
             .thenReturn(List.of(userEntity(BenutzerTestdaten.ada()), userEntity(BenutzerTestdaten.carla())));
 
-        var urlaubsantrags = urlaubsantragPersistenceAdapter.findeAlleNachAntragstellerId(BenutzerTestdaten.adaId());
+        final var urlaubsantrags = urlaubsantragPersistenceAdapter.findeAlleNachAntragstellerId(BenutzerTestdaten.adaId());
 
         verify(urlaubsantragJpaRepository).findAllByAntragstellerId(
             eq(BenutzerTestdaten.ADA_UUID),
@@ -160,7 +160,7 @@ class UrlaubsantragPersistenceAdapterTest {
 
     @Test
     void failsWhenReferencedSubstituteUserCannotBeLoaded() {
-        UrlaubsantragEntity urlaubsantragEntity = new UrlaubsantragEntity(
+        final UrlaubsantragEntity urlaubsantragEntity = new UrlaubsantragEntity(
             UrlaubsantragTestData.VACATION_REQUEST_UUID,
             UrlaubsantragTestData.FROM,
             UrlaubsantragTestData.TO,
@@ -185,7 +185,7 @@ class UrlaubsantragPersistenceAdapterTest {
 
     @Test
     void failsWhenReferencedSupervisorUserCannotBeLoaded() {
-        UrlaubsantragEntity urlaubsantragEntity = new UrlaubsantragEntity(
+        final UrlaubsantragEntity urlaubsantragEntity = new UrlaubsantragEntity(
             UrlaubsantragTestData.VACATION_REQUEST_UUID,
             UrlaubsantragTestData.FROM,
             UrlaubsantragTestData.TO,
@@ -225,17 +225,17 @@ class UrlaubsantragPersistenceAdapterTest {
     }
 
     private static BenutzerEntity userEntity(Benutzer benutzer) {
-        BenutzerEntity benutzerEntity = new BenutzerEntity(
+        final BenutzerEntity benutzerEntity = new BenutzerEntity(
             benutzer.id().value(),
             benutzer.name(),
             benutzer.email(),
             new LinkedHashSet<>()
         );
-        for (var team : benutzer.teams()) {
-            UUID teamId = team.name().equals(BenutzerTestdaten.ENGINEERING_TEAM)
+        for (final var team : benutzer.teams()) {
+            final UUID teamId = team.name().equals(BenutzerTestdaten.ENGINEERING_TEAM)
                 ? BenutzerTestdaten.ENGINEERING_TEAM_UUID
                 : BenutzerTestdaten.PLATFORM_TEAM_UUID;
-            TeamEntity teamEntity = new TeamEntity(teamId, team.name());
+            final TeamEntity teamEntity = new TeamEntity(teamId, team.name());
             benutzerEntity.getTeamMitgliedschaften().add(new TeamMitgliedschaftEntity(
                 new TeamMitgliedschaftId(teamId, benutzer.id().value()),
                 teamEntity,

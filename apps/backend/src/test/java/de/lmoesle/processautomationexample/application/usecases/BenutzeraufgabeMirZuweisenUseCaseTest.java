@@ -48,7 +48,7 @@ class BenutzeraufgabeMirZuweisenUseCaseTest {
 
         verify(tasklistRepositoryOutPort).getTaskById(UserTaskTestdaten.taskId());
         verify(processEngineApiTasklistAdapter).assignTaskToUser(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId());
-        ArgumentCaptor<de.lmoesle.processautomationexample.domain.urlaubsantrag.Urlaubsantrag> urlaubsantragCaptor = ArgumentCaptor.forClass(
+        final ArgumentCaptor<de.lmoesle.processautomationexample.domain.urlaubsantrag.Urlaubsantrag> urlaubsantragCaptor = ArgumentCaptor.forClass(
             de.lmoesle.processautomationexample.domain.urlaubsantrag.Urlaubsantrag.class
         );
         verify(urlaubsantragSpeichernOutPort).speichere(urlaubsantragCaptor.capture());

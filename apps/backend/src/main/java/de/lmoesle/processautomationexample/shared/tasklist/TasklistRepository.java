@@ -55,7 +55,7 @@ public class TasklistRepository implements TasklistRepositoryOutPort {
 
     private Optional<UserTask> ladeTask(UserTaskId taskId) {
         try {
-            TaskInformation taskInformation = userTaskSupport.getTaskInformation(taskId.value());
+            final TaskInformation taskInformation = userTaskSupport.getTaskInformation(taskId.value());
             return Optional.of(mapTask(taskInformation, userTaskSupport.getPayload(taskId.value())));
         } catch (IllegalArgumentException exception) {
             return Optional.empty();
