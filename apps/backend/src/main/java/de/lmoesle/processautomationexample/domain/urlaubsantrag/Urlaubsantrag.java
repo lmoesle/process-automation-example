@@ -93,7 +93,7 @@ public final class Urlaubsantrag {
     }
 
     public void schliesseAutomatischePruefungAb(boolean gueltig) {
-        UrlaubsantragStatus neuerStatus = gueltig
+        final UrlaubsantragStatus neuerStatus = gueltig
             ? UrlaubsantragStatus.VORGESETZTEN_PRUEFUNG
             : UrlaubsantragStatus.ABGELEHNT;
 

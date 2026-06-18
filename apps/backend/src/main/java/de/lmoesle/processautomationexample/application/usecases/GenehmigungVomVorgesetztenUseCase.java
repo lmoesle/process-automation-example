@@ -33,14 +33,14 @@ public class GenehmigungVomVorgesetztenUseCase implements GenehmigungVomVorgeset
         Assert.notNull(command.taskId(), "taskId darf nicht null sein");
         Assert.notNull(command.benutzerId(), "benutzerId darf nicht null sein");
 
-        var task = tasklistRepositoryOutPort.getTaskById(command.taskId())
+        final var task = tasklistRepositoryOutPort.getTaskById(command.taskId())
             .orElseThrow(() -> new TaskNichtGefundenException(command.taskId()));
 
         if (!task.istSichtbarFuer(command.benutzerId())) {
             throw new TaskZugriffVerweigertException(command.taskId());
         }
 
-        var urlaubsantrag = task.urlaubsantrag();
+        final var urlaubsantrag = task.urlaubsantrag();
         if (urlaubsantrag == null) {
             throw new IllegalStateException("taskId verweist auf keinen zugeordneten Urlaubsantrag");
         }

@@ -27,12 +27,12 @@ class AutomatischePruefungProzessEngineWorkerTest {
 
     @Test
     void passesUrlaubsantragIdToInPortAndReturnsGueltigVariable() {
-        String urlaubsantragId = UrlaubsantragTestData.urlaubsantragId().value().toString();
+        final String urlaubsantragId = UrlaubsantragTestData.urlaubsantragId().value().toString();
         when(pruefeUrlaubsantragAutomatischInPort.pruefeUrlaubsantragAutomatisch(
             new UrlaubsantragAutomatischPruefenCommand(UrlaubsantragTestData.urlaubsantragId())
         )).thenReturn(true);
 
-        var result = automatischePruefungProzessEngineWorker.pruefeAutomatisch(urlaubsantragId);
+        final var result = automatischePruefungProzessEngineWorker.pruefeAutomatisch(urlaubsantragId);
 
         assertThat(result)
             .containsEntry(VacationApprovalProcessApi.Variables.GUELTIG, true)
@@ -45,7 +45,7 @@ class AutomatischePruefungProzessEngineWorkerTest {
 
     @Test
     void exposesReturnTypeAsWorkerPayloadForProcessVariables() throws NoSuchMethodException {
-        var method = AutomatischePruefungProzessEngineWorker.class.getMethod("pruefeAutomatisch", String.class);
+        final var method = AutomatischePruefungProzessEngineWorker.class.getMethod("pruefeAutomatisch", String.class);
 
         assertThat(ReflectionUtilsKt.hasPayloadReturnType(method)).isTrue();
     }

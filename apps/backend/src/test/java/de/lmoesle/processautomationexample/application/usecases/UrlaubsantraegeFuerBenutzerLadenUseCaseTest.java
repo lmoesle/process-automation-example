@@ -28,7 +28,7 @@ class UrlaubsantraegeFuerBenutzerLadenUseCaseTest {
 
     @Test
     void loadsUrlaubsantraegeFuerBenutzer() {
-        var expectedUrlaubsantrags = List.of(
+        final var expectedUrlaubsantrags = List.of(
             UrlaubsantragTestData.urlaubsantrag(
                 UrlaubsantragTestData.urlaubsantragId(),
                 UrlaubsantragTestData.vacationPeriod(),
@@ -40,7 +40,7 @@ class UrlaubsantraegeFuerBenutzerLadenUseCaseTest {
         when(urlaubsantraegeLadenOutPort.findeAlleNachAntragstellerId(BenutzerTestdaten.adaId()))
             .thenReturn(expectedUrlaubsantrags);
 
-        var urlaubsantrags = urlaubsantraegeFuerBenutzerLadenUseCase.ladeUrlaubsantraegeFuerBenutzer(
+        final var urlaubsantrags = urlaubsantraegeFuerBenutzerLadenUseCase.ladeUrlaubsantraegeFuerBenutzer(
             new UrlaubsantraegeFuerBenutzerLadenCommand(BenutzerTestdaten.adaId())
         );
 

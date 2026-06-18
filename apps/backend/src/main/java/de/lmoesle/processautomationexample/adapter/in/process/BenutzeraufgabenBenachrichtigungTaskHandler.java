@@ -55,7 +55,7 @@ public class BenutzeraufgabenBenachrichtigungTaskHandler implements TaskHandler,
     }
 
     private void verarbeiteTaskEvent(TaskInformation taskInformation) {
-        String reason = taskInformation.getMeta().get(TaskInformation.REASON);
+        final String reason = taskInformation.getMeta().get(TaskInformation.REASON);
         if (TaskInformation.COMPLETE.equals(reason) || TaskInformation.DELETE.equals(reason)) {
             verarbeiteEntfernteBenutzeraufgabe(taskInformation);
             return;

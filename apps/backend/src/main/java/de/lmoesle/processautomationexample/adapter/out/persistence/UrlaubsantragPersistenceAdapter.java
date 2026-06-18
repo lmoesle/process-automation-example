@@ -39,7 +39,7 @@ public class UrlaubsantragPersistenceAdapter implements UrlaubsantragSpeichernOu
 
     @Override
     public List<Urlaubsantrag> findeAlleNachAntragstellerId(BenutzerId antragstellerId) {
-        List<UrlaubsantragEntity> urlaubsantragEntities = urlaubsantragJpaRepository.findAllByAntragstellerId(
+        final List<UrlaubsantragEntity> urlaubsantragEntities = urlaubsantragJpaRepository.findAllByAntragstellerId(
             antragstellerId.value(),
             Sort.by(
                 new Sort.Order(DESC, "von"),
@@ -51,7 +51,7 @@ public class UrlaubsantragPersistenceAdapter implements UrlaubsantragSpeichernOu
             return List.of();
         }
 
-        Map<UUID, Benutzer> benutzerNachId = ladeBenutzerNachId(urlaubsantragEntities);
+        final Map<UUID, Benutzer> benutzerNachId = ladeBenutzerNachId(urlaubsantragEntities);
 
         return urlaubsantragEntities.stream()
             .map(entity -> toDomain(entity, benutzerNachId))
@@ -59,12 +59,12 @@ public class UrlaubsantragPersistenceAdapter implements UrlaubsantragSpeichernOu
     }
 
     private Urlaubsantrag toDomain(UrlaubsantragEntity urlaubsantragEntity) {
-        Map<UUID, Benutzer> benutzerNachId = ladeBenutzerNachId(List.of(urlaubsantragEntity));
+        final Map<UUID, Benutzer> benutzerNachId = ladeBenutzerNachId(List.of(urlaubsantragEntity));
         return toDomain(urlaubsantragEntity, benutzerNachId);
     }
 
     private Map<UUID, Benutzer> ladeBenutzerNachId(List<UrlaubsantragEntity> urlaubsantragEntities) {
-        Map<UUID, Benutzer> benutzerNachId = benutzerJpaRepository.findDistinctByIdIn(
+        final Map<UUID, Benutzer> benutzerNachId = benutzerJpaRepository.findDistinctByIdIn(
             urlaubsantragEntities.stream()
                 .flatMap(entity -> Stream.of(entity.getAntragstellerId(), entity.getVertretungId(), entity.getVorgesetzterId()))
                 .filter(Objects::nonNull)
@@ -91,7 +91,7 @@ public class UrlaubsantragPersistenceAdapter implements UrlaubsantragSpeichernOu
     }
 
     private static Benutzer erfordereBenutzer(Map<UUID, Benutzer> benutzerNachId, UUID benutzerId, UUID urlaubsantragId, String feldname) {
-        Benutzer benutzer = benutzerNachId.get(benutzerId);
+        final Benutzer benutzer = benutzerNachId.get(benutzerId);
 
         if (benutzer == null) {
             throw new IllegalStateException(

@@ -17,15 +17,15 @@ class BenutzerPersistenceMapperTest {
 
     @Test
     void mapsBenutzerEntityWithTeamMembershipsToDomain() {
-        TeamEntity engineeringTeam = new TeamEntity(
+        final TeamEntity engineeringTeam = new TeamEntity(
             BenutzerTestdaten.ENGINEERING_TEAM_UUID,
             BenutzerTestdaten.ENGINEERING_TEAM
         );
-        TeamEntity platformTeam = new TeamEntity(
+        final TeamEntity platformTeam = new TeamEntity(
             BenutzerTestdaten.PLATFORM_TEAM_UUID,
             BenutzerTestdaten.PLATFORM_TEAM
         );
-        BenutzerEntity benutzerEntity = new BenutzerEntity(
+        final BenutzerEntity benutzerEntity = new BenutzerEntity(
             BenutzerTestdaten.ADA_UUID,
             "Ada Lovelace",
             "ada.lovelace@example.com",
@@ -45,7 +45,7 @@ class BenutzerPersistenceMapperTest {
             TeamRolle.MITGLIED
         ));
 
-        Benutzer benutzer = BenutzerPersistenceMapper.toDomain(benutzerEntity);
+        final Benutzer benutzer = BenutzerPersistenceMapper.toDomain(benutzerEntity);
 
         assertThat(benutzer.id()).isEqualTo(BenutzerTestdaten.adaId());
         assertThat(benutzer.name()).isEqualTo("Ada Lovelace");

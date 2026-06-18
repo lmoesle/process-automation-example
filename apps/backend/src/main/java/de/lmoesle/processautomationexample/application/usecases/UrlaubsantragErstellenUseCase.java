@@ -28,8 +28,8 @@ public class UrlaubsantragErstellenUseCase implements UrlaubsantragErstellenInPo
 
     @Override
     public UrlaubsantragErstellenErgebnis erstelleUrlaubsantrag(UrlaubsantragErstellenCommand command) {
-        Benutzer antragsteller = ladeBenutzer(command.antragstellerId(), "antragstellerId");
-        Benutzer vertretung = command.vertretungId() == null
+        final Benutzer antragsteller = ladeBenutzer(command.antragstellerId(), "antragstellerId");
+        final Benutzer vertretung = command.vertretungId() == null
             ? null
             : ladeBenutzer(command.vertretungId(), "vertretungId");
 
@@ -42,7 +42,7 @@ public class UrlaubsantragErstellenUseCase implements UrlaubsantragErstellenInPo
 
         urlaubsantragSpeichernOutPort.speichere(urlaubsantrag);
 
-        ProzessinstanzId prozessinstanzId = genehmigungsprozessStartenOutPort.starteGenehmigungsprozessFuer(
+        final ProzessinstanzId prozessinstanzId = genehmigungsprozessStartenOutPort.starteGenehmigungsprozessFuer(
             urlaubsantrag,
             ermittleTeamLeadIds(antragsteller)
         );

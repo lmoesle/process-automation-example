@@ -37,15 +37,15 @@ class CamundaUrlaubsantragGenehmigungsprozessAdapterTest {
             CompletableFuture.completedFuture(new ProcessInformation("process-instance-42", Map.of()))
         );
 
-        var prozessinstanzId = camundaVacationApprovalProcessEngineAdapter.starteGenehmigungsprozessFuer(
+        final var prozessinstanzId = camundaVacationApprovalProcessEngineAdapter.starteGenehmigungsprozessFuer(
             UrlaubsantragTestData.urlaubsantrag(),
             List.of(BenutzerTestdaten.adaId(), BenutzerTestdaten.carlaId())
         );
 
-        ArgumentCaptor<StartProcessCommand> commandCaptor = ArgumentCaptor.forClass(StartProcessCommand.class);
+        final ArgumentCaptor<StartProcessCommand> commandCaptor = ArgumentCaptor.forClass(StartProcessCommand.class);
         verify(startProcessApi).startProcess(commandCaptor.capture());
 
-        StartProcessByDefinitionCmd command = (StartProcessByDefinitionCmd) commandCaptor.getValue();
+        final StartProcessByDefinitionCmd command = (StartProcessByDefinitionCmd) commandCaptor.getValue();
         assertThat(command.getDefinitionKey()).isEqualTo(VacationApprovalProcessApi.PROCESS_ID);
         assertThat(command.get())
             .containsEntry(

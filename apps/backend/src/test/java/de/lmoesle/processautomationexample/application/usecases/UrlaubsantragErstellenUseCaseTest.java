@@ -50,16 +50,16 @@ class UrlaubsantragErstellenUseCaseTest {
 
     @Test
     void savesRequestStartsProcessAndPersistsProzessinstanzId() {
-        Benutzer antragstellerMitTeams = Benutzer.rekonstituiere(
+        final Benutzer antragstellerMitTeams = Benutzer.rekonstituiere(
             UrlaubsantragTestData.antragstellerId(),
             "Applicant Benutzer",
             "applicant.user@example.com",
             List.of(BenutzerTestdaten.engineeringLeadTeam(), BenutzerTestdaten.platformUserTeam())
         );
-        AtomicInteger saveInvocationCounter = new AtomicInteger();
+        final AtomicInteger saveInvocationCounter = new AtomicInteger();
         doAnswer(invocation -> {
-            Urlaubsantrag urlaubsantrag = invocation.getArgument(0);
-            int currentInvocation = saveInvocationCounter.incrementAndGet();
+            final Urlaubsantrag urlaubsantrag = invocation.getArgument(0);
+            final int currentInvocation = saveInvocationCounter.incrementAndGet();
 
             if (currentInvocation == 1) {
                 assertThat(urlaubsantrag.prozessinstanzId()).isNull();
@@ -84,14 +84,14 @@ class UrlaubsantragErstellenUseCaseTest {
             .thenReturn(List.of(BenutzerTestdaten.carla()));
         when(genehmigungsprozessStartenOutPort.starteGenehmigungsprozessFuer(any(Urlaubsantrag.class), any()))
             .thenAnswer(invocation -> {
-                Urlaubsantrag urlaubsantrag = invocation.getArgument(0);
+                final Urlaubsantrag urlaubsantrag = invocation.getArgument(0);
                 assertThat(urlaubsantrag.prozessinstanzId()).isNull();
                 assertThat(invocation.<List<de.lmoesle.processautomationexample.domain.benutzer.BenutzerId>>getArgument(1))
                     .containsExactly(BenutzerTestdaten.adaId(), BenutzerTestdaten.carlaId());
                 return UrlaubsantragTestData.prozessinstanzId();
             });
 
-        var result = erstelleUrlaubsantragUseCase.erstelleUrlaubsantrag(
+        final var result = erstelleUrlaubsantragUseCase.erstelleUrlaubsantrag(
             new UrlaubsantragErstellenCommand(
                 UrlaubsantragTestData.FROM,
                 UrlaubsantragTestData.TO,
@@ -100,7 +100,7 @@ class UrlaubsantragErstellenUseCaseTest {
             )
         );
 
-        InOrder inOrder = inOrder(benutzerRepositoryOutPort, urlaubsantragSpeichernOutPort, genehmigungsprozessStartenOutPort);
+        final InOrder inOrder = inOrder(benutzerRepositoryOutPort, urlaubsantragSpeichernOutPort, genehmigungsprozessStartenOutPort);
         inOrder.verify(benutzerRepositoryOutPort).findeNachId(UrlaubsantragTestData.antragstellerId());
         inOrder.verify(benutzerRepositoryOutPort).findeNachId(UrlaubsantragTestData.vertretungId());
         inOrder.verify(urlaubsantragSpeichernOutPort).speichere(any(Urlaubsantrag.class));
@@ -158,7 +158,7 @@ class UrlaubsantragErstellenUseCaseTest {
                 return ProzessinstanzId.of("process-instance-9000");
             });
 
-        var result = erstelleUrlaubsantragUseCase.erstelleUrlaubsantrag(
+        final var result = erstelleUrlaubsantragUseCase.erstelleUrlaubsantrag(
             new UrlaubsantragErstellenCommand(
                 UrlaubsantragTestData.FROM,
                 UrlaubsantragTestData.TO,
@@ -237,7 +237,7 @@ class UrlaubsantragErstellenUseCaseTest {
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("vertretungId verweist auf keinen vorhandenen Benutzer");
 
-        InOrder inOrder = inOrder(benutzerRepositoryOutPort);
+        final InOrder inOrder = inOrder(benutzerRepositoryOutPort);
         inOrder.verify(benutzerRepositoryOutPort).findeNachId(UrlaubsantragTestData.antragstellerId());
         inOrder.verify(benutzerRepositoryOutPort).findeNachId(UrlaubsantragTestData.vertretungId());
         verifyNoInteractions(urlaubsantragSpeichernOutPort, genehmigungsprozessStartenOutPort);

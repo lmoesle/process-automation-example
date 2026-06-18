@@ -28,7 +28,7 @@ class EmailBenachrichtigungAdapterTest {
         javaMailSender = mock(JavaMailSender.class);
         mimeMessage = new MimeMessage(Session.getInstance(new Properties()));
         when(javaMailSender.createMimeMessage()).thenReturn(mimeMessage);
-        EmailBenachrichtigungProperties properties = new EmailBenachrichtigungProperties();
+        final EmailBenachrichtigungProperties properties = new EmailBenachrichtigungProperties();
         properties.setFromAddress("no-reply@process-automation-example.local");
         properties.setStandardTemplate(new ClassPathResource("mail/standard-benachrichtigung.mail.html"));
         properties.setFrontendBaseUrl("http://localhost:3000");
@@ -37,7 +37,7 @@ class EmailBenachrichtigungAdapterTest {
 
     @Test
     void sendsApprovalEmailUsingStandardHtmlTemplate() throws Exception {
-        Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantragWithStartedProcess();
+        final Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantragWithStartedProcess();
         urlaubsantrag.starteAutomatischePruefung();
         urlaubsantrag.schliesseAutomatischePruefungAb(true);
         urlaubsantrag.genehmigeDurchVorgesetzten("Vertretung ist organisiert.");
@@ -54,7 +54,7 @@ class EmailBenachrichtigungAdapterTest {
         assertThat(mimeMessage.getSubject()).isEqualTo("Urlaubsantrag genehmigt");
         assertThat(mimeMessage.getContentType()).contains("text/html");
         assertThat(mimeMessage.getContent()).isInstanceOf(String.class);
-        String html = (String) mimeMessage.getContent();
+        final String html = (String) mimeMessage.getContent();
         assertThat(html).contains("<!DOCTYPE html>");
         assertThat(html).contains("Urlaubsantrag genehmigt");
         assertThat(html).contains("Hallo " + UrlaubsantragTestData.antragsteller().name() + ",");
@@ -66,7 +66,7 @@ class EmailBenachrichtigungAdapterTest {
 
     @Test
     void sendsRejectionEmailUsingStandardHtmlTemplate() throws Exception {
-        Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
+        final Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
         urlaubsantrag.starteAutomatischePruefung();
         urlaubsantrag.schliesseAutomatischePruefungAb(false);
 
@@ -78,7 +78,7 @@ class EmailBenachrichtigungAdapterTest {
         assertThat(mimeMessage.getSubject()).isEqualTo("Urlaubsantrag abgelehnt");
         assertThat(mimeMessage.getContentType()).contains("text/html");
         assertThat(mimeMessage.getContent()).isInstanceOf(String.class);
-        String html = (String) mimeMessage.getContent();
+        final String html = (String) mimeMessage.getContent();
         assertThat(html).contains("Urlaubsantrag abgelehnt");
         assertThat(html).contains("dein Urlaubsantrag fuer den Zeitraum vom 01.07.2026 bis 10.07.2026 wurde abgelehnt.");
         assertThat(html).contains("Es wurde kein zusaetzlicher Kommentar hinterlegt.");
@@ -101,7 +101,7 @@ class EmailBenachrichtigungAdapterTest {
         assertThat(mimeMessage.getSubject()).isEqualTo("Neue Aufgabe bereit");
         assertThat(mimeMessage.getContentType()).contains("text/html");
         assertThat(mimeMessage.getContent()).isInstanceOf(String.class);
-        String html = (String) mimeMessage.getContent();
+        final String html = (String) mimeMessage.getContent();
         assertThat(html).contains("Neue Aufgabe bereit");
         assertThat(html).contains("Hallo " + BenutzerTestdaten.carla().name() + ",");
         assertThat(html).contains("Es liegt fuer Sie eine neue Aufgabe bereit.");

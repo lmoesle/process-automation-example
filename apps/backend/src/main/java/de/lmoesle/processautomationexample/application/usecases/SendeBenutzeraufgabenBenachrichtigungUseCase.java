@@ -31,16 +31,17 @@ public class SendeBenutzeraufgabenBenachrichtigungUseCase implements Benutzerauf
         Assert.notNull(command, "command darf nicht null sein");
         Assert.notNull(command.taskId(), "taskId darf nicht null sein");
 
-        if (!aktiveBenutzeraufgabenOutPort.speichereWennNeu(command.taskId())) {
+        final var isNewUsertask = aktiveBenutzeraufgabenOutPort.speichereWennNeu(command.taskId());
+        if (!isNewUsertask) {
             log.debug("Benutzeraufgabe {} ist bereits registriert, es wird keine Benachrichtigung versendet", command.taskId().value());
             return;
         }
 
         try {
-            var userTask = tasklistRepositoryOutPort.getTaskById(command.taskId())
+            final var userTask = tasklistRepositoryOutPort.getTaskById(command.taskId())
                 .orElseThrow(() -> new TaskNichtGefundenException(command.taskId()));
 
-            List<Benutzer> empfaenger = userTask.candidateUsers().stream()
+            final List<Benutzer> empfaenger = userTask.candidateUsers().stream()
                 .collect(
                     LinkedHashMap<BenutzerId, Benutzer>::new,
                     (map, benutzer) -> map.putIfAbsent(benutzer.id(), benutzer),

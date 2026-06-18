@@ -40,7 +40,7 @@ class SendeBenutzeraufgabenBenachrichtigungUseCaseTest {
 
     @Test
     void sendsNotificationToAllDistinctCandidateUsers() {
-        UserTask userTask = new UserTask(
+        final UserTask userTask = new UserTask(
             UserTaskTestdaten.taskId(),
             UserTaskTestdaten.userTask().urlaubsantrag(),
             List.of(BenutzerTestdaten.ada(), BenutzerTestdaten.carla(), BenutzerTestdaten.ada()),
@@ -53,7 +53,7 @@ class SendeBenutzeraufgabenBenachrichtigungUseCaseTest {
             new AktiveBenutzeraufgabeCommand(UserTaskTestdaten.taskId())
         );
 
-        InOrder inOrder = inOrder(aktiveBenutzeraufgabenOutPort, tasklistRepositoryOutPort, sendeBenutzeraufgabenBenachrichtigungOutPort);
+        final InOrder inOrder = inOrder(aktiveBenutzeraufgabenOutPort, tasklistRepositoryOutPort, sendeBenutzeraufgabenBenachrichtigungOutPort);
         inOrder.verify(aktiveBenutzeraufgabenOutPort).speichereWennNeu(UserTaskTestdaten.taskId());
         inOrder.verify(tasklistRepositoryOutPort).getTaskById(UserTaskTestdaten.taskId());
         inOrder.verify(sendeBenutzeraufgabenBenachrichtigungOutPort)
@@ -63,7 +63,7 @@ class SendeBenutzeraufgabenBenachrichtigungUseCaseTest {
 
     @Test
     void doesNothingWhenTaskHasNoCandidateUsers() {
-        UserTask userTask = new UserTask(
+        final UserTask userTask = new UserTask(
             UserTaskTestdaten.taskId(),
             UserTaskTestdaten.userTask().urlaubsantrag(),
             List.of(),

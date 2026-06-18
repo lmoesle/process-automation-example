@@ -31,13 +31,13 @@ class TaskAbfragenUseCaseTest {
 
     @Test
     void loadsAllTasksVisibleForUser() {
-        var expectedTasks = List.of(
+        final var expectedTasks = List.of(
             UserTaskTestdaten.userTaskWithoutPayload(),
             UserTaskTestdaten.secondUserTaskWithoutPayload()
         );
         when(tasklistRepositoryOutPort.getAllTasks(BenutzerTestdaten.carlaId())).thenReturn(expectedTasks);
 
-        var tasks = taskAbfragenUseCase.getAllTasks(new GetAllTasksCommand(BenutzerTestdaten.carlaId()));
+        final var tasks = taskAbfragenUseCase.getAllTasks(new GetAllTasksCommand(BenutzerTestdaten.carlaId()));
 
         verify(tasklistRepositoryOutPort).getAllTasks(BenutzerTestdaten.carlaId());
         assertThat(tasks).containsExactlyElementsOf(expectedTasks);
@@ -59,11 +59,11 @@ class TaskAbfragenUseCaseTest {
 
     @Test
     void loadsTaskById() {
-        var expectedTask = UserTaskTestdaten.userTask();
+        final var expectedTask = UserTaskTestdaten.userTask();
         when(tasklistRepositoryOutPort.getTaskById(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId()))
             .thenReturn(Optional.of(expectedTask));
 
-        var task = taskAbfragenUseCase.getTaskById(new GetTaskByIdCommand(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId()));
+        final var task = taskAbfragenUseCase.getTaskById(new GetTaskByIdCommand(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId()));
 
         verify(tasklistRepositoryOutPort).getTaskById(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId());
         assertThat(task).isEqualTo(expectedTask);

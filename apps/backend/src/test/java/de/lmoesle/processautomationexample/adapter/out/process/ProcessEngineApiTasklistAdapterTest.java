@@ -75,7 +75,7 @@ class ProcessEngineApiTasklistAdapterTest {
 
         processEngineApiTasklistAdapter.completeTask(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId(), true);
 
-        InOrder inOrder = inOrder(userTaskModificationApi, userTaskCompletionApi);
+        final InOrder inOrder = inOrder(userTaskModificationApi, userTaskCompletionApi);
         inOrder.verify(userTaskModificationApi).update(argThat(command ->
             command instanceof AssignTaskCmd assignTaskCmd
                 && assignTaskCmd.getTaskId().equals(UserTaskTestdaten.TASK_ID)

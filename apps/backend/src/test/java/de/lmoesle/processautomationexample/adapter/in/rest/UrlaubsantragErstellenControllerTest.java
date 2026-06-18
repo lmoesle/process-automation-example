@@ -56,8 +56,8 @@ class UrlaubsantragErstellenControllerTest {
 
     @Test
     void createsUrlaubsantragViaRestApi() throws Exception {
-        UUID urlaubsantragId = UrlaubsantragTestData.VACATION_REQUEST_UUID;
-        UUID vertretungId = UrlaubsantragTestData.SUBSTITUTE_USER_UUID;
+        final UUID urlaubsantragId = UrlaubsantragTestData.VACATION_REQUEST_UUID;
+        final UUID vertretungId = UrlaubsantragTestData.SUBSTITUTE_USER_UUID;
 
         when(erstelleUrlaubsantragInPort.erstelleUrlaubsantrag(any()))
             .thenReturn(new UrlaubsantragErstellenErgebnis(

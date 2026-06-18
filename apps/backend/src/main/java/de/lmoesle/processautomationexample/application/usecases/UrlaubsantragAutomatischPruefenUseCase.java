@@ -29,7 +29,7 @@ public class UrlaubsantragAutomatischPruefenUseCase implements UrlaubsantragAuto
         Assert.notNull(command, "command darf nicht null sein");
         Assert.notNull(command.urlaubsantragId(), "urlaubsantragId darf nicht null sein");
 
-        Urlaubsantrag urlaubsantrag = urlaubsantraegeLadenOutPort.findeNachId(command.urlaubsantragId())
+        final Urlaubsantrag urlaubsantrag = urlaubsantraegeLadenOutPort.findeNachId(command.urlaubsantragId())
             .orElseThrow(() -> new IllegalArgumentException("urlaubsantragId verweist auf keinen vorhandenen Urlaubsantrag"));
 
         if (urlaubsantrag.status() == UrlaubsantragStatus.ABGELEHNT) {
@@ -42,11 +42,11 @@ public class UrlaubsantragAutomatischPruefenUseCase implements UrlaubsantragAuto
 
         urlaubsantrag.starteAutomatischePruefung();
 
-        List<Urlaubsantrag> vertretungsUrlaubsantraege = urlaubsantrag.vertretung() == null
+        final List<Urlaubsantrag> vertretungsUrlaubsantraege = urlaubsantrag.vertretung() == null
             ? List.of()
             : urlaubsantraegeLadenOutPort.findeAlleNachAntragstellerId(urlaubsantrag.vertretung().id());
 
-        boolean gueltig = urlaubsantrag.istAutomatischGueltigGegen(vertretungsUrlaubsantraege);
+        final boolean gueltig = urlaubsantrag.istAutomatischGueltigGegen(vertretungsUrlaubsantraege);
         urlaubsantrag.schliesseAutomatischePruefungAb(gueltig);
         urlaubsantragSpeichernOutPort.speichere(urlaubsantrag);
         if (urlaubsantrag.status() == UrlaubsantragStatus.ABGELEHNT) {

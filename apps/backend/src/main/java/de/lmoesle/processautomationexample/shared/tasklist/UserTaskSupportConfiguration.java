@@ -15,7 +15,7 @@ public class UserTaskSupportConfiguration {
         TaskSubscriptionApi taskSubscriptionApi,
         BenutzeraufgabenBenachrichtigungTaskHandler benutzeraufgabenBenachrichtigungTaskHandler
     ) {
-        UserTaskSupport support = new UserTaskSupport();
+        final UserTaskSupport support = new UserTaskSupport();
         support.addHandler(benutzeraufgabenBenachrichtigungTaskHandler);
         support.addTerminationHandler(benutzeraufgabenBenachrichtigungTaskHandler);
         support.subscribe(
