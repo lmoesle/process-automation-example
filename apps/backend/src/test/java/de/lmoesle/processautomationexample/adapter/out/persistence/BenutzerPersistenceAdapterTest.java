@@ -32,7 +32,7 @@ class BenutzerPersistenceAdapterTest {
 
     @Test
     void findsUserByIdIncludingTeams() {
-        BenutzerEntity adaEntity = userEntity(
+        final BenutzerEntity adaEntity = userEntity(
             BenutzerTestdaten.ADA_UUID,
             "Ada Lovelace",
             "ada.lovelace@example.com",
@@ -49,7 +49,7 @@ class BenutzerPersistenceAdapterTest {
         );
         when(benutzerJpaRepository.findById(BenutzerTestdaten.ADA_UUID)).thenReturn(Optional.of(adaEntity));
 
-        var geladenerBenutzer = benutzerPersistenceAdapter.findeNachId(BenutzerTestdaten.adaId());
+        final var geladenerBenutzer = benutzerPersistenceAdapter.findeNachId(BenutzerTestdaten.adaId());
 
         assertThat(geladenerBenutzer).contains(BenutzerTestdaten.ada());
     }
@@ -58,14 +58,14 @@ class BenutzerPersistenceAdapterTest {
     void returnsEmptyWhenUserDoesNotExist() {
         when(benutzerJpaRepository.findById(BenutzerTestdaten.ADA_UUID)).thenReturn(Optional.empty());
 
-        var geladenerBenutzer = benutzerPersistenceAdapter.findeNachId(BenutzerTestdaten.adaId());
+        final var geladenerBenutzer = benutzerPersistenceAdapter.findeNachId(BenutzerTestdaten.adaId());
 
         assertThat(geladenerBenutzer).isEmpty();
     }
 
     @Test
     void findsAllLeadsOfATeam() {
-        BenutzerEntity leiterKandidat = userEntity(
+        final BenutzerEntity leiterKandidat = userEntity(
             BenutzerTestdaten.ADA_UUID,
             "Ada Lovelace",
             "ada.lovelace@example.com",
@@ -80,7 +80,7 @@ class BenutzerPersistenceAdapterTest {
                 TeamRolle.MITGLIED
             )
         );
-        BenutzerEntity geladenerLeiter = userEntity(
+        final BenutzerEntity geladenerLeiter = userEntity(
             BenutzerTestdaten.ADA_UUID,
             "Ada Lovelace",
             "ada.lovelace@example.com",
@@ -101,7 +101,7 @@ class BenutzerPersistenceAdapterTest {
         )).thenReturn(List.of(leiterKandidat));
         when(benutzerJpaRepository.findDistinctByIdIn(List.of(BenutzerTestdaten.ADA_UUID))).thenReturn(List.of(geladenerLeiter));
 
-        var leitende = benutzerPersistenceAdapter.findeAlleLeitendenNachTeamId(BenutzerTestdaten.engineeringTeamId());
+        final var leitende = benutzerPersistenceAdapter.findeAlleLeitendenNachTeamId(BenutzerTestdaten.engineeringTeamId());
 
         verify(benutzerJpaRepository).findDistinctByTeamMitgliedschaftenIdTeamIdAndTeamMitgliedschaftenRolle(
             eq(BenutzerTestdaten.ENGINEERING_TEAM_UUID),
@@ -125,15 +125,15 @@ class BenutzerPersistenceAdapterTest {
             TeamRolle.LEITUNG
         )).thenReturn(List.of());
 
-        var leitende = benutzerPersistenceAdapter.findeAlleLeitendenNachTeamId(BenutzerTestdaten.engineeringTeamId());
+        final var leitende = benutzerPersistenceAdapter.findeAlleLeitendenNachTeamId(BenutzerTestdaten.engineeringTeamId());
 
         assertThat(leitende).isEmpty();
     }
 
     private static BenutzerEntity userEntity(UUID benutzerId, String name, String email, MembershipRecord... memberships) {
-        BenutzerEntity benutzerEntity = new BenutzerEntity(benutzerId, name, email, new LinkedHashSet<>());
-        for (MembershipRecord membership : memberships) {
-            TeamEntity teamEntity = new TeamEntity(membership.teamId(), membership.teamName());
+        final BenutzerEntity benutzerEntity = new BenutzerEntity(benutzerId, name, email, new LinkedHashSet<>());
+        for (final MembershipRecord membership : memberships) {
+            final TeamEntity teamEntity = new TeamEntity(membership.teamId(), membership.teamName());
             benutzerEntity.getTeamMitgliedschaften().add(new TeamMitgliedschaftEntity(
                 new TeamMitgliedschaftId(teamEntity.getId(), benutzerId),
                 teamEntity,

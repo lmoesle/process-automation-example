@@ -24,7 +24,7 @@ public class ArchUnitUtils {
             new ArchCondition<>("be records") {
                 @Override
                 public void check(JavaClass javaClass, ConditionEvents events) {
-                    boolean ok = javaClass.isRecord();
+                    final boolean ok = javaClass.isRecord();
                     events.add(new SimpleConditionEvent(
                             javaClass,
                             ok,
@@ -37,7 +37,7 @@ public class ArchUnitUtils {
             new ArchCondition<>("be records or interfaces") {
                 @Override
                 public void check(JavaClass javaClass, ConditionEvents events) {
-                    boolean ok = javaClass.isRecord() || javaClass.isInterface();
+                    final boolean ok = javaClass.isRecord() || javaClass.isInterface();
                     events.add(new SimpleConditionEvent(
                             javaClass,
                             ok,
@@ -53,7 +53,7 @@ public class ArchUnitUtils {
             new ArchCondition<>("be normal classes (not record/interface/enum/annotation)") {
                 @Override
                 public void check(JavaClass javaClass, ConditionEvents events) {
-                    boolean ok = !javaClass.isRecord()
+                    final boolean ok = !javaClass.isRecord()
                             && !javaClass.isInterface()
                             && !javaClass.isEnum()
                             && !javaClass.isAnnotation();
@@ -74,7 +74,7 @@ public class ArchUnitUtils {
                 @Override
                 public void check(JavaClass javaClass, ConditionEvents events) {
                     boolean ok = false;
-                    for (Class<?> ann : SPRING_BEAN_ANNOTATIONS) {
+                    for (final Class<?> ann : SPRING_BEAN_ANNOTATIONS) {
                         if (javaClass.isAnnotatedWith((Class<? extends Annotation>) ann)) {
                             ok = true;
                             break;

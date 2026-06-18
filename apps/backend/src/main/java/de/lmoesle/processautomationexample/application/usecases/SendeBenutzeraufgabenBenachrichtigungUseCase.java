@@ -38,10 +38,10 @@ public class SendeBenutzeraufgabenBenachrichtigungUseCase implements Benutzerauf
         }
 
         try {
-            var userTask = tasklistRepositoryOutPort.getTaskById(command.taskId())
+            final var userTask = tasklistRepositoryOutPort.getTaskById(command.taskId())
                 .orElseThrow(() -> new TaskNichtGefundenException(command.taskId()));
 
-            List<Benutzer> empfaenger = userTask.candidateUsers().stream()
+            final List<Benutzer> empfaenger = userTask.candidateUsers().stream()
                 .collect(
                     LinkedHashMap<BenutzerId, Benutzer>::new,
                     (map, benutzer) -> map.putIfAbsent(benutzer.id(), benutzer),

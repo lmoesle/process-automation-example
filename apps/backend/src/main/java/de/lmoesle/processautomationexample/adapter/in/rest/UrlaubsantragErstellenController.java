@@ -54,8 +54,8 @@ public class UrlaubsantragErstellenController {
     public ResponseEntity<UrlaubsantragDto> erstelleUrlaubsantrag(
         @Valid @RequestBody UrlaubsantragErstellenDto request
     ) {
-        var ergebnis = erstelleUrlaubsantragInPort.erstelleUrlaubsantrag(request.alsCommand());
-        var response = UrlaubsantragDto.ausErstellenErgebnis(ergebnis, request.von(), request.bis());
+        final var ergebnis = erstelleUrlaubsantragInPort.erstelleUrlaubsantrag(request.alsCommand());
+        final var response = UrlaubsantragDto.ausErstellenErgebnis(ergebnis, request.von(), request.bis());
 
         return ResponseEntity
             .created(URI.create("/api/urlaubsantraege/" + ergebnis.urlaubsantragId().value()))

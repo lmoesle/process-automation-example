@@ -11,7 +11,7 @@ class BenutzerTest {
 
     @Test
     void reconstitutesUserWithTeams() {
-        Benutzer benutzer = Benutzer.rekonstituiere(
+        final Benutzer benutzer = Benutzer.rekonstituiere(
             BenutzerTestdaten.adaId(),
             "Ada Lovelace",
             "ada.lovelace@example.com",

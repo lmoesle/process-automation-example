@@ -38,7 +38,7 @@ public class CamundaUrlaubsantragGenehmigungsprozessAdapter implements Urlaubsan
         ));
 
         try {
-            ProcessInformation aufgeloesteProzessinstanzInfo = prozessinstanzInfo.get(
+            final ProcessInformation aufgeloesteProzessinstanzInfo = prozessinstanzInfo.get(
                 PROCESS_START_TIMEOUT_SECONDS,
                 TimeUnit.SECONDS
             );

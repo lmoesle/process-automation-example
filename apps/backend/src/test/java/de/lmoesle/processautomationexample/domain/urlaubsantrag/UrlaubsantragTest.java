@@ -15,7 +15,7 @@ class UrlaubsantragTest {
 
     @Test
     void submitsUrlaubsantragWithGeneratedId() {
-        Urlaubsantrag urlaubsantrag = Urlaubsantrag.stelle(
+        final Urlaubsantrag urlaubsantrag = Urlaubsantrag.stelle(
             UrlaubsantragTestData.FROM,
             UrlaubsantragTestData.TO,
             UrlaubsantragTestData.antragsteller(),
@@ -40,11 +40,11 @@ class UrlaubsantragTest {
 
     @Test
     void reconstitutesUrlaubsantragWithExistingState() {
-        List<UrlaubsantragStatusHistorieneintrag> history = statusHistorie(
+        final List<UrlaubsantragStatusHistorieneintrag> history = statusHistorie(
             UrlaubsantragStatus.ANTRAG_GESTELLT,
             UrlaubsantragStatus.VORGESETZTEN_PRUEFUNG
         );
-        Urlaubsantrag urlaubsantrag = new Urlaubsantrag(
+        final Urlaubsantrag urlaubsantrag = new Urlaubsantrag(
             UrlaubsantragTestData.urlaubsantragId(),
             UrlaubsantragTestData.vacationPeriod(),
             UrlaubsantragTestData.antragsteller(),
@@ -68,7 +68,7 @@ class UrlaubsantragTest {
 
     @Test
     void assignsSupervisor() {
-        Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
+        final Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
 
         urlaubsantrag.weiseVorgesetztenZu(BenutzerTestdaten.carla());
 
@@ -101,7 +101,7 @@ class UrlaubsantragTest {
 
     @Test
     void automaticCheckIsValidWhenNoSubstituteUserIsConfigured() {
-        Urlaubsantrag urlaubsantrag = Urlaubsantrag.stelle(
+        final Urlaubsantrag urlaubsantrag = Urlaubsantrag.stelle(
             UrlaubsantragTestData.FROM,
             UrlaubsantragTestData.TO,
             UrlaubsantragTestData.antragsteller(),
@@ -115,7 +115,7 @@ class UrlaubsantragTest {
 
     @Test
     void automaticCheckIsValidWhenSubstituteUserHasNoOverlappingUrlaubsantrag() {
-        Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
+        final Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
 
         assertThat(urlaubsantrag.istAutomatischGueltigGegen(
             java.util.List.of(UrlaubsantragTestData.secondUrlaubsantrag(UrlaubsantragTestData.vertretung(), null))
@@ -124,8 +124,8 @@ class UrlaubsantragTest {
 
     @Test
     void automaticCheckIsValidWhenSubstituteUserHasOverlappingUnapprovedUrlaubsantrag() {
-        Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
-        Urlaubsantrag overlappingUrlaubsantrag = UrlaubsantragTestData.urlaubsantrag(
+        final Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
+        final Urlaubsantrag overlappingUrlaubsantrag = UrlaubsantragTestData.urlaubsantrag(
             UrlaubsantragTestData.secondUrlaubsantragId(),
             UrlaubsantragTestData.vacationPeriod(),
             UrlaubsantragTestData.vertretung(),
@@ -138,8 +138,8 @@ class UrlaubsantragTest {
 
     @Test
     void automaticCheckIsInvalidWhenSubstituteUserHasApprovedOverlappingUrlaubsantrag() {
-        Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
-        Urlaubsantrag overlappingUrlaubsantrag = UrlaubsantragTestData.urlaubsantrag(
+        final Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
+        final Urlaubsantrag overlappingUrlaubsantrag = UrlaubsantragTestData.urlaubsantrag(
             UrlaubsantragTestData.secondUrlaubsantragId(),
             UrlaubsantragTestData.vacationPeriod(),
             UrlaubsantragTestData.vertretung(),
@@ -155,7 +155,7 @@ class UrlaubsantragTest {
 
     @Test
     void marksApprovalProcessAsStarted() {
-        Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
+        final Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
 
         urlaubsantrag.markiereGenehmigungsprozessAlsGestartet(ProzessinstanzId.of(PROCESS_INSTANCE_ID_VALUE));
 
@@ -164,7 +164,7 @@ class UrlaubsantragTest {
 
     @Test
     void rejectsNullProzessinstanzIdWhenStartingApprovalProcess() {
-        Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
+        final Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
 
         assertThatThrownBy(() -> urlaubsantrag.markiereGenehmigungsprozessAlsGestartet(null))
             .isInstanceOf(IllegalArgumentException.class)
@@ -173,7 +173,7 @@ class UrlaubsantragTest {
 
     @Test
     void rejectsStartingApprovalProcessTwice() {
-        Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantragWithStartedProcess();
+        final Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantragWithStartedProcess();
 
         assertThatThrownBy(() -> urlaubsantrag.markiereGenehmigungsprozessAlsGestartet(ProzessinstanzId.of("process-instance-99")))
             .isInstanceOf(IllegalStateException.class)
@@ -182,7 +182,7 @@ class UrlaubsantragTest {
 
     @Test
     void rejectsNullUrlaubsantragsWhenRunningAutomaticCheck() {
-        Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
+        final Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
 
         assertThatThrownBy(() -> urlaubsantrag.istAutomatischGueltigGegen(null))
             .isInstanceOf(IllegalArgumentException.class)
@@ -191,7 +191,7 @@ class UrlaubsantragTest {
 
     @Test
     void startsAutomaticCheckAddsStatusHistory() {
-        Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
+        final Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
 
         urlaubsantrag.starteAutomatischePruefung();
 
@@ -206,10 +206,10 @@ class UrlaubsantragTest {
 
     @Test
     void starteAutomatischePruefungIsIdempotent() {
-        Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
+        final Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
 
         urlaubsantrag.starteAutomatischePruefung();
-        int firstEntryCount = urlaubsantrag.statusHistorie().size();
+        final int firstEntryCount = urlaubsantrag.statusHistorie().size();
 
         urlaubsantrag.starteAutomatischePruefung();
 
@@ -218,7 +218,7 @@ class UrlaubsantragTest {
 
     @Test
     void completesAutomaticCheckWithManagerReviewStatusWhenValid() {
-        Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
+        final Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
 
         urlaubsantrag.starteAutomatischePruefung();
         urlaubsantrag.schliesseAutomatischePruefungAb(true);
@@ -235,7 +235,7 @@ class UrlaubsantragTest {
 
     @Test
     void completesAutomaticCheckWithRejectedStatusWhenInvalid() {
-        Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
+        final Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
 
         urlaubsantrag.starteAutomatischePruefung();
         urlaubsantrag.schliesseAutomatischePruefungAb(false);
@@ -252,7 +252,7 @@ class UrlaubsantragTest {
 
     @Test
     void rejectsCompletingAutomaticCheckBeforeItWasStarted() {
-        Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
+        final Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
 
         assertThatThrownBy(() -> urlaubsantrag.schliesseAutomatischePruefungAb(true))
             .isInstanceOf(IllegalStateException.class)
@@ -261,7 +261,7 @@ class UrlaubsantragTest {
 
     @Test
     void approvesByManagerAddsCommentToStatusHistory() {
-        Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
+        final Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
 
         urlaubsantrag.starteAutomatischePruefung();
         urlaubsantrag.schliesseAutomatischePruefungAb(true);
@@ -278,7 +278,7 @@ class UrlaubsantragTest {
 
     @Test
     void rejectsByManagerWithoutComment() {
-        Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
+        final Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
 
         urlaubsantrag.starteAutomatischePruefung();
         urlaubsantrag.schliesseAutomatischePruefungAb(true);
@@ -295,7 +295,7 @@ class UrlaubsantragTest {
 
     @Test
     void rejectsManagerDecisionOutsideManagerReviewState() {
-        Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
+        final Urlaubsantrag urlaubsantrag = UrlaubsantragTestData.urlaubsantrag();
 
         assertThatThrownBy(() -> urlaubsantrag.genehmigeDurchVorgesetzten("ok"))
             .isInstanceOf(IllegalStateException.class)

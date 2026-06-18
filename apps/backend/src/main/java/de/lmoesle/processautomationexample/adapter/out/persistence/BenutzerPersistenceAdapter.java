@@ -32,7 +32,7 @@ public class BenutzerPersistenceAdapter implements BenutzerRepositoryOutPort {
     public List<Benutzer> findeAlleLeitendenNachTeamId(TeamId teamId) {
         Assert.notNull(teamId, "teamId darf nicht null sein");
 
-        List<UUID> leitendenIds = benutzerJpaRepository.findDistinctByTeamMitgliedschaftenIdTeamIdAndTeamMitgliedschaftenRolle(
+        final List<UUID> leitendenIds = benutzerJpaRepository.findDistinctByTeamMitgliedschaftenIdTeamIdAndTeamMitgliedschaftenRolle(
             teamId.value(),
             TeamRolle.LEITUNG
         ).stream()

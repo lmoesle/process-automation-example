@@ -33,7 +33,7 @@ public class EmailBenachrichtigungAdapter implements SendeBenachrichtigungOutPor
     public void sendeBenachrichtigung(Urlaubsantrag urlaubsantrag) {
         Assert.notNull(urlaubsantrag, "urlaubsantrag darf nicht null sein");
 
-        EmailInhalt emailInhalt = emailInhaltFuer(urlaubsantrag);
+        final EmailInhalt emailInhalt = emailInhaltFuer(urlaubsantrag);
         sendeEmail(List.of(urlaubsantrag.antragsteller().email()), "Urlaubsantrag " + urlaubsantrag.id().value(), emailInhalt);
     }
 
@@ -43,7 +43,7 @@ public class EmailBenachrichtigungAdapter implements SendeBenachrichtigungOutPor
         Assert.notNull(empfaenger, "empfaenger darf nicht null sein");
 
         empfaenger.forEach(benutzer -> {
-            EmailInhalt emailInhalt = new EmailInhalt(
+            final EmailInhalt emailInhalt = new EmailInhalt(
                 "Neue Aufgabe bereit",
                 "Neue Aufgabe bereit",
                 "Hallo %s,".formatted(benutzer.name()),
@@ -58,11 +58,11 @@ public class EmailBenachrichtigungAdapter implements SendeBenachrichtigungOutPor
     }
 
     private void sendeEmail(List<String> empfaengerEmail, String referenz, EmailInhalt emailInhalt) {
-        String template = ladeTemplate(properties.getStandardTemplate());
-        String renderteEmail = render(template, emailInhalt);
-        var mimeMessage = javaMailSender.createMimeMessage();
+        final String template = ladeTemplate(properties.getStandardTemplate());
+        final String renderteEmail = render(template, emailInhalt);
+        final var mimeMessage = javaMailSender.createMimeMessage();
         try {
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, StandardCharsets.UTF_8.name());
+            final MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, StandardCharsets.UTF_8.name());
             helper.setFrom(properties.getFromAddress());
             helper.setTo(empfaengerEmail.toArray(String[]::new));
             helper.setSubject(emailInhalt.betreff());
@@ -78,11 +78,11 @@ public class EmailBenachrichtigungAdapter implements SendeBenachrichtigungOutPor
 
     private EmailInhalt emailInhaltFuer(Urlaubsantrag urlaubsantrag) {
         Assert.notNull(urlaubsantrag.status(), "status darf nicht null sein");
-        String zeitraum = "dein Urlaubsantrag fuer den Zeitraum vom %s bis %s".formatted(
+        final String zeitraum = "dein Urlaubsantrag fuer den Zeitraum vom %s bis %s".formatted(
             urlaubsantrag.zeitraum().von().format(DATE_FORMATTER),
             urlaubsantrag.zeitraum().bis().format(DATE_FORMATTER)
         );
-        String hinweisZurEntscheidung = kommentarZumAktuellenStatus(urlaubsantrag);
+        final String hinweisZurEntscheidung = kommentarZumAktuellenStatus(urlaubsantrag);
         return switch (urlaubsantrag.status()) {
             case GENEHMIGT -> new EmailInhalt(
                 "Urlaubsantrag genehmigt",
@@ -111,7 +111,7 @@ public class EmailBenachrichtigungAdapter implements SendeBenachrichtigungOutPor
     }
 
     private String ladeTemplate(Resource resource) {
-        try (var inputStream = resource.getInputStream()) {
+        try (final var inputStream = resource.getInputStream()) {
             return StreamUtils.copyToString(inputStream, StandardCharsets.UTF_8)
                 .replace("\r\n", "\n");
         } catch (IOException exception) {
@@ -123,7 +123,7 @@ public class EmailBenachrichtigungAdapter implements SendeBenachrichtigungOutPor
     }
 
     private String kommentarZumAktuellenStatus(Urlaubsantrag urlaubsantrag) {
-        String entscheidungskommentar = urlaubsantrag.statusHistorie().getLast().kommentar();
+        final String entscheidungskommentar = urlaubsantrag.statusHistorie().getLast().kommentar();
         return entscheidungskommentar == null || entscheidungskommentar.isBlank()
             ? "Es wurde kein zusaetzlicher Kommentar hinterlegt."
             : entscheidungskommentar;

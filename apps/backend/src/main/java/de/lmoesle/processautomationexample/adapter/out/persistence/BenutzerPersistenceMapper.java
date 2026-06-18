@@ -17,11 +17,11 @@ public final class BenutzerPersistenceMapper {
     }
 
     public static Benutzer toDomain(BenutzerEntity benutzerEntity) {
-        Set<TeamMitgliedschaftEntity> teamMitgliedschaften = benutzerEntity.getTeamMitgliedschaften() == null
+        final Set<TeamMitgliedschaftEntity> teamMitgliedschaften = benutzerEntity.getTeamMitgliedschaften() == null
             ? Set.of()
             : benutzerEntity.getTeamMitgliedschaften();
 
-        List<Team> teams = teamMitgliedschaften.stream()
+        final List<Team> teams = teamMitgliedschaften.stream()
             .map(mitgliedschaft -> new Team(
                 TeamId.of(mitgliedschaft.getTeam().getId()),
                 mitgliedschaft.getTeam().getName(),

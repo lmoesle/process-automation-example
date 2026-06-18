@@ -31,7 +31,7 @@ public class BenutzeraufgabeMirZuweisenUseCase implements BenutzeraufgabeMirZuwe
         Assert.notNull(command.taskId(), "taskId darf nicht null sein");
         Assert.notNull(command.benutzerId(), "benutzerId darf nicht null sein");
 
-        var task = tasklistRepositoryOutPort.getTaskById(command.taskId())
+        final var task = tasklistRepositoryOutPort.getTaskById(command.taskId())
             .orElseThrow(() -> new TaskNichtGefundenException(command.taskId()));
 
         if (!task.istCandidateUser(command.benutzerId())) {

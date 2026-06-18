@@ -43,7 +43,7 @@ class ProcessEngineApiTasklistRepositoryTest {
         liefereTask(UserTaskTestdaten.taskId(), UserTaskTestdaten.meta(), UserTaskTestdaten.payload());
         liefereTask(UserTaskTestdaten.secondTaskId(), UserTaskTestdaten.secondMeta(), UserTaskTestdaten.secondPayload());
 
-        var tasks = processEngineApiTasklistRepository.getAllTasks(BenutzerTestdaten.carlaId());
+        final var tasks = processEngineApiTasklistRepository.getAllTasks(BenutzerTestdaten.carlaId());
 
         assertThat(tasks)
             .extracting(task -> task.id().value())
@@ -71,7 +71,7 @@ class ProcessEngineApiTasklistRepositoryTest {
         liefereTask(UserTaskTestdaten.taskId(), UserTaskTestdaten.meta(), UserTaskTestdaten.payload());
         liefereTask(UserTaskTestdaten.secondTaskId(), UserTaskTestdaten.secondMeta(), UserTaskTestdaten.secondPayload());
 
-        var tasks = processEngineApiTasklistRepository.getAllTasks(BenutzerTestdaten.adaId());
+        final var tasks = processEngineApiTasklistRepository.getAllTasks(BenutzerTestdaten.adaId());
 
         assertThat(tasks)
             .extracting(task -> task.id().value())
@@ -83,7 +83,7 @@ class ProcessEngineApiTasklistRepositoryTest {
         stubReferenzen();
         liefereTask(UserTaskTestdaten.taskId(), UserTaskTestdaten.meta(), UserTaskTestdaten.payload());
 
-        var task = processEngineApiTasklistRepository.getTaskById(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId()).orElseThrow();
+        final var task = processEngineApiTasklistRepository.getTaskById(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId()).orElseThrow();
 
         assertThat(task.id().value()).isEqualTo(UserTaskTestdaten.TASK_ID);
         assertThat(task.urlaubsantrag().id().value()).isEqualTo(UrlaubsantragTestData.VACATION_REQUEST_UUID);
@@ -97,7 +97,7 @@ class ProcessEngineApiTasklistRepositoryTest {
         stubReferenzen();
         liefereTask(UserTaskTestdaten.secondTaskId(), UserTaskTestdaten.secondMeta(), UserTaskTestdaten.secondPayload());
 
-        var task = processEngineApiTasklistRepository.getTaskById(UserTaskTestdaten.secondTaskId()).orElseThrow();
+        final var task = processEngineApiTasklistRepository.getTaskById(UserTaskTestdaten.secondTaskId()).orElseThrow();
 
         assertThat(task.id()).isEqualTo(UserTaskTestdaten.secondTaskId());
         assertThat(task.candidateUsers()).containsExactly(BenutzerTestdaten.carla());

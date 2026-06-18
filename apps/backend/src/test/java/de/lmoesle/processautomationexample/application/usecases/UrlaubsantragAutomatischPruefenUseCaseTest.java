@@ -39,7 +39,7 @@ class UrlaubsantragAutomatischPruefenUseCaseTest {
 
     @Test
     void returnsTrueWhenNoSubstituteUserExists() {
-        Urlaubsantrag urlaubsantragWithoutSubstitute = Urlaubsantrag.stelle(
+        final Urlaubsantrag urlaubsantragWithoutSubstitute = Urlaubsantrag.stelle(
             UrlaubsantragTestData.FROM,
             UrlaubsantragTestData.TO,
             UrlaubsantragTestData.antragsteller(),
@@ -48,13 +48,13 @@ class UrlaubsantragAutomatischPruefenUseCaseTest {
         when(urlaubsantraegeLadenOutPort.findeNachId(urlaubsantragWithoutSubstitute.id()))
             .thenReturn(Optional.of(urlaubsantragWithoutSubstitute));
 
-        boolean result = pruefeUrlaubsantragAutomatischUseCase.pruefeUrlaubsantragAutomatisch(
+        final boolean result = pruefeUrlaubsantragAutomatischUseCase.pruefeUrlaubsantragAutomatisch(
             new UrlaubsantragAutomatischPruefenCommand(urlaubsantragWithoutSubstitute.id())
         );
 
         assertThat(result).isTrue();
         verify(urlaubsantraegeLadenOutPort).findeNachId(urlaubsantragWithoutSubstitute.id());
-        ArgumentCaptor<Urlaubsantrag> savedCaptor = ArgumentCaptor.forClass(Urlaubsantrag.class);
+        final ArgumentCaptor<Urlaubsantrag> savedCaptor = ArgumentCaptor.forClass(Urlaubsantrag.class);
         verify(urlaubsantragSpeichernOutPort).speichere(savedCaptor.capture());
         assertThat(savedCaptor.getValue().status()).isEqualTo(UrlaubsantragStatus.VORGESETZTEN_PRUEFUNG);
         assertThat(savedCaptor.getValue().statusHistorie()).hasSize(3)
@@ -76,14 +76,14 @@ class UrlaubsantragAutomatischPruefenUseCaseTest {
         when(urlaubsantraegeLadenOutPort.findeAlleNachAntragstellerId(UrlaubsantragTestData.vertretungId()))
             .thenReturn(List.of(UrlaubsantragTestData.secondUrlaubsantrag(UrlaubsantragTestData.vertretung(), null)));
 
-        boolean result = pruefeUrlaubsantragAutomatischUseCase.pruefeUrlaubsantragAutomatisch(
+        final boolean result = pruefeUrlaubsantragAutomatischUseCase.pruefeUrlaubsantragAutomatisch(
             new UrlaubsantragAutomatischPruefenCommand(UrlaubsantragTestData.urlaubsantragId())
         );
 
         assertThat(result).isTrue();
         verify(urlaubsantraegeLadenOutPort).findeNachId(UrlaubsantragTestData.urlaubsantragId());
         verify(urlaubsantraegeLadenOutPort).findeAlleNachAntragstellerId(UrlaubsantragTestData.vertretungId());
-        ArgumentCaptor<Urlaubsantrag> savedCaptor = ArgumentCaptor.forClass(Urlaubsantrag.class);
+        final ArgumentCaptor<Urlaubsantrag> savedCaptor = ArgumentCaptor.forClass(Urlaubsantrag.class);
         verify(urlaubsantragSpeichernOutPort).speichere(savedCaptor.capture());
         assertThat(savedCaptor.getValue().status()).isEqualTo(UrlaubsantragStatus.VORGESETZTEN_PRUEFUNG);
         verifyNoMoreInteractions(urlaubsantraegeLadenOutPort);
@@ -93,7 +93,7 @@ class UrlaubsantragAutomatischPruefenUseCaseTest {
 
     @Test
     void returnsFalseWhenSubstituteUserHasOverlappingUrlaubsantrag() {
-        Urlaubsantrag overlappingUrlaubsantrag = UrlaubsantragTestData.urlaubsantrag(
+        final Urlaubsantrag overlappingUrlaubsantrag = UrlaubsantragTestData.urlaubsantrag(
             UrlaubsantragTestData.secondUrlaubsantragId(),
             UrlaubsantragTestData.vacationPeriod(),
             UrlaubsantragTestData.vertretung(),
@@ -109,14 +109,14 @@ class UrlaubsantragAutomatischPruefenUseCaseTest {
         when(urlaubsantraegeLadenOutPort.findeAlleNachAntragstellerId(UrlaubsantragTestData.vertretungId()))
             .thenReturn(List.of(overlappingUrlaubsantrag));
 
-        boolean result = pruefeUrlaubsantragAutomatischUseCase.pruefeUrlaubsantragAutomatisch(
+        final boolean result = pruefeUrlaubsantragAutomatischUseCase.pruefeUrlaubsantragAutomatisch(
             new UrlaubsantragAutomatischPruefenCommand(UrlaubsantragTestData.urlaubsantragId())
         );
 
         assertThat(result).isFalse();
         verify(urlaubsantraegeLadenOutPort).findeNachId(UrlaubsantragTestData.urlaubsantragId());
         verify(urlaubsantraegeLadenOutPort).findeAlleNachAntragstellerId(UrlaubsantragTestData.vertretungId());
-        ArgumentCaptor<Urlaubsantrag> savedCaptor = ArgumentCaptor.forClass(Urlaubsantrag.class);
+        final ArgumentCaptor<Urlaubsantrag> savedCaptor = ArgumentCaptor.forClass(Urlaubsantrag.class);
         verify(urlaubsantragSpeichernOutPort).speichere(savedCaptor.capture());
         verify(sendeBenachrichtigungOutPort).sendeBenachrichtigung(savedCaptor.getValue());
         assertThat(savedCaptor.getValue().status()).isEqualTo(UrlaubsantragStatus.ABGELEHNT);
@@ -126,7 +126,7 @@ class UrlaubsantragAutomatischPruefenUseCaseTest {
 
     @Test
     void returnsTrueWithoutSavingWhenAutomaticCheckWasAlreadyCompletedSuccessfully() {
-        Urlaubsantrag bereitsGepruefterUrlaubsantrag = new Urlaubsantrag(
+        final Urlaubsantrag bereitsGepruefterUrlaubsantrag = new Urlaubsantrag(
             UrlaubsantragTestData.urlaubsantragId(),
             UrlaubsantragTestData.vacationPeriod(),
             UrlaubsantragTestData.antragsteller(),
@@ -143,7 +143,7 @@ class UrlaubsantragAutomatischPruefenUseCaseTest {
         when(urlaubsantraegeLadenOutPort.findeNachId(UrlaubsantragTestData.urlaubsantragId()))
             .thenReturn(Optional.of(bereitsGepruefterUrlaubsantrag));
 
-        boolean result = pruefeUrlaubsantragAutomatischUseCase.pruefeUrlaubsantragAutomatisch(
+        final boolean result = pruefeUrlaubsantragAutomatischUseCase.pruefeUrlaubsantragAutomatisch(
             new UrlaubsantragAutomatischPruefenCommand(UrlaubsantragTestData.urlaubsantragId())
         );
 
@@ -156,7 +156,7 @@ class UrlaubsantragAutomatischPruefenUseCaseTest {
 
     @Test
     void returnsFalseWithoutSavingWhenAutomaticCheckWasAlreadyCompletedWithRejection() {
-        Urlaubsantrag bereitsAbgelehnterUrlaubsantrag = new Urlaubsantrag(
+        final Urlaubsantrag bereitsAbgelehnterUrlaubsantrag = new Urlaubsantrag(
             UrlaubsantragTestData.urlaubsantragId(),
             UrlaubsantragTestData.vacationPeriod(),
             UrlaubsantragTestData.antragsteller(),
@@ -173,7 +173,7 @@ class UrlaubsantragAutomatischPruefenUseCaseTest {
         when(urlaubsantraegeLadenOutPort.findeNachId(UrlaubsantragTestData.urlaubsantragId()))
             .thenReturn(Optional.of(bereitsAbgelehnterUrlaubsantrag));
 
-        boolean result = pruefeUrlaubsantragAutomatischUseCase.pruefeUrlaubsantragAutomatisch(
+        final boolean result = pruefeUrlaubsantragAutomatischUseCase.pruefeUrlaubsantragAutomatisch(
             new UrlaubsantragAutomatischPruefenCommand(UrlaubsantragTestData.urlaubsantragId())
         );
 

@@ -25,7 +25,7 @@ class UserTaskSupportConfigurationTest {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
         .withBean(TaskSubscriptionApi.class, () -> {
-            TaskSubscriptionApi taskSubscriptionApi = mock(TaskSubscriptionApi.class);
+            final TaskSubscriptionApi taskSubscriptionApi = mock(TaskSubscriptionApi.class);
             when(taskSubscriptionApi.subscribeForTask(any()))
                 .thenReturn(CompletableFuture.completedFuture(mock(TaskSubscription.class)));
             return taskSubscriptionApi;

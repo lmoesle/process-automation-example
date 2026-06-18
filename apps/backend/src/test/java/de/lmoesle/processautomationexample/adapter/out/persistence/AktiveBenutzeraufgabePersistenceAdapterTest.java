@@ -23,7 +23,7 @@ class AktiveBenutzeraufgabePersistenceAdapterTest {
     void storesTaskWhenItDoesNotExist() {
         when(aktiveBenutzeraufgabeJpaRepository.insertiereWennNichtVorhanden(UserTaskTestdaten.TASK_ID)).thenReturn(1);
 
-        boolean gespeichert = adapter.speichereWennNeu(UserTaskTestdaten.taskId());
+        final boolean gespeichert = adapter.speichereWennNeu(UserTaskTestdaten.taskId());
 
         assertThat(gespeichert).isTrue();
         verify(aktiveBenutzeraufgabeJpaRepository).insertiereWennNichtVorhanden(UserTaskTestdaten.TASK_ID);
@@ -33,7 +33,7 @@ class AktiveBenutzeraufgabePersistenceAdapterTest {
     void ignoresTaskWhenItAlreadyExists() {
         when(aktiveBenutzeraufgabeJpaRepository.insertiereWennNichtVorhanden(UserTaskTestdaten.TASK_ID)).thenReturn(0);
 
-        boolean gespeichert = adapter.speichereWennNeu(UserTaskTestdaten.taskId());
+        final boolean gespeichert = adapter.speichereWennNeu(UserTaskTestdaten.taskId());
 
         assertThat(gespeichert).isFalse();
         verify(aktiveBenutzeraufgabeJpaRepository).insertiereWennNichtVorhanden(UserTaskTestdaten.TASK_ID);
