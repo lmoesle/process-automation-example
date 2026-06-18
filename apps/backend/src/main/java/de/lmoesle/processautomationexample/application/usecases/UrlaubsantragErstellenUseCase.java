@@ -33,7 +33,7 @@ public class UrlaubsantragErstellenUseCase implements UrlaubsantragErstellenInPo
             ? null
             : ladeBenutzer(command.vertretungId(), "vertretungId");
 
-        Urlaubsantrag urlaubsantrag = Urlaubsantrag.stelle(
+        final Urlaubsantrag urlaubsantrag = Urlaubsantrag.stelle(
             command.von(),
             command.bis(),
             antragsteller,
@@ -47,20 +47,20 @@ public class UrlaubsantragErstellenUseCase implements UrlaubsantragErstellenInPo
             ermittleTeamLeadIds(antragsteller)
         );
         urlaubsantrag.markiereGenehmigungsprozessAlsGestartet(prozessinstanzId);
-        urlaubsantrag = urlaubsantragSpeichernOutPort.speichere(urlaubsantrag);
+        final Urlaubsantrag gespeicherterUrlaubsantrag = urlaubsantragSpeichernOutPort.speichere(urlaubsantrag);
 
         log.info(
             "Urlaubsantrag erfolgreich erstellt: urlaubsantragId={}, prozessinstanzId={}, status={}",
-            urlaubsantrag.id().value(),
+            gespeicherterUrlaubsantrag.id().value(),
             prozessinstanzId.value(),
-            urlaubsantrag.status()
+            gespeicherterUrlaubsantrag.status()
         );
 
         return new UrlaubsantragErstellenErgebnis(
-            urlaubsantrag.id(),
+            gespeicherterUrlaubsantrag.id(),
             prozessinstanzId,
-            urlaubsantrag.status(),
-            urlaubsantrag.statusHistorie(),
+            gespeicherterUrlaubsantrag.status(),
+            gespeicherterUrlaubsantrag.statusHistorie(),
             antragsteller,
             vertretung
         );

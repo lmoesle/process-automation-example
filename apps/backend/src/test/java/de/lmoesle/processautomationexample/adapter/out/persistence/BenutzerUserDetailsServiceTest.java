@@ -27,7 +27,7 @@ class BenutzerUserDetailsServiceTest {
 
     @Test
     void loadsUserDetailsFromDatabaseUser() {
-        var benutzer = new BenutzerEntity(
+        final var benutzer = new BenutzerEntity(
             UUID.fromString("41f60f4f-1bbb-4469-871f-bf102c46d001"),
             "John",
             "john@example.com",
@@ -37,7 +37,7 @@ class BenutzerUserDetailsServiceTest {
         benutzer.setPasswortHash("{noop}test");
         when(benutzerJpaRepository.findByBenutzername("john")).thenReturn(Optional.of(benutzer));
 
-        var userDetails = benutzerUserDetailsService.loadUserByUsername("john");
+        final var userDetails = benutzerUserDetailsService.loadUserByUsername("john");
 
         assertThat(userDetails.getUsername()).isEqualTo("john");
         assertThat(userDetails.getPassword()).isEqualTo("{noop}test");

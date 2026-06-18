@@ -65,7 +65,7 @@ class BenutzerPersistenceAdapterTest {
 
     @Test
     void findsUserByUsernameIncludingTeams() {
-        BenutzerEntity adaEntity = userEntity(
+        final BenutzerEntity adaEntity = userEntity(
             BenutzerTestdaten.ADA_UUID,
             "Ada Lovelace",
             "ada.lovelace@example.com",
@@ -82,7 +82,7 @@ class BenutzerPersistenceAdapterTest {
         );
         when(benutzerJpaRepository.findByBenutzername("ada")).thenReturn(Optional.of(adaEntity));
 
-        var geladenerBenutzer = benutzerPersistenceAdapter.findeNachBenutzername("ada");
+        final var geladenerBenutzer = benutzerPersistenceAdapter.findeNachBenutzername("ada");
 
         assertThat(geladenerBenutzer).contains(BenutzerTestdaten.ada());
     }

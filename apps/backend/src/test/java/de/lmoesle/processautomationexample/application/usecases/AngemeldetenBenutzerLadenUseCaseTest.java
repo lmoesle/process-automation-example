@@ -28,7 +28,7 @@ class AngemeldetenBenutzerLadenUseCaseTest {
     void loadsAuthenticatedUserByUsername() {
         when(benutzerRepositoryOutPort.findeNachBenutzername("john")).thenReturn(Optional.of(BenutzerTestdaten.ada()));
 
-        var benutzer = useCase.ladeAngemeldetenBenutzer(new AngemeldetenBenutzerLadenCommand("john"));
+        final var benutzer = useCase.ladeAngemeldetenBenutzer(new AngemeldetenBenutzerLadenCommand("john"));
 
         assertThat(benutzer).isEqualTo(BenutzerTestdaten.ada());
     }
