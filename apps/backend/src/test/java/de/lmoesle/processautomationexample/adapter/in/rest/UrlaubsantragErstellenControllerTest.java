@@ -1,7 +1,5 @@
 package de.lmoesle.processautomationexample.adapter.in.rest;
 
-import de.lmoesle.processautomationexample.application.ports.in.AngemeldetenBenutzerLadenInPort;
-import de.lmoesle.processautomationexample.application.ports.in.AngemeldetenBenutzerLadenInPort.AngemeldetenBenutzerLadenCommand;
 import de.lmoesle.processautomationexample.application.ports.in.UrlaubsantragErstellenInPort;
 import de.lmoesle.processautomationexample.application.ports.in.UrlaubsantragErstellenInPort.UrlaubsantragErstellenCommand;
 import de.lmoesle.processautomationexample.application.ports.in.UrlaubsantragErstellenInPort.UrlaubsantragErstellenErgebnis;
@@ -20,7 +18,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.security.Principal;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -34,10 +31,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(UrlaubsantragErstellenController.class)
 @AutoConfigureMockMvc(addFilters = false)
-@Import({RestExceptionHandler.class, AktuellerBenutzerProvider.class})
+@Import(RestExceptionHandler.class)
 class UrlaubsantragErstellenControllerTest {
-
-    private static final Principal JOHN_PRINCIPAL = () -> "john";
 
     @Autowired
     private MockMvc mockMvc;
@@ -46,12 +41,11 @@ class UrlaubsantragErstellenControllerTest {
     private UrlaubsantragErstellenInPort erstelleUrlaubsantragInPort;
 
     @MockitoBean
-    private AngemeldetenBenutzerLadenInPort angemeldetenBenutzerLadenInPort;
+    private AktuellerBenutzerProvider aktuellerBenutzerProvider;
 
     @BeforeEach
     void setUpCurrentUser() {
-        when(angemeldetenBenutzerLadenInPort.ladeAngemeldetenBenutzer(new AngemeldetenBenutzerLadenCommand("john")))
-            .thenReturn(BenutzerTestdaten.ada());
+        when(aktuellerBenutzerProvider.benutzerId()).thenReturn(BenutzerTestdaten.adaId());
     }
 
     @Test
@@ -70,7 +64,6 @@ class UrlaubsantragErstellenControllerTest {
             ));
 
         mockMvc.perform(post("/api/urlaubsantraege")
-                .principal(JOHN_PRINCIPAL)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                     {
@@ -123,7 +116,6 @@ class UrlaubsantragErstellenControllerTest {
             .thenThrow(new IllegalArgumentException("prozessinstanzId darf nicht null sein"));
 
         mockMvc.perform(post("/api/urlaubsantraege")
-                .principal(JOHN_PRINCIPAL)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                     {

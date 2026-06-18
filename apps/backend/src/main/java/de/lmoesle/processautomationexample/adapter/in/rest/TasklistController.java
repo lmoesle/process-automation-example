@@ -20,7 +20,6 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -48,8 +47,9 @@ public class TasklistController {
             )
         )
     })
-    public List<UserTaskDto> getAllTasks(Principal principal) {
-        return taskAbfragenInPort.getAllTasks(new GetAllTasksCommand(aktuellerBenutzerProvider.benutzerId(principal))).stream()
+    public List<UserTaskDto> getAllTasks() {
+        final var aktuellerBenutzerId = aktuellerBenutzerProvider.benutzerId();
+        return taskAbfragenInPort.getAllTasks(new GetAllTasksCommand(aktuellerBenutzerId)).stream()
             .map(UserTaskDto::ausDomain)
             .toList();
     }
@@ -67,11 +67,12 @@ public class TasklistController {
         ),
         @ApiResponse(responseCode = "404", description = "Kein User Task mit der angegebenen ID gefunden.")
     })
-    public UserTaskDto getTaskById(@PathVariable("taskId") String taskId, Principal principal) {
+    public UserTaskDto getTaskById(@PathVariable("taskId") String taskId) {
+        final var aktuellerBenutzerId = aktuellerBenutzerProvider.benutzerId();
         return UserTaskDto.ausDomain(
             taskAbfragenInPort.getTaskById(new GetTaskByIdCommand(
                 UserTaskId.of(taskId),
-                aktuellerBenutzerProvider.benutzerId(principal)
+                aktuellerBenutzerId
             ))
         );
     }
@@ -110,11 +111,11 @@ public class TasklistController {
     })
     public ResponseEntity<Void> entscheideGenehmigungVomVorgesetzten(
         @PathVariable("taskId") String taskId,
-        @Valid @RequestBody VorgesetztenentscheidungDto request,
-        Principal principal
+        @Valid @RequestBody VorgesetztenentscheidungDto request
     ) {
+        final var aktuellerBenutzerId = aktuellerBenutzerProvider.benutzerId();
         genehmigungVomVorgesetztenInPort.entscheideGenehmigungVomVorgesetzten(
-            request.alsCommand(UserTaskId.of(taskId), aktuellerBenutzerProvider.benutzerId(principal))
+            request.alsCommand(UserTaskId.of(taskId), aktuellerBenutzerId)
         );
         return ResponseEntity.noContent().build();
     }

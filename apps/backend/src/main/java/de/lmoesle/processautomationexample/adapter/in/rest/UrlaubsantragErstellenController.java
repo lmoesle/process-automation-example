@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
-import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/urlaubsantraege")
@@ -53,12 +52,10 @@ public class UrlaubsantragErstellenController {
             )
         )
     })
-    public ResponseEntity<UrlaubsantragDto> erstelleUrlaubsantrag(
-        @Valid @RequestBody UrlaubsantragErstellenDto request,
-        Principal principal
-    ) {
+    public ResponseEntity<UrlaubsantragDto> erstelleUrlaubsantrag(@Valid @RequestBody UrlaubsantragErstellenDto request) {
+        final var aktuellerBenutzerId = aktuellerBenutzerProvider.benutzerId();
         final var ergebnis = erstelleUrlaubsantragInPort.erstelleUrlaubsantrag(
-            request.alsCommand(aktuellerBenutzerProvider.benutzerId(principal))
+            request.alsCommand(aktuellerBenutzerId)
         );
         final var response = UrlaubsantragDto.ausErstellenErgebnis(ergebnis, request.von(), request.bis());
 

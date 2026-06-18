@@ -1,7 +1,5 @@
 package de.lmoesle.processautomationexample.adapter.in.rest;
 
-import de.lmoesle.processautomationexample.application.ports.in.AngemeldetenBenutzerLadenInPort;
-import de.lmoesle.processautomationexample.application.ports.in.AngemeldetenBenutzerLadenInPort.AngemeldetenBenutzerLadenCommand;
 import de.lmoesle.processautomationexample.application.ports.in.GenehmigungVomVorgesetztenInPort;
 import de.lmoesle.processautomationexample.application.ports.in.GenehmigungVomVorgesetztenInPort.GenehmigungVomVorgesetztenCommand;
 import de.lmoesle.processautomationexample.application.ports.in.TaskAbfragenInPort;
@@ -20,7 +18,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.security.Principal;
 import java.util.List;
 
 import static org.mockito.Mockito.doThrow;
@@ -33,10 +30,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(TasklistController.class)
 @AutoConfigureMockMvc(addFilters = false)
-@Import({AktuellerBenutzerProvider.class, RestExceptionHandler.class})
+@Import(RestExceptionHandler.class)
 class TasklistControllerTest {
-
-    private static final Principal JOHN_PRINCIPAL = () -> "john";
 
     @Autowired
     private MockMvc mockMvc;
@@ -48,12 +43,11 @@ class TasklistControllerTest {
     private GenehmigungVomVorgesetztenInPort genehmigungVomVorgesetztenInPort;
 
     @MockitoBean
-    private AngemeldetenBenutzerLadenInPort angemeldetenBenutzerLadenInPort;
+    private AktuellerBenutzerProvider aktuellerBenutzerProvider;
 
     @BeforeEach
     void setUpCurrentUser() {
-        when(angemeldetenBenutzerLadenInPort.ladeAngemeldetenBenutzer(new AngemeldetenBenutzerLadenCommand("john")))
-            .thenReturn(BenutzerTestdaten.ada());
+        when(aktuellerBenutzerProvider.benutzerId()).thenReturn(BenutzerTestdaten.adaId());
     }
 
     @Test
@@ -63,7 +57,7 @@ class TasklistControllerTest {
             UserTaskTestdaten.secondUserTaskWithoutPayload()
         ));
 
-        mockMvc.perform(get("/api/tasks").principal(JOHN_PRINCIPAL))
+        mockMvc.perform(get("/api/tasks"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].taskId").value(UserTaskTestdaten.TASK_ID))
             .andExpect(jsonPath("$[0].bearbeiter.name").value("Ada Lovelace"))
@@ -83,7 +77,7 @@ class TasklistControllerTest {
         when(taskAbfragenInPort.getTaskById(new GetTaskByIdCommand(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId())))
             .thenReturn(UserTaskTestdaten.userTask());
 
-        mockMvc.perform(get("/api/tasks/{taskId}", UserTaskTestdaten.TASK_ID).principal(JOHN_PRINCIPAL))
+        mockMvc.perform(get("/api/tasks/{taskId}", UserTaskTestdaten.TASK_ID))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.taskId").value(UserTaskTestdaten.TASK_ID))
             .andExpect(jsonPath("$.urlaubsantrag.id").value("c7a6939b-a97b-4445-bd66-4a0f98781899"))
@@ -99,7 +93,7 @@ class TasklistControllerTest {
         when(taskAbfragenInPort.getTaskById(new GetTaskByIdCommand(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId())))
             .thenThrow(new TaskNichtGefundenException(UserTaskTestdaten.taskId()));
 
-        mockMvc.perform(get("/api/tasks/{taskId}", UserTaskTestdaten.TASK_ID).principal(JOHN_PRINCIPAL))
+        mockMvc.perform(get("/api/tasks/{taskId}", UserTaskTestdaten.TASK_ID))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.title").value("Aufgabe nicht gefunden"))
             .andExpect(jsonPath("$.detail").value("taskId verweist auf keine vorhandene Aufgabe: " + UserTaskTestdaten.TASK_ID));
@@ -108,7 +102,6 @@ class TasklistControllerTest {
     @Test
     void processesManagerDecision() throws Exception {
         mockMvc.perform(post("/api/tasks/{taskId}/vorgesetztenentscheidung", UserTaskTestdaten.TASK_ID)
-                .principal(JOHN_PRINCIPAL)
                 .contentType("application/json")
                 .content("""
                     {
@@ -137,7 +130,6 @@ class TasklistControllerTest {
             );
 
         mockMvc.perform(post("/api/tasks/{taskId}/vorgesetztenentscheidung", UserTaskTestdaten.TASK_ID)
-                .principal(JOHN_PRINCIPAL)
                 .contentType("application/json")
                 .content("""
                     {

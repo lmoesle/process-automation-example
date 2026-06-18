@@ -1,7 +1,5 @@
 package de.lmoesle.processautomationexample.adapter.in.rest;
 
-import de.lmoesle.processautomationexample.application.ports.in.AngemeldetenBenutzerLadenInPort;
-import de.lmoesle.processautomationexample.application.ports.in.AngemeldetenBenutzerLadenInPort.AngemeldetenBenutzerLadenCommand;
 import de.lmoesle.processautomationexample.application.ports.in.UrlaubsantraegeFuerBenutzerLadenInPort;
 import de.lmoesle.processautomationexample.application.ports.in.UrlaubsantraegeFuerBenutzerLadenInPort.UrlaubsantraegeFuerBenutzerLadenCommand;
 import de.lmoesle.processautomationexample.domain.benutzer.BenutzerTestdaten;
@@ -12,11 +10,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.security.Principal;
 import java.util.List;
 
 import static org.hamcrest.Matchers.nullValue;
@@ -28,10 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(UrlaubsantraegeLadenController.class)
 @AutoConfigureMockMvc(addFilters = false)
-@Import(AktuellerBenutzerProvider.class)
 class UrlaubsantraegeLadenControllerTest {
-
-    private static final Principal JOHN_PRINCIPAL = () -> "john";
 
     @Autowired
     private MockMvc mockMvc;
@@ -40,12 +33,11 @@ class UrlaubsantraegeLadenControllerTest {
     private UrlaubsantraegeFuerBenutzerLadenInPort urlaubsantraegeFuerBenutzerLadenInPort;
 
     @MockitoBean
-    private AngemeldetenBenutzerLadenInPort angemeldetenBenutzerLadenInPort;
+    private AktuellerBenutzerProvider aktuellerBenutzerProvider;
 
     @BeforeEach
     void setUpCurrentUser() {
-        when(angemeldetenBenutzerLadenInPort.ladeAngemeldetenBenutzer(new AngemeldetenBenutzerLadenCommand("john")))
-            .thenReturn(BenutzerTestdaten.ada());
+        when(aktuellerBenutzerProvider.benutzerId()).thenReturn(BenutzerTestdaten.adaId());
     }
 
     @Test
@@ -70,7 +62,7 @@ class UrlaubsantraegeLadenControllerTest {
             new UrlaubsantraegeFuerBenutzerLadenCommand(BenutzerTestdaten.adaId())
         )).thenReturn(List.of(firstUrlaubsantrag, secondUrlaubsantrag));
 
-        mockMvc.perform(get("/api/urlaubsantraege").principal(JOHN_PRINCIPAL))
+        mockMvc.perform(get("/api/urlaubsantraege"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].id").value(UrlaubsantragTestData.VACATION_REQUEST_UUID.toString()))
             .andExpect(jsonPath("$[0].von").value(UrlaubsantragTestData.FROM.toString()))
@@ -110,7 +102,7 @@ class UrlaubsantraegeLadenControllerTest {
             new UrlaubsantraegeFuerBenutzerLadenCommand(BenutzerTestdaten.adaId())
         )).thenReturn(List.of());
 
-        mockMvc.perform(get("/api/urlaubsantraege").principal(JOHN_PRINCIPAL))
+        mockMvc.perform(get("/api/urlaubsantraege"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$").isArray())
             .andExpect(jsonPath("$").isEmpty());

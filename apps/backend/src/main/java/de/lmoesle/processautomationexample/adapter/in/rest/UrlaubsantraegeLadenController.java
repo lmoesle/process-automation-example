@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -42,9 +41,10 @@ public class UrlaubsantraegeLadenController {
             )
         )
     })
-    public List<UrlaubsantragDto> ladeUrlaubsantraege(Principal principal) {
+    public List<UrlaubsantragDto> ladeUrlaubsantraege() {
+        final var aktuellerBenutzerId = aktuellerBenutzerProvider.benutzerId();
         return urlaubsantraegeFuerBenutzerLadenInPort.ladeUrlaubsantraegeFuerBenutzer(
-                new UrlaubsantraegeFuerBenutzerLadenCommand(aktuellerBenutzerProvider.benutzerId(principal))
+                new UrlaubsantraegeFuerBenutzerLadenCommand(aktuellerBenutzerId)
             ).stream()
             .map(UrlaubsantragDto::ausDomain)
             .toList();
