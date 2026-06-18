@@ -24,25 +24,25 @@ The repository is intended as a small, concrete reference for combining process 
 ## Repository Structure
 
 ```text
+pom.xml      Maven aggregator for all backend variants
 apps/
-  backend/    Spring Boot backend
+  backend/    Spring Boot backend variant
   frontend/     Placeholder for the future React frontend
 stack/        Local infrastructure such as Docker Compose
 ```
 
 ## Prerequisites
 
-- Java 25
+- Java 21
 - Docker with Docker Compose support
 
-The Maven build is configured with `source` and `target` level `25`. If you build with an older JDK, Maven will fail with `invalid target release: 25`.
+The Maven build is configured with `source` and `target` level `21`. If you build with an older JDK, Maven will fail with `invalid target release: 21`.
 
 ## Build The Project
 
-Use the Maven wrapper from the backend application directory:
+Use the Maven wrapper from the repository root to build all backend variants registered in the root aggregator:
 
 ```bash
-cd apps/backend
 ./mvnw clean verify
 ```
 
@@ -79,8 +79,7 @@ The database is exposed on `localhost:5432` with these default settings:
 After the database is up, start the Spring Boot application:
 
 ```bash
-cd apps/backend
-./mvnw spring-boot:run
+./mvnw -pl apps/backend spring-boot:run
 ```
 
 By default, the application connects to the PostgreSQL container started through Docker Compose.
