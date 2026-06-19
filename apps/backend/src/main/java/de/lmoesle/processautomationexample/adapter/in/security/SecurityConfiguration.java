@@ -15,6 +15,8 @@ public class SecurityConfiguration {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        // Demo-only security: Basic Auth is used to switch between sample users.
+        // This is not a production-ready authentication or authorization setup.
         return http
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -30,6 +32,7 @@ public class SecurityConfiguration {
 
     @Bean
     PasswordEncoder passwordEncoder() {
+        // Supports the demo password hashes seeded for the sample users; not a complete password policy.
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 }

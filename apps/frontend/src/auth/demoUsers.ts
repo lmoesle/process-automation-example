@@ -9,6 +9,8 @@ export type DemoUser = {
 
 const SELECTED_USER_STORAGE_KEY = "process-automation-example.selected-user";
 
+// Demo-only users with hardcoded credentials for quickly switching perspectives in the UI.
+// This intentionally is not secure user management and must not be reused for production auth.
 export const demoUsers: [DemoUser, ...DemoUser[]] = [
   {
     id: "41f60f4f-1bbb-4469-871f-bf102c46d001",
@@ -58,5 +60,6 @@ export const storeSelectedUser = (user: DemoUser) => {
 };
 
 export const getBasicAuthHeader = (user: DemoUser) => {
+  // Demo-only Basic Auth header; credentials are visible in frontend code by design for this example.
   return `Basic ${window.btoa(`${user.username}:${user.password}`)}`;
 };

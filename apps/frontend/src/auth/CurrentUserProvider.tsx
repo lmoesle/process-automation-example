@@ -10,6 +10,7 @@ export const CurrentUserProvider = ({ children }: CurrentUserProviderProps) => {
   const [currentUser, setCurrentUser] = useState(loadSelectedUser);
 
   const selectUser = (user: DemoUser) => {
+    // Demo-only user switcher: persists the selected sample user, not a real login session.
     storeSelectedUser(user);
     setCurrentUser(user);
   };

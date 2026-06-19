@@ -15,6 +15,8 @@ public class AktuellerBenutzerProvider {
     private final AngemeldetenBenutzerLadenInPort angemeldetenBenutzerLadenInPort;
 
     BenutzerId benutzerId() {
+        // Demo-only bridge from Spring Security's Basic-Auth username to the domain BenutzerId.
+        // This is not intended to model a full identity or permission system.
         final var authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated() || authentication instanceof AnonymousAuthenticationToken) {
             throw new IllegalStateException("Kein angemeldeter Benutzer im Security-Kontext vorhanden");

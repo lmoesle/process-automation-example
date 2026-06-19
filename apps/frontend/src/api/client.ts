@@ -144,6 +144,7 @@ const toApiError = (response: Response, problem?: ApiProblemDetail) =>
   });
 
 const authorizationHeaders = (user: DemoUser) => ({
+  // Demo-only request authentication: every API call impersonates the selected sample user.
   Authorization: getBasicAuthHeader(user),
 });
 

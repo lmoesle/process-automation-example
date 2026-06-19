@@ -16,6 +16,8 @@ class BenutzerUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String benutzername) {
+        // Demo-only user management: existing domain users double as Basic-Auth users.
+        // A real system would delegate identity, credentials and account state to a dedicated IAM setup.
         return benutzerJpaRepository.findByBenutzername(benutzername)
             .filter(benutzer -> StringUtils.hasText(benutzer.getPasswortHash()))
             .map(benutzer -> User.withUsername(benutzer.getBenutzername())
