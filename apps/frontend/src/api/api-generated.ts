@@ -4,6 +4,26 @@
  */
 
 export interface paths {
+    "/api/benutzer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Benutzer suchen
+         * @description Liefert die aktuell verfuegbaren Benutzer fuer Auswahlfelder wie die Vertretung.
+         */
+        get: operations["sucheBenutzer"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/tasks": {
         parameters: {
             query?: never;
@@ -13,7 +33,7 @@ export interface paths {
         };
         /**
          * Alle User Tasks laden
-         * @description Liefert alle fuer den aktuell angemeldeten Benutzer sichtbaren User Tasks. Solange keine Authentifizierung existiert, ist der Benutzer im Controller fest verdrahtet.
+         * @description Liefert alle fuer den aktuell angemeldeten Benutzer sichtbaren User Tasks.
          */
         get: operations["getAllTasks"];
         put?: never;
@@ -55,7 +75,7 @@ export interface paths {
         put?: never;
         /**
          * Genehmigung vom Vorgesetzten entscheiden
-         * @description Der aktuelle Benutzer entscheidet ueber den sichtbaren User Task und kann optional einen Kommentar fuer die Statushistorie hinterlegen. Beim Abschluss wird die Aufgabe automatisch dem aktuellen Benutzer zugewiesen und danach abgeschlossen. Solange keine Authentifizierung existiert, ist der Benutzer im Controller fest verdrahtet.
+         * @description Der aktuelle Benutzer entscheidet ueber den sichtbaren User Task und kann optional einen Kommentar fuer die Statushistorie hinterlegen. Beim Abschluss wird die Aufgabe automatisch dem aktuellen Benutzer zugewiesen und danach abgeschlossen.
          */
         post: operations["entscheideGenehmigungVomVorgesetzten"];
         delete?: never;
@@ -73,7 +93,7 @@ export interface paths {
         };
         /**
          * Urlaubsanträge laden
-         * @description Laedt alle Urlaubsantraege fuer den aktuell angemeldeten Benutzer. Solange keine Authentifizierung existiert, ist der Benutzer im Controller fest verdrahtet.
+         * @description Laedt alle Urlaubsantraege fuer den aktuell angemeldeten Benutzer.
          */
         get: operations["ladeUrlaubsantraege"];
         put?: never;
@@ -92,6 +112,24 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        BenutzerAuswahlDto: {
+            /**
+             * @description E-Mail-Adresse des Benutzers.
+             * @example ada.lovelace@example.com
+             */
+            email?: string;
+            /**
+             * Format: uuid
+             * @description Technische Benutzer-ID fuer Auswahlfelder.
+             * @example 2d88b39b-e7b0-4a3f-b9c6-b3d8e6fbe100
+             */
+            id?: string;
+            /**
+             * @description Anzeigename des Benutzers.
+             * @example Ada Lovelace
+             */
+            name?: string;
+        };
         BenutzerDto: {
             /**
              * @description E-Mail-Adresse des Benutzers.
@@ -152,12 +190,6 @@ export interface components {
             vorgesetzter?: components["schemas"]["BenutzerDto"];
         };
         UrlaubsantragErstellenDto: {
-            /**
-             * Format: uuid
-             * @description Benutzer-ID des Antragstellers.
-             * @example 2d88b39b-e7b0-4a3f-b9c6-b3d8e6fbe100
-             */
-            antragstellerId: string;
             /**
              * Format: date
              * @description Endedatum des beantragten Urlaubszeitraums.
@@ -220,6 +252,7 @@ export interface components {
     headers: never;
     pathItems: never;
 }
+export type SchemaBenutzerAuswahlDto = components['schemas']['BenutzerAuswahlDto'];
 export type SchemaBenutzerDto = components['schemas']['BenutzerDto'];
 export type SchemaProblemDetail = components['schemas']['ProblemDetail'];
 export type SchemaUrlaubsantragDto = components['schemas']['UrlaubsantragDto'];
@@ -229,6 +262,28 @@ export type SchemaUserTaskDto = components['schemas']['UserTaskDto'];
 export type SchemaVorgesetztenentscheidungDto = components['schemas']['VorgesetztenentscheidungDto'];
 export type $defs = Record<string, never>;
 export interface operations {
+    sucheBenutzer: {
+        parameters: {
+            query?: {
+                suchbegriff?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Benutzer erfolgreich geladen. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BenutzerAuswahlDto"][];
+                };
+            };
+        };
+    };
     getAllTasks: {
         parameters: {
             query?: never;

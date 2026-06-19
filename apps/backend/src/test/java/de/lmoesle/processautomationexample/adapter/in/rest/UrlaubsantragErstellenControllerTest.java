@@ -126,4 +126,30 @@ class UrlaubsantragErstellenControllerTest {
             .andExpect(jsonPath("$.title").value("Ungueltige Anfrage"))
             .andExpect(jsonPath("$.detail").value("prozessinstanzId darf nicht null sein"));
     }
+
+    @Test
+    void returnsProblemDetailWhenApplicantIsSubstituteUser() throws Exception {
+        when(erstelleUrlaubsantragInPort.erstelleUrlaubsantrag(any()))
+            .thenThrow(new IllegalArgumentException("vertretung darf nicht antragsteller sein"));
+
+        mockMvc.perform(post("/api/urlaubsantraege")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                      "von": "2026-07-01",
+                      "bis": "2026-07-10",
+                      "vertretungId": "%s"
+                    }
+                    """.formatted(BenutzerTestdaten.ADA_UUID)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.title").value("Ungueltige Anfrage"))
+            .andExpect(jsonPath("$.detail").value("vertretung darf nicht antragsteller sein"));
+
+        verify(erstelleUrlaubsantragInPort).erstelleUrlaubsantrag(new UrlaubsantragErstellenCommand(
+            LocalDate.parse("2026-07-01"),
+            LocalDate.parse("2026-07-10"),
+            BenutzerTestdaten.adaId(),
+            BenutzerTestdaten.adaId()
+        ));
+    }
 }

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Alert, Button, Card, CardContent, Stack, TextField, Typography } from "@mui/material";
+import type { UserSelection } from "../../api/client";
 
 type VacationRequestFormValues = {
   von: string;
@@ -9,15 +10,19 @@ type VacationRequestFormValues = {
 
 type VacationRequestFormProps = {
   isPending: boolean;
+  users: UserSelection[];
+  usersError?: Error | null;
+  usersPending: boolean;
   onSubmit: (values: VacationRequestFormValues) => void;
 };
 
-export const VacationRequestForm = ({ isPending, onSubmit }: VacationRequestFormProps) => {
+export const VacationRequestForm = ({ isPending, users, usersError, usersPending, onSubmit }: VacationRequestFormProps) => {
   const [von, setVon] = useState("");
   const [bis, setBis] = useState("");
   const [vertretungId, setVertretungId] = useState("");
 
   const invalidRange = Boolean(von && bis && von > bis);
+  const validVertretungId = users.some((user) => user.id === vertretungId) ? vertretungId : "";
 
   return (
     <Card variant="outlined">
@@ -32,7 +37,7 @@ export const VacationRequestForm = ({ isPending, onSubmit }: VacationRequestForm
               return;
             }
 
-            const trimmedVertretungId = vertretungId.trim();
+            const trimmedVertretungId = validVertretungId.trim();
             onSubmit({
               von,
               bis,
@@ -49,7 +54,7 @@ export const VacationRequestForm = ({ isPending, onSubmit }: VacationRequestForm
             type="date"
             value={von}
             onChange={(event) => setVon(event.target.value)}
-            InputLabelProps={{ shrink: true }}
+            slotProps={{ inputLabel: { shrink: true } }}
             required
           />
 
@@ -58,16 +63,34 @@ export const VacationRequestForm = ({ isPending, onSubmit }: VacationRequestForm
             type="date"
             value={bis}
             onChange={(event) => setBis(event.target.value)}
-            InputLabelProps={{ shrink: true }}
+            slotProps={{ inputLabel: { shrink: true } }}
             required
           />
 
           <TextField
-            label="Vertretung (optional)"
-            placeholder="UUID der Vertretung"
-            value={vertretungId}
+            select
+            value={validVertretungId}
             onChange={(event) => setVertretungId(event.target.value)}
-          />
+            disabled={usersPending || Boolean(usersError)}
+            helperText={usersPending ? "Benutzer werden geladen..." : ""}
+            slotProps={{
+              select: {
+                native: true,
+                inputProps: { "aria-label": "Vertretung" },
+              },
+            }}
+          >
+            <option value="">Keine Vertretung</option>
+            {users.map((user) => (
+              <option key={user.id} value={user.id}>
+                {user.name} ({user.email})
+              </option>
+            ))}
+          </TextField>
+
+          {usersError ? (
+            <Alert severity="warning">Benutzer konnten nicht geladen werden: {usersError.message}</Alert>
+          ) : null}
 
           {invalidRange ? <Alert severity="warning">`Von` muss vor oder gleich `Bis` liegen.</Alert> : null}
 

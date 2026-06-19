@@ -35,6 +35,10 @@ public final class Urlaubsantrag {
         Assert.notNull(id, "id darf nicht null sein");
         Assert.notNull(zeitraum, "zeitraum darf nicht null sein");
         Assert.notNull(antragsteller, "antragsteller darf nicht null sein");
+        Assert.isTrue(
+            vertretung == null || !vertretung.id().equals(antragsteller.id()),
+            "vertretung darf nicht antragsteller sein"
+        );
         Assert.notNull(status, "status darf nicht null sein");
         Assert.notEmpty(statusHistorie, "statusHistorie darf nicht leer sein");
         Assert.isTrue(

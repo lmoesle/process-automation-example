@@ -7,6 +7,7 @@ type ApiUser = components["schemas"]["BenutzerDto"];
 type ApiProblemDetail = components["schemas"]["ProblemDetail"];
 type ApiVacationRequest = components["schemas"]["UrlaubsantragDto"];
 type ApiVacationRequestHistoryEntry = components["schemas"]["UrlaubsantragStatusHistorieneintragDto"];
+type ApiUserSelection = components["schemas"]["BenutzerAuswahlDto"];
 type ApiUserTask = components["schemas"]["UserTaskDto"];
 type ApiVacationRequestInput = NonNullable<
   paths["/api/urlaubsantraege"]["post"]["requestBody"]
@@ -25,6 +26,10 @@ export type VacationStatus = (typeof vacationStatuses)[number];
 export type UserSummary = {
   name: string;
   email: string;
+};
+
+export type UserSelection = UserSummary & {
+  id: string;
 };
 
 export type VacationRequestHistoryEntry = {
@@ -90,6 +95,12 @@ const normalizeUser = (user?: ApiUser): UserSummary => ({
   email: user?.email ?? "",
 });
 
+const normalizeUserSelection = (user?: ApiUserSelection): UserSelection => ({
+  id: user?.id ?? "",
+  name: user?.name ?? "Unbekannt",
+  email: user?.email ?? "",
+});
+
 const normalizeOptionalUser = (user?: ApiUser): UserSummary | null => (user ? normalizeUser(user) : null);
 
 const normalizeVacationRequestHistoryEntry = (
@@ -147,6 +158,11 @@ const authorizationHeaders = (user: DemoUser) => ({
   // Demo-only request authentication: every API call impersonates the selected sample user.
   Authorization: getBasicAuthHeader(user),
 });
+
+export const listUsers = async (user: DemoUser): Promise<UserSelection[]> => {
+  const result = await apiClient.GET("/api/benutzer", { headers: authorizationHeaders(user) });
+  return expectData(result).map(normalizeUserSelection);
+};
 
 const expectData = <T>(result: { data?: T; error?: unknown; response: Response }) => {
   if (result.error) {
