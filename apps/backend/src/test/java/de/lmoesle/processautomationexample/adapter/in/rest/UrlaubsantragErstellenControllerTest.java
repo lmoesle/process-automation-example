@@ -103,10 +103,9 @@ class UrlaubsantragErstellenControllerTest {
                 .content("""
                     {
                       "von": "2026-07-10",
-                      "bis": "2026-07-01",
-                      "antragstellerId": "%s"
+                      "bis": "2026-07-01"
                     }
-                    """.formatted(UrlaubsantragTestData.APPLICANT_USER_UUID)))
+                    """))
             .andExpect(status().isBadRequest());
     }
 
@@ -120,10 +119,9 @@ class UrlaubsantragErstellenControllerTest {
                 .content("""
                     {
                       "von": "2026-07-01",
-                      "bis": "2026-07-10",
-                      "antragstellerId": "%s"
+                      "bis": "2026-07-10"
                     }
-                    """.formatted(UrlaubsantragTestData.APPLICANT_USER_UUID)))
+                    """))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.title").value("Ungueltige Anfrage"))
             .andExpect(jsonPath("$.detail").value("prozessinstanzId darf nicht null sein"));

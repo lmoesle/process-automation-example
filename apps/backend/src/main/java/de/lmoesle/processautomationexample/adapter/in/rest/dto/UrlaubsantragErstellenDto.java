@@ -21,11 +21,6 @@ public record UrlaubsantragErstellenDto(
     )
     @NotNull LocalDate bis,
     @Schema(
-        description = "Optionale Benutzer-ID des Antragstellers. Der REST-Adapter verwendet den authentifizierten Benutzer.",
-        example = "2d88b39b-e7b0-4a3f-b9c6-b3d8e6fbe100"
-    )
-    UUID antragstellerId,
-    @Schema(
         description = "Optionale Benutzer-ID der Vertretung waehrend des Urlaubszeitraums.",
         example = "f9821988-db4f-4daa-9414-6cc5227f7102",
         nullable = true
