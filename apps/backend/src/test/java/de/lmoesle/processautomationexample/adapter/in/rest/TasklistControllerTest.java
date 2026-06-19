@@ -9,9 +9,12 @@ import de.lmoesle.processautomationexample.domain.benutzer.BenutzerTestdaten;
 import de.lmoesle.processautomationexample.domain.tasklist.TaskNichtGefundenException;
 import de.lmoesle.processautomationexample.domain.tasklist.TaskZugriffVerweigertException;
 import de.lmoesle.processautomationexample.domain.tasklist.UserTaskTestdaten;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -26,6 +29,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(TasklistController.class)
+@AutoConfigureMockMvc(addFilters = false)
+@Import(RestExceptionHandler.class)
 class TasklistControllerTest {
 
     @Autowired
@@ -36,6 +41,14 @@ class TasklistControllerTest {
 
     @MockitoBean
     private GenehmigungVomVorgesetztenInPort genehmigungVomVorgesetztenInPort;
+
+    @MockitoBean
+    private AktuellerBenutzerProvider aktuellerBenutzerProvider;
+
+    @BeforeEach
+    void setUpCurrentUser() {
+        when(aktuellerBenutzerProvider.benutzerId()).thenReturn(BenutzerTestdaten.adaId());
+    }
 
     @Test
     void loadsAllTasks() throws Exception {

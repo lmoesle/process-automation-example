@@ -5,8 +5,10 @@ import de.lmoesle.processautomationexample.application.ports.in.UrlaubsantraegeF
 import de.lmoesle.processautomationexample.domain.benutzer.BenutzerTestdaten;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.Urlaubszeitraum;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.UrlaubsantragTestData;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -21,6 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UrlaubsantraegeLadenController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class UrlaubsantraegeLadenControllerTest {
 
     @Autowired
@@ -29,8 +32,16 @@ class UrlaubsantraegeLadenControllerTest {
     @MockitoBean
     private UrlaubsantraegeFuerBenutzerLadenInPort urlaubsantraegeFuerBenutzerLadenInPort;
 
+    @MockitoBean
+    private AktuellerBenutzerProvider aktuellerBenutzerProvider;
+
+    @BeforeEach
+    void setUpCurrentUser() {
+        when(aktuellerBenutzerProvider.benutzerId()).thenReturn(BenutzerTestdaten.adaId());
+    }
+
     @Test
-    void loadsUrlaubsantragsForHardcodedCurrentUser() throws Exception {
+    void loadsUrlaubsantragsForAuthenticatedCurrentUser() throws Exception {
         final var firstUrlaubsantrag = UrlaubsantragTestData.urlaubsantrag(
             UrlaubsantragTestData.urlaubsantragId(),
             UrlaubsantragTestData.vacationPeriod(),

@@ -3,13 +3,17 @@ import { AsyncState } from "../components/common/AsyncState";
 import { Page } from "../components/layout/Page";
 import { VacationRequestForm } from "../components/vacation-requests/VacationRequestForm";
 import { VacationRequestList } from "../components/vacation-requests/VacationRequestList";
-import { runtimeConfig } from "../config/runtimeConfig";
+import { useCurrentUser } from "../auth/useCurrentUser";
 import { useCreateVacationRequestMutation } from "../hooks/useCreateVacationRequestMutation";
+import { useUsersQuery } from "../hooks/useUsersQuery";
 import { useVacationRequestsQuery } from "../hooks/useVacationRequestsQuery";
 
 export const VacationRequestsPage = () => {
+  const { currentUser } = useCurrentUser();
+  const usersQuery = useUsersQuery();
   const vacationRequestsQuery = useVacationRequestsQuery();
   const createVacationRequestMutation = useCreateVacationRequestMutation();
+  const selectableUsers = (usersQuery.data ?? []).filter((user) => user.id !== currentUser.id);
 
   return (
     <Page
@@ -20,21 +24,11 @@ export const VacationRequestsPage = () => {
         <Stack sx={{ flex: { xs: 1, xl: "0 0 360px" }, width: "100%" }}>
           <VacationRequestForm
             isPending={createVacationRequestMutation.isPending}
+            users={selectableUsers}
+            usersError={usersQuery.error}
+            usersPending={usersQuery.isLoading}
             onSubmit={(values) => {
-              createVacationRequestMutation.mutate(
-                values.vertretungId
-                  ? {
-                      antragstellerId: runtimeConfig.applicantId,
-                      bis: values.bis,
-                      von: values.von,
-                      vertretungId: values.vertretungId,
-                    }
-                  : {
-                      antragstellerId: runtimeConfig.applicantId,
-                      bis: values.bis,
-                      von: values.von,
-                    },
-              );
+              createVacationRequestMutation.mutate(values);
             }}
           />
 

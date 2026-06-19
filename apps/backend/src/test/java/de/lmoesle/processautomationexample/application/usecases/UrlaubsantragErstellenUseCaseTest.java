@@ -25,6 +25,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -173,6 +175,31 @@ class UrlaubsantragErstellenUseCaseTest {
     }
 
     @Test
+    void excludesApplicantFromTeamLeadCandidates() {
+        when(benutzerRepositoryOutPort.findeNachId(BenutzerTestdaten.adaId()))
+            .thenReturn(Optional.of(BenutzerTestdaten.ada()));
+        when(benutzerRepositoryOutPort.findeAlleLeitendenNachTeamId(BenutzerTestdaten.engineeringTeamId()))
+            .thenReturn(List.of(BenutzerTestdaten.ada()));
+        when(benutzerRepositoryOutPort.findeAlleLeitendenNachTeamId(BenutzerTestdaten.platformTeamId()))
+            .thenReturn(List.of(BenutzerTestdaten.carla()));
+        when(urlaubsantragSpeichernOutPort.speichere(any(Urlaubsantrag.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+        when(genehmigungsprozessStartenOutPort.starteGenehmigungsprozessFuer(any(Urlaubsantrag.class), any()))
+            .thenAnswer(invocation -> {
+                assertThat(invocation.<List<de.lmoesle.processautomationexample.domain.benutzer.BenutzerId>>getArgument(1))
+                    .containsExactly(BenutzerTestdaten.carlaId());
+                return UrlaubsantragTestData.prozessinstanzId();
+            });
+
+        erstelleUrlaubsantragUseCase.erstelleUrlaubsantrag(new UrlaubsantragErstellenCommand(
+            UrlaubsantragTestData.FROM,
+            UrlaubsantragTestData.TO,
+            BenutzerTestdaten.adaId(),
+            null
+        ));
+    }
+
+    @Test
     void rejectsMissingApplicantUser() {
         when(benutzerRepositoryOutPort.findeNachId(UrlaubsantragTestData.antragstellerId())).thenReturn(Optional.empty());
 
@@ -215,6 +242,27 @@ class UrlaubsantragErstellenUseCaseTest {
         final InOrder inOrder = inOrder(benutzerRepositoryOutPort);
         inOrder.verify(benutzerRepositoryOutPort).findeNachId(UrlaubsantragTestData.antragstellerId());
         inOrder.verify(benutzerRepositoryOutPort).findeNachId(UrlaubsantragTestData.vertretungId());
+        verifyNoInteractions(urlaubsantragSpeichernOutPort, genehmigungsprozessStartenOutPort);
+        verifyNoMoreInteractions(benutzerRepositoryOutPort);
+    }
+
+    @Test
+    void rejectsApplicantAsSubstituteUser() {
+        when(benutzerRepositoryOutPort.findeNachId(UrlaubsantragTestData.antragstellerId()))
+            .thenReturn(Optional.of(UrlaubsantragTestData.antragsteller()));
+
+        assertThatThrownBy(() -> erstelleUrlaubsantragUseCase.erstelleUrlaubsantrag(
+            new UrlaubsantragErstellenCommand(
+                UrlaubsantragTestData.FROM,
+                UrlaubsantragTestData.TO,
+                UrlaubsantragTestData.antragstellerId(),
+                UrlaubsantragTestData.antragstellerId()
+            )
+        ))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("vertretung darf nicht antragsteller sein");
+
+        verify(benutzerRepositoryOutPort, times(2)).findeNachId(UrlaubsantragTestData.antragstellerId());
         verifyNoInteractions(urlaubsantragSpeichernOutPort, genehmigungsprozessStartenOutPort);
         verifyNoMoreInteractions(benutzerRepositoryOutPort);
     }

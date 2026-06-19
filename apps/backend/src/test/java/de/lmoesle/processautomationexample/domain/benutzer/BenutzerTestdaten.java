@@ -35,6 +35,10 @@ public final class BenutzerTestdaten {
         return new Team(engineeringTeamId(), ENGINEERING_TEAM, TeamRolle.LEITUNG);
     }
 
+    public static Team engineeringUserTeam() {
+        return new Team(engineeringTeamId(), ENGINEERING_TEAM, TeamRolle.MITGLIED);
+    }
+
     public static Team platformUserTeam() {
         return new Team(platformTeamId(), PLATFORM_TEAM, TeamRolle.MITGLIED);
     }

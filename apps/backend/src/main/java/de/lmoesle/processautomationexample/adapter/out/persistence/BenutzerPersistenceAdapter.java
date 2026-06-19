@@ -19,12 +19,43 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BenutzerPersistenceAdapter implements BenutzerRepositoryOutPort {
 
+    // Demo-only allowlist: the UI must only offer users that can log in via the sample Basic Auth setup.
+    private static final List<String> DEMO_BENUTZERNAMEN = List.of("john", "jane", "max");
+
     private final BenutzerJpaRepository benutzerJpaRepository;
+
+    @Override
+    public List<Benutzer> findeAlleAuswaehlbaren() {
+        return benutzerJpaRepository.findDistinctByBenutzernameIn(DEMO_BENUTZERNAMEN).stream()
+            .map(BenutzerPersistenceMapper::toDomain)
+            .sorted(Comparator.comparing(Benutzer::name))
+            .toList();
+    }
+
+    @Override
+    public List<Benutzer> sucheAuswaehlbareNachNameOderEmail(String suchbegriff) {
+        Assert.hasText(suchbegriff, "suchbegriff darf nicht leer sein");
+        return benutzerJpaRepository.findAuswaehlbareByBenutzernamenAndNameOrEmailContainingIgnoreCase(
+                DEMO_BENUTZERNAMEN,
+                suchbegriff
+            )
+            .stream()
+            .map(BenutzerPersistenceMapper::toDomain)
+            .sorted(Comparator.comparing(Benutzer::name))
+            .toList();
+    }
 
     @Override
     public Optional<Benutzer> findeNachId(BenutzerId benutzerId) {
         Assert.notNull(benutzerId, "benutzerId darf nicht null sein");
         return benutzerJpaRepository.findById(benutzerId.value())
+            .map(BenutzerPersistenceMapper::toDomain);
+    }
+
+    @Override
+    public Optional<Benutzer> findeNachBenutzername(String benutzername) {
+        Assert.hasText(benutzername, "benutzername darf nicht leer sein");
+        return benutzerJpaRepository.findByBenutzername(benutzername)
             .map(BenutzerPersistenceMapper::toDomain);
     }
 

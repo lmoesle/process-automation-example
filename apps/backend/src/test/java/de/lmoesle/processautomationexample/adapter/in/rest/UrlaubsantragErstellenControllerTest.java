@@ -1,22 +1,28 @@
 package de.lmoesle.processautomationexample.adapter.in.rest;
 
 import de.lmoesle.processautomationexample.application.ports.in.UrlaubsantragErstellenInPort;
+import de.lmoesle.processautomationexample.application.ports.in.UrlaubsantragErstellenInPort.UrlaubsantragErstellenCommand;
 import de.lmoesle.processautomationexample.application.ports.in.UrlaubsantragErstellenInPort.UrlaubsantragErstellenErgebnis;
 import de.lmoesle.processautomationexample.domain.benutzer.BenutzerTestdaten;
+import de.lmoesle.processautomationexample.domain.benutzer.BenutzerId;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.UrlaubsantragId;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.UrlaubsantragStatus;
 import de.lmoesle.processautomationexample.domain.urlaubsantrag.UrlaubsantragTestData;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -24,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UrlaubsantragErstellenController.class)
+@AutoConfigureMockMvc(addFilters = false)
 @Import(RestExceptionHandler.class)
 class UrlaubsantragErstellenControllerTest {
 
@@ -33,10 +40,17 @@ class UrlaubsantragErstellenControllerTest {
     @MockitoBean
     private UrlaubsantragErstellenInPort erstelleUrlaubsantragInPort;
 
+    @MockitoBean
+    private AktuellerBenutzerProvider aktuellerBenutzerProvider;
+
+    @BeforeEach
+    void setUpCurrentUser() {
+        when(aktuellerBenutzerProvider.benutzerId()).thenReturn(BenutzerTestdaten.adaId());
+    }
+
     @Test
     void createsUrlaubsantragViaRestApi() throws Exception {
         final UUID urlaubsantragId = UrlaubsantragTestData.VACATION_REQUEST_UUID;
-        final UUID antragstellerId = UrlaubsantragTestData.APPLICANT_USER_UUID;
         final UUID vertretungId = UrlaubsantragTestData.SUBSTITUTE_USER_UUID;
 
         when(erstelleUrlaubsantragInPort.erstelleUrlaubsantrag(any()))
@@ -55,10 +69,9 @@ class UrlaubsantragErstellenControllerTest {
                     {
                       "von": "2026-07-01",
                       "bis": "2026-07-10",
-                      "antragstellerId": "%s",
                       "vertretungId": "%s"
                     }
-                    """.formatted(antragstellerId, vertretungId)))
+                    """.formatted(vertretungId)))
             .andExpect(status().isCreated())
             .andExpect(header().string("Location", "/api/urlaubsantraege/" + urlaubsantragId))
             .andExpect(jsonPath("$.id").value(urlaubsantragId.toString()))
@@ -74,6 +87,13 @@ class UrlaubsantragErstellenControllerTest {
             .andExpect(jsonPath("$.status").value("ANTRAG_GESTELLT"))
             .andExpect(jsonPath("$.statusHistorie[0].status").value("ANTRAG_GESTELLT"))
             .andExpect(jsonPath("$.prozessinstanzId").doesNotExist());
+
+        verify(erstelleUrlaubsantragInPort).erstelleUrlaubsantrag(new UrlaubsantragErstellenCommand(
+            LocalDate.parse("2026-07-01"),
+            LocalDate.parse("2026-07-10"),
+            BenutzerTestdaten.adaId(),
+            BenutzerId.of(vertretungId)
+        ));
     }
 
     @Test
@@ -83,10 +103,9 @@ class UrlaubsantragErstellenControllerTest {
                 .content("""
                     {
                       "von": "2026-07-10",
-                      "bis": "2026-07-01",
-                      "antragstellerId": "%s"
+                      "bis": "2026-07-01"
                     }
-                    """.formatted(UrlaubsantragTestData.APPLICANT_USER_UUID)))
+                    """))
             .andExpect(status().isBadRequest());
     }
 
@@ -100,12 +119,37 @@ class UrlaubsantragErstellenControllerTest {
                 .content("""
                     {
                       "von": "2026-07-01",
-                      "bis": "2026-07-10",
-                      "antragstellerId": "%s"
+                      "bis": "2026-07-10"
                     }
-                    """.formatted(UrlaubsantragTestData.APPLICANT_USER_UUID)))
+                    """))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.title").value("Ungueltige Anfrage"))
             .andExpect(jsonPath("$.detail").value("prozessinstanzId darf nicht null sein"));
+    }
+
+    @Test
+    void returnsProblemDetailWhenApplicantIsSubstituteUser() throws Exception {
+        when(erstelleUrlaubsantragInPort.erstelleUrlaubsantrag(any()))
+            .thenThrow(new IllegalArgumentException("vertretung darf nicht antragsteller sein"));
+
+        mockMvc.perform(post("/api/urlaubsantraege")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                      "von": "2026-07-01",
+                      "bis": "2026-07-10",
+                      "vertretungId": "%s"
+                    }
+                    """.formatted(BenutzerTestdaten.ADA_UUID)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.title").value("Ungueltige Anfrage"))
+            .andExpect(jsonPath("$.detail").value("vertretung darf nicht antragsteller sein"));
+
+        verify(erstelleUrlaubsantragInPort).erstelleUrlaubsantrag(new UrlaubsantragErstellenCommand(
+            LocalDate.parse("2026-07-01"),
+            LocalDate.parse("2026-07-10"),
+            BenutzerTestdaten.adaId(),
+            BenutzerTestdaten.adaId()
+        ));
     }
 }

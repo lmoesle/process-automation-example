@@ -1,4 +1,5 @@
 import createClient from "openapi-fetch";
+import { type DemoUser, getBasicAuthHeader } from "../auth/demoUsers";
 import { runtimeConfig } from "../config/runtimeConfig";
 import type { components, paths } from "./api-generated";
 
@@ -6,7 +7,11 @@ type ApiUser = components["schemas"]["BenutzerDto"];
 type ApiProblemDetail = components["schemas"]["ProblemDetail"];
 type ApiVacationRequest = components["schemas"]["UrlaubsantragDto"];
 type ApiVacationRequestHistoryEntry = components["schemas"]["UrlaubsantragStatusHistorieneintragDto"];
+type ApiUserSelection = components["schemas"]["BenutzerAuswahlDto"];
 type ApiUserTask = components["schemas"]["UserTaskDto"];
+type ApiVacationRequestInput = NonNullable<
+  paths["/api/urlaubsantraege"]["post"]["requestBody"]
+>["content"]["application/json"];
 
 const vacationStatuses = [
   "ANTRAG_GESTELLT",
@@ -21,6 +26,10 @@ export type VacationStatus = (typeof vacationStatuses)[number];
 export type UserSummary = {
   name: string;
   email: string;
+};
+
+export type UserSelection = UserSummary & {
+  id: string;
 };
 
 export type VacationRequestHistoryEntry = {
@@ -40,7 +49,6 @@ export type VacationRequest = {
 };
 
 export type VacationRequestInput = {
-  antragstellerId: string;
   bis: string;
   von: string;
   vertretungId?: string;
@@ -83,6 +91,12 @@ const normalizeVacationStatus = (value: unknown): VacationStatus =>
   isVacationStatus(value) ? value : "ANTRAG_GESTELLT";
 
 const normalizeUser = (user?: ApiUser): UserSummary => ({
+  name: user?.name ?? "Unbekannt",
+  email: user?.email ?? "",
+});
+
+const normalizeUserSelection = (user?: ApiUserSelection): UserSelection => ({
+  id: user?.id ?? "",
   name: user?.name ?? "Unbekannt",
   email: user?.email ?? "",
 });
@@ -140,6 +154,16 @@ const toApiError = (response: Response, problem?: ApiProblemDetail) =>
     problem,
   });
 
+const authorizationHeaders = (user: DemoUser) => ({
+  // Demo-only request authentication: every API call impersonates the selected sample user.
+  Authorization: getBasicAuthHeader(user),
+});
+
+export const listUsers = async (user: DemoUser): Promise<UserSelection[]> => {
+  const result = await apiClient.GET("/api/benutzer", { headers: authorizationHeaders(user) });
+  return expectData(result).map(normalizeUserSelection);
+};
+
 const expectData = <T>(result: { data?: T; error?: unknown; response: Response }) => {
   if (result.error) {
     throw toApiError(result.response, result.error as ApiProblemDetail);
@@ -157,28 +181,40 @@ const expectData = <T>(result: { data?: T; error?: unknown; response: Response }
 };
 
 const expectNoContent = (result: { error?: unknown; response: Response }) => {
-  if (result.error) {
+  if (result.error || !result.response.ok) {
     throw toApiError(result.response, result.error as ApiProblemDetail);
+  }
+
+  if (result.response.status !== 204) {
+    throw new ApiError({
+      status: result.response.status,
+      url: result.response.url,
+      message: "Die API hat keinen 204-No-Content-Status zurueckgegeben.",
+    });
   }
 };
 
-export const listVacationRequests = async (): Promise<VacationRequest[]> => {
-  const result = await apiClient.GET("/api/urlaubsantraege");
+export const listVacationRequests = async (user: DemoUser): Promise<VacationRequest[]> => {
+  const result = await apiClient.GET("/api/urlaubsantraege", { headers: authorizationHeaders(user) });
   return expectData(result).map(normalizeVacationRequest);
 };
 
-export const createVacationRequest = async (body: VacationRequestInput): Promise<VacationRequest> => {
-  const result = await apiClient.POST("/api/urlaubsantraege", { body });
+export const createVacationRequest = async (user: DemoUser, body: VacationRequestInput): Promise<VacationRequest> => {
+  const result = await apiClient.POST("/api/urlaubsantraege", {
+    body: body as unknown as ApiVacationRequestInput,
+    headers: authorizationHeaders(user),
+  });
   return normalizeVacationRequest(expectData(result));
 };
 
-export const listTasks = async (): Promise<UserTask[]> => {
-  const result = await apiClient.GET("/api/tasks");
+export const listTasks = async (user: DemoUser): Promise<UserTask[]> => {
+  const result = await apiClient.GET("/api/tasks", { headers: authorizationHeaders(user) });
   return expectData(result).map(normalizeUserTask);
 };
 
-export const getTask = async (taskId: string): Promise<UserTask> => {
+export const getTask = async (user: DemoUser, taskId: string): Promise<UserTask> => {
   const result = await apiClient.GET("/api/tasks/{taskId}", {
+    headers: authorizationHeaders(user),
     params: {
       path: {
         taskId,
@@ -189,8 +225,9 @@ export const getTask = async (taskId: string): Promise<UserTask> => {
   return normalizeUserTask(expectData(result));
 };
 
-export const submitManagerDecision = async (taskId: string, body: ManagerDecisionInput): Promise<void> => {
+export const submitManagerDecision = async (user: DemoUser, taskId: string, body: ManagerDecisionInput): Promise<void> => {
   const result = await apiClient.POST("/api/tasks/{taskId}/vorgesetztenentscheidung", {
+    headers: authorizationHeaders(user),
     params: {
       path: {
         taskId,

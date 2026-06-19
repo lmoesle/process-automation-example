@@ -3,7 +3,6 @@ package de.lmoesle.processautomationexample.adapter.in.rest;
 import de.lmoesle.processautomationexample.adapter.in.rest.dto.UrlaubsantragDto;
 import de.lmoesle.processautomationexample.application.ports.in.UrlaubsantraegeFuerBenutzerLadenInPort;
 import de.lmoesle.processautomationexample.application.ports.in.UrlaubsantraegeFuerBenutzerLadenInPort.UrlaubsantraegeFuerBenutzerLadenCommand;
-import de.lmoesle.processautomationexample.domain.benutzer.BenutzerId;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/urlaubsantraege")
@@ -25,14 +23,13 @@ import java.util.UUID;
 @Tag(name = "Urlaubsanträge")
 public class UrlaubsantraegeLadenController {
 
-    private static final BenutzerId AKTUELLER_BENUTZER_ID = BenutzerId.of(UUID.fromString("2d88b39b-e7b0-4a3f-b9c6-b3d8e6fbe100"));
-
     private final UrlaubsantraegeFuerBenutzerLadenInPort urlaubsantraegeFuerBenutzerLadenInPort;
+    private final AktuellerBenutzerProvider aktuellerBenutzerProvider;
 
     @GetMapping
     @Operation(
         summary = "Urlaubsanträge laden",
-        description = "Laedt alle Urlaubsantraege fuer den aktuell angemeldeten Benutzer. Solange keine Authentifizierung existiert, ist der Benutzer im Controller fest verdrahtet."
+        description = "Laedt alle Urlaubsantraege fuer den aktuell angemeldeten Benutzer."
     )
     @ApiResponses({
         @ApiResponse(
@@ -45,8 +42,9 @@ public class UrlaubsantraegeLadenController {
         )
     })
     public List<UrlaubsantragDto> ladeUrlaubsantraege() {
+        final var aktuellerBenutzerId = aktuellerBenutzerProvider.benutzerId();
         return urlaubsantraegeFuerBenutzerLadenInPort.ladeUrlaubsantraegeFuerBenutzer(
-                new UrlaubsantraegeFuerBenutzerLadenCommand(AKTUELLER_BENUTZER_ID)
+                new UrlaubsantraegeFuerBenutzerLadenCommand(aktuellerBenutzerId)
             ).stream()
             .map(UrlaubsantragDto::ausDomain)
             .toList();

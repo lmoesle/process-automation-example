@@ -100,6 +100,18 @@ class UrlaubsantragTest {
     }
 
     @Test
+    void rejectsApplicantAsSubstituteUser() {
+        assertThatThrownBy(() -> Urlaubsantrag.stelle(
+            UrlaubsantragTestData.FROM,
+            UrlaubsantragTestData.TO,
+            UrlaubsantragTestData.antragsteller(),
+            UrlaubsantragTestData.antragsteller()
+        ))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("vertretung darf nicht antragsteller sein");
+    }
+
+    @Test
     void automaticCheckIsValidWhenNoSubstituteUserIsConfigured() {
         final Urlaubsantrag urlaubsantrag = Urlaubsantrag.stelle(
             UrlaubsantragTestData.FROM,

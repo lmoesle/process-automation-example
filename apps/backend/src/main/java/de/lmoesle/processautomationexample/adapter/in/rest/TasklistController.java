@@ -6,7 +6,6 @@ import de.lmoesle.processautomationexample.application.ports.in.GenehmigungVomVo
 import de.lmoesle.processautomationexample.application.ports.in.TaskAbfragenInPort;
 import de.lmoesle.processautomationexample.application.ports.in.TaskAbfragenInPort.GetAllTasksCommand;
 import de.lmoesle.processautomationexample.application.ports.in.TaskAbfragenInPort.GetTaskByIdCommand;
-import de.lmoesle.processautomationexample.domain.benutzer.BenutzerId;
 import de.lmoesle.processautomationexample.domain.tasklist.UserTaskId;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -22,7 +21,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/tasks")
@@ -30,15 +28,14 @@ import java.util.UUID;
 @Tag(name = "Tasklist")
 public class TasklistController {
 
-    private static final BenutzerId AKTUELLER_BENUTZER_ID = BenutzerId.of(UUID.fromString("2d88b39b-e7b0-4a3f-b9c6-b3d8e6fbe100"));
-
     private final TaskAbfragenInPort taskAbfragenInPort;
     private final GenehmigungVomVorgesetztenInPort genehmigungVomVorgesetztenInPort;
+    private final AktuellerBenutzerProvider aktuellerBenutzerProvider;
 
     @GetMapping
     @Operation(
         summary = "Alle User Tasks laden",
-        description = "Liefert alle fuer den aktuell angemeldeten Benutzer sichtbaren User Tasks. Solange keine Authentifizierung existiert, ist der Benutzer im Controller fest verdrahtet."
+        description = "Liefert alle fuer den aktuell angemeldeten Benutzer sichtbaren User Tasks."
     )
     @ApiResponses({
         @ApiResponse(
@@ -51,7 +48,8 @@ public class TasklistController {
         )
     })
     public List<UserTaskDto> getAllTasks() {
-        return taskAbfragenInPort.getAllTasks(new GetAllTasksCommand(AKTUELLER_BENUTZER_ID)).stream()
+        final var aktuellerBenutzerId = aktuellerBenutzerProvider.benutzerId();
+        return taskAbfragenInPort.getAllTasks(new GetAllTasksCommand(aktuellerBenutzerId)).stream()
             .map(UserTaskDto::ausDomain)
             .toList();
     }
@@ -70,15 +68,19 @@ public class TasklistController {
         @ApiResponse(responseCode = "404", description = "Kein User Task mit der angegebenen ID gefunden.")
     })
     public UserTaskDto getTaskById(@PathVariable("taskId") String taskId) {
+        final var aktuellerBenutzerId = aktuellerBenutzerProvider.benutzerId();
         return UserTaskDto.ausDomain(
-            taskAbfragenInPort.getTaskById(new GetTaskByIdCommand(UserTaskId.of(taskId), AKTUELLER_BENUTZER_ID))
+            taskAbfragenInPort.getTaskById(new GetTaskByIdCommand(
+                UserTaskId.of(taskId),
+                aktuellerBenutzerId
+            ))
         );
     }
 
     @PostMapping("/{taskId}/vorgesetztenentscheidung")
     @Operation(
         summary = "Genehmigung vom Vorgesetzten entscheiden",
-        description = "Der aktuelle Benutzer entscheidet ueber den sichtbaren User Task und kann optional einen Kommentar fuer die Statushistorie hinterlegen. Beim Abschluss wird die Aufgabe automatisch dem aktuellen Benutzer zugewiesen und danach abgeschlossen. Solange keine Authentifizierung existiert, ist der Benutzer im Controller fest verdrahtet."
+        description = "Der aktuelle Benutzer entscheidet ueber den sichtbaren User Task und kann optional einen Kommentar fuer die Statushistorie hinterlegen. Beim Abschluss wird die Aufgabe automatisch dem aktuellen Benutzer zugewiesen und danach abgeschlossen."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Vorgesetztenentscheidung erfolgreich verarbeitet."),
@@ -111,8 +113,9 @@ public class TasklistController {
         @PathVariable("taskId") String taskId,
         @Valid @RequestBody VorgesetztenentscheidungDto request
     ) {
+        final var aktuellerBenutzerId = aktuellerBenutzerProvider.benutzerId();
         genehmigungVomVorgesetztenInPort.entscheideGenehmigungVomVorgesetzten(
-            request.alsCommand(UserTaskId.of(taskId), AKTUELLER_BENUTZER_ID)
+            request.alsCommand(UserTaskId.of(taskId), aktuellerBenutzerId)
         );
         return ResponseEntity.noContent().build();
     }

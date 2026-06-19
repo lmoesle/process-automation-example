@@ -1,5 +1,6 @@
 export const queryKeys = {
-  vacationRequests: ["vacation-requests"] as const,
-  tasks: ["tasks"] as const,
-  task: (taskId: string) => ["tasks", taskId] as const,
+  users: (username: string) => ["users", username] as const,
+  vacationRequests: (username: string) => ["vacation-requests", username] as const,
+  tasks: (username: string) => ["tasks", username] as const,
+  task: (username: string, taskId: string) => ["tasks", username, taskId] as const,
 };

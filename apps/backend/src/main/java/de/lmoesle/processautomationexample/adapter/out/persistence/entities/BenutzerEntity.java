@@ -29,6 +29,19 @@ public class BenutzerEntity {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(unique = true)
+    private String benutzername;
+
+    @Column(name = "passwort_hash")
+    private String passwortHash;
+
     @OneToMany(mappedBy = "benutzer", fetch = LAZY)
     private Set<TeamMitgliedschaftEntity> teamMitgliedschaften = new LinkedHashSet<>();
+
+    public BenutzerEntity(UUID id, String name, String email, Set<TeamMitgliedschaftEntity> teamMitgliedschaften) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.teamMitgliedschaften = teamMitgliedschaften;
+    }
 }

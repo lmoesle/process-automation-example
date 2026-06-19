@@ -27,6 +27,7 @@ import java.net.URI;
 public class UrlaubsantragErstellenController {
 
     private final UrlaubsantragErstellenInPort erstelleUrlaubsantragInPort;
+    private final AktuellerBenutzerProvider aktuellerBenutzerProvider;
 
     @PostMapping
     @Operation(
@@ -51,10 +52,11 @@ public class UrlaubsantragErstellenController {
             )
         )
     })
-    public ResponseEntity<UrlaubsantragDto> erstelleUrlaubsantrag(
-        @Valid @RequestBody UrlaubsantragErstellenDto request
-    ) {
-        final var ergebnis = erstelleUrlaubsantragInPort.erstelleUrlaubsantrag(request.alsCommand());
+    public ResponseEntity<UrlaubsantragDto> erstelleUrlaubsantrag(@Valid @RequestBody UrlaubsantragErstellenDto request) {
+        final var aktuellerBenutzerId = aktuellerBenutzerProvider.benutzerId();
+        final var ergebnis = erstelleUrlaubsantragInPort.erstelleUrlaubsantrag(
+            request.alsCommand(aktuellerBenutzerId)
+        );
         final var response = UrlaubsantragDto.ausErstellenErgebnis(ergebnis, request.von(), request.bis());
 
         return ResponseEntity

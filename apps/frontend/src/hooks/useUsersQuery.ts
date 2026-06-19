@@ -1,13 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
-import { listVacationRequests } from "../api/client";
+import { listUsers } from "../api/client";
 import { useCurrentUser } from "../auth/useCurrentUser";
 import { queryKeys } from "./queryKeys";
 
-export const useVacationRequestsQuery = () => {
+export const useUsersQuery = () => {
   const { currentUser } = useCurrentUser();
 
   return useQuery({
-    queryKey: queryKeys.vacationRequests(currentUser.username),
-    queryFn: () => listVacationRequests(currentUser),
+    queryKey: queryKeys.users(currentUser.username),
+    queryFn: () => listUsers(currentUser),
   });
 };
