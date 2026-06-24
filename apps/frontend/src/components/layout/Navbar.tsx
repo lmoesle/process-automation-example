@@ -11,7 +11,7 @@ const navigationItems = [
   { label: "Genehmigungen", to: "/tasks" },
 ];
 
-const isActive = (pathname: string, target: string) => {
+const isCurrentRoute = (pathname: string, target: string) => {
   if (target === "/") {
     return pathname === "/";
   }
@@ -32,9 +32,8 @@ export const Navbar = () => {
         position: "sticky",
         top: 0,
         zIndex: theme.zIndex.appBar,
-        borderBottom: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
-        backdropFilter: "blur(18px)",
-        backgroundColor: alpha("#fff9f1", 0.72),
+        borderBottom: `1px solid ${alpha(theme.palette.common.white, 0.16)}`,
+        backgroundColor: "#000000",
       })}
     >
       <Box
@@ -52,7 +51,12 @@ export const Navbar = () => {
           justifyContent="space-between"
         >
           <Stack spacing={0.5}>
-            <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.14em" }}>
+            <Typography
+              component={RouterLink}
+              to="/"
+              variant="overline"
+              sx={{ color: "secondary.main", letterSpacing: "0.14em" }}
+            >
               Miravelo Urlaubsantrag
             </Typography>
           </Stack>
@@ -64,22 +68,18 @@ export const Navbar = () => {
             sx={{ alignSelf: { xs: "stretch", md: "center" }, width: { xs: "100%", md: "auto" } }}
           >
             <Stack direction="row" spacing={1} sx={{ flex: 1, overflowX: "auto", pb: { xs: 0.5, md: 0 } }}>
-              {navigationItems.map((item) => {
-                const active = isActive(location.pathname, item.to);
-
-                return (
-                  <Button
-                    key={item.to}
-                    component={RouterLink}
-                    to={item.to}
-                    color={active ? "secondary" : "primary"}
-                    variant={active ? "contained" : "text"}
-                    sx={{ whiteSpace: "nowrap" }}
-                  >
-                    {item.label}
-                  </Button>
-                );
-              })}
+              {navigationItems.map((item) => (
+                <Button
+                  key={item.to}
+                  component={RouterLink}
+                  to={item.to}
+                  variant="text"
+                  aria-current={isCurrentRoute(location.pathname, item.to) ? "page" : undefined}
+                  sx={{ color: "#ffffff", whiteSpace: "nowrap", "&:hover": { backgroundColor: alpha("#ffffff", 0.12) } }}
+                >
+                  {item.label}
+                </Button>
+              ))}
             </Stack>
 
             <IconButton

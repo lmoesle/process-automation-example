@@ -1,22 +1,24 @@
-import AssignmentTurnedInRoundedIcon from "@mui/icons-material/AssignmentTurnedInRounded";
-import BeachAccessRoundedIcon from "@mui/icons-material/BeachAccessRounded";
-import TaskRoundedIcon from "@mui/icons-material/TaskRounded";
-import { Alert, Card, CardContent, Stack, Typography } from "@mui/material";
-import { Link as RouterLink, useNavigate } from "react-router";
+import { Alert, Link, Stack } from "@mui/material";
+import { Link as RouterLink } from "react-router";
+import { useCurrentUser } from "../auth/useCurrentUser";
 import { MetricCard } from "../components/common/MetricCard";
 import { Page } from "../components/layout/Page";
-import { TaskList } from "../components/tasks/TaskList";
-import { VacationRequestList } from "../components/vacation-requests/VacationRequestList";
+import { VacationRequestForm } from "../components/vacation-requests/VacationRequestForm";
+import { useCreateVacationRequestMutation } from "../hooks/useCreateVacationRequestMutation";
 import { useTasksQuery } from "../hooks/useTasksQuery";
+import { useUsersQuery } from "../hooks/useUsersQuery";
 import { useVacationRequestsQuery } from "../hooks/useVacationRequestsQuery";
 
 export const HomePage = () => {
-  const navigate = useNavigate();
+  const { currentUser } = useCurrentUser();
+  const usersQuery = useUsersQuery();
   const vacationRequestsQuery = useVacationRequestsQuery();
   const tasksQuery = useTasksQuery();
+  const createVacationRequestMutation = useCreateVacationRequestMutation();
 
   const requests = vacationRequestsQuery.data ?? [];
   const tasks = tasksQuery.data ?? [];
+  const selectableUsers = (usersQuery.data ?? []).filter((user) => user.id !== currentUser.id);
 
   const approvedCount = requests.filter((request) => request.status === "GENEHMIGT").length;
   const inProgressCount = requests.filter(
@@ -24,7 +26,10 @@ export const HomePage = () => {
   ).length;
 
   return (
-    <Page title="Übersicht">
+    <Page
+      title="Miravelo Urlaubsantrag"
+      subtitle="Irgendwo zwischen Siebträger, Triathlon-Plänen und dem nächsten Gravel-Bike-Upgrade muss auch bei Miravelo Urlaub planbar bleiben: Anträge schnell stellen, Genehmigungen transparent prüfen und rechtzeitig zur nächsten Feierabendrunde frei bekommen."
+    >
       <Stack spacing={3}>
         {(vacationRequestsQuery.error || tasksQuery.error) ? (
           <Alert severity="error">
@@ -32,67 +37,61 @@ export const HomePage = () => {
           </Alert>
         ) : null}
 
+        <Stack spacing={2}>
+          <VacationRequestForm
+            inline
+            isPending={createVacationRequestMutation.isPending}
+            users={selectableUsers}
+            usersError={usersQuery.error}
+            usersPending={usersQuery.isLoading}
+            onSubmit={(values) => {
+              createVacationRequestMutation.mutate(values);
+            }}
+          />
+
+          {createVacationRequestMutation.error ? (
+            <Alert severity="error">{createVacationRequestMutation.error.message}</Alert>
+          ) : null}
+        </Stack>
+
         <Stack
           direction={{ xs: "column", md: "row" }}
           spacing={2}
           useFlexGap
           flexWrap="wrap"
-          sx={{ "& > *": { flex: "1 1 280px" } }}
+          alignItems="stretch"
+          sx={{ "& > *": { flex: "1 1 280px", minWidth: 0 } }}
         >
           <MetricCard
             label="Offene Genehmigungen"
             value={tasksQuery.isLoading ? "..." : String(tasks.length)}
             helperText="Alle offenen Genehmigungen"
-            icon={<TaskRoundedIcon color="primary" />}
+            action={(
+              <Link component={RouterLink} to="/tasks" color="secondary.main" fontWeight={700} underline="hover">
+                Offene Genehmigungen anzeigen
+              </Link>
+            )}
           />
           <MetricCard
             label="Aktive Anträge"
             value={vacationRequestsQuery.isLoading ? "..." : String(inProgressCount)}
             helperText="Offene Anträge"
-            icon={<BeachAccessRoundedIcon color="secondary" />}
+            action={(
+              <Link component={RouterLink} to="/urlaubsantraege" color="secondary.main" fontWeight={700} underline="hover">
+                Alle Anträge anzeigen
+              </Link>
+            )}
           />
           <MetricCard
             label="Genehmigt"
             value={vacationRequestsQuery.isLoading ? "..." : String(approvedCount)}
-            helperText="Bereits erfolgreich abgeschlossene Urlaubsanträge."
-            icon={<AssignmentTurnedInRoundedIcon color="success" />}
+            helperText="Erfolgreich abgeschlossene Urlaubsanträge."
+            action={(
+              <Link component={RouterLink} to="/urlaubsantraege" color="secondary.main" fontWeight={700} underline="hover">
+                Alle Anträge anzeigen
+              </Link>
+            )}
           />
-        </Stack>
-
-        <Stack direction={{ xs: "column", xl: "row" }} spacing={3} alignItems="stretch">
-          <Card variant="outlined" sx={{ flex: 1 }}>
-            <CardContent>
-              <Stack spacing={2}>
-                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                  <Typography variant="h5">Neueste Anträge</Typography>
-                  <Typography component={RouterLink} to="/urlaubsantraege" color="secondary.main">
-                    Alle anzeigen
-                  </Typography>
-                </Stack>
-                <VacationRequestList requests={requests} maxItems={3} />
-              </Stack>
-            </CardContent>
-          </Card>
-
-          <Card variant="outlined" sx={{ flex: 1 }}>
-            <CardContent>
-              <Stack spacing={2}>
-                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                  <Typography variant="h5">Aktuelle Genehmigungen</Typography>
-                  <Typography component={RouterLink} to="/tasks" color="secondary.main">
-                    Meine Genehmigungen
-                  </Typography>
-                </Stack>
-                <TaskList
-                  tasks={tasks}
-                  maxItems={4}
-                  onSelectTask={(taskId) => {
-                    void navigate(`/tasks/${taskId}`);
-                  }}
-                />
-              </Stack>
-            </CardContent>
-          </Card>
         </Stack>
       </Stack>
     </Page>

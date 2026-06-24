@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { VacationRequestList } from "./VacationRequestList";
 import type { VacationRequest } from "../../api/client";
 
@@ -31,12 +31,16 @@ const requests: VacationRequest[] = [
 ];
 
 describe("VacationRequestList", () => {
-  it("renders the request details and history", () => {
+  it("renders request details and reveals the history in an accordion", () => {
     render(<VacationRequestList requests={requests} />);
 
     expect(screen.getByText("Ada Lovelace")).toBeInTheDocument();
     expect(screen.getByText("Grace Hopper")).toBeInTheDocument();
     expect(screen.getAllByText("Antrag gestellt")[0]).toBeInTheDocument();
+    expect(screen.queryByText("Vertretung ist organisiert.")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Statushistorie fuer Antrag request-1" }));
+
     expect(screen.getByText("Vertretung ist organisiert.")).toBeInTheDocument();
     expect(screen.queryByText("Kein Kommentar hinterlegt.")).not.toBeInTheDocument();
   });

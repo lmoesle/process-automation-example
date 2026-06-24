@@ -6,18 +6,16 @@ type MetricCardProps = {
   label: string;
   value: string;
   helperText: string;
-  icon: ReactNode;
+  action?: ReactNode;
 };
 
-export const MetricCard = ({ label, value, helperText, icon }: MetricCardProps) => (
+export const MetricCard = ({ label, value, helperText, action }: MetricCardProps) => (
   <Card
     sx={(theme) => ({
       position: "relative",
       overflow: "hidden",
-      background: `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(
-        theme.palette.common.white,
-        0.78,
-      )} 100%)`,
+      height: "100%",
+      backgroundColor: "#F9F7F7",
       "&::after": {
         content: '""',
         position: "absolute",
@@ -26,19 +24,18 @@ export const MetricCard = ({ label, value, helperText, icon }: MetricCardProps) 
         height: 120,
         borderRadius: "50%",
         backgroundColor: alpha(theme.palette.secondary.main, 0.12),
+        pointerEvents: "none",
       },
     })}
   >
-    <CardContent>
-      <Stack spacing={2}>
-        <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
-          <Typography variant="overline" sx={{ color: "text.secondary", letterSpacing: "0.08em" }}>
-            {label}
-          </Typography>
-          {icon}
-        </Stack>
+    <CardContent sx={{ height: "100%", position: "relative", zIndex: 1 }}>
+      <Stack spacing={2} sx={{ height: "100%" }}>
+        <Typography variant="overline" sx={{ color: "text.secondary", letterSpacing: "0.08em" }}>
+          {label}
+        </Typography>
         <Typography variant="h3">{value}</Typography>
         <Typography color="text.secondary">{helperText}</Typography>
+        {action ? <Stack sx={{ mt: "auto", pt: 1 }}>{action}</Stack> : null}
       </Stack>
     </CardContent>
   </Card>

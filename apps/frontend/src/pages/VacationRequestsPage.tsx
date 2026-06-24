@@ -20,9 +20,10 @@ export const VacationRequestsPage = () => {
       title="Urlaubsanträge"
       actions={<Chip color="secondary" label={`${vacationRequestsQuery.data?.length ?? 0} Eintraege`} />}
     >
-      <Stack direction={{ xs: "column", xl: "row" }} spacing={3} alignItems="flex-start">
-        <Stack sx={{ flex: { xs: 1, xl: "0 0 360px" }, width: "100%" }}>
+      <Stack spacing={3}>
+        <Stack spacing={2}>
           <VacationRequestForm
+            inline
             isPending={createVacationRequestMutation.isPending}
             users={selectableUsers}
             usersError={usersQuery.error}
@@ -39,7 +40,7 @@ export const VacationRequestsPage = () => {
           ) : null}
         </Stack>
 
-        <Stack sx={{ flex: 1, width: "100%" }} spacing={2}>
+        <Stack sx={{ width: "100%" }} spacing={2}>
           <AsyncState
             loading={vacationRequestsQuery.isLoading}
             error={vacationRequestsQuery.error}

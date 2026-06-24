@@ -23,4 +23,27 @@ export const theme = createTheme({
       letterSpacing: "0.02em",
     },
   },
+  components: {
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          backgroundColor: "#F9F7F7",
+        },
+      },
+    },
+    MuiAccordion: {
+      styleOverrides: {
+        root: {
+          backgroundColor: "#F9F7F7",
+        },
+      },
+    },
+    MuiDialog: {
+      styleOverrides: {
+        paper: {
+          backgroundColor: "#F9F7F7",
+        },
+      },
+    },
+  },
 });

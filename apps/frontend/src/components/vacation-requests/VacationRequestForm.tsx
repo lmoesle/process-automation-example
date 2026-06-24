@@ -13,10 +13,18 @@ type VacationRequestFormProps = {
   users: UserSelection[];
   usersError?: Error | null;
   usersPending: boolean;
+  inline?: boolean;
   onSubmit: (values: VacationRequestFormValues) => void;
 };
 
-export const VacationRequestForm = ({ isPending, users, usersError, usersPending, onSubmit }: VacationRequestFormProps) => {
+export const VacationRequestForm = ({
+  isPending,
+  users,
+  usersError,
+  usersPending,
+  inline = false,
+  onSubmit,
+}: VacationRequestFormProps) => {
   const [von, setVon] = useState("");
   const [bis, setBis] = useState("");
   const [vertretungId, setVertretungId] = useState("");
@@ -25,7 +33,7 @@ export const VacationRequestForm = ({ isPending, users, usersError, usersPending
   const validVertretungId = users.some((user) => user.id === vertretungId) ? vertretungId : "";
 
   return (
-    <Card variant="outlined">
+    <Card variant="outlined" sx={{ width: "100%" }}>
       <CardContent>
         <Stack
           component="form"
@@ -49,44 +57,63 @@ export const VacationRequestForm = ({ isPending, users, usersError, usersPending
             <Typography variant="h5">Neuen Urlaubsantrag stellen</Typography>
           </Stack>
 
-          <TextField
-            label="Von"
-            type="date"
-            value={von}
-            onChange={(event) => setVon(event.target.value)}
-            slotProps={{ inputLabel: { shrink: true } }}
-            required
-          />
-
-          <TextField
-            label="Bis"
-            type="date"
-            value={bis}
-            onChange={(event) => setBis(event.target.value)}
-            slotProps={{ inputLabel: { shrink: true } }}
-            required
-          />
-
-          <TextField
-            select
-            value={validVertretungId}
-            onChange={(event) => setVertretungId(event.target.value)}
-            disabled={usersPending || Boolean(usersError)}
-            helperText={usersPending ? "Benutzer werden geladen..." : ""}
-            slotProps={{
-              select: {
-                native: true,
-                inputProps: { "aria-label": "Vertretung" },
-              },
-            }}
+          <Stack
+            direction={inline ? { xs: "column", md: "row" } : "column"}
+            spacing={2}
+            alignItems={inline ? { xs: "stretch", md: "flex-start" } : "stretch"}
           >
-            <option value="">Keine Vertretung</option>
-            {users.map((user) => (
-              <option key={user.id} value={user.id}>
-                {user.name} ({user.email})
-              </option>
-            ))}
-          </TextField>
+            <TextField
+              label="Von"
+              type="date"
+              value={von}
+              onChange={(event) => setVon(event.target.value)}
+              slotProps={{ inputLabel: { shrink: true } }}
+              required
+              sx={{ flex: 1 }}
+            />
+
+            <TextField
+              label="Bis"
+              type="date"
+              value={bis}
+              onChange={(event) => setBis(event.target.value)}
+              slotProps={{ inputLabel: { shrink: true } }}
+              required
+              sx={{ flex: 1 }}
+            />
+
+            <TextField
+              select
+              value={validVertretungId}
+              onChange={(event) => setVertretungId(event.target.value)}
+              disabled={usersPending || Boolean(usersError)}
+              helperText={usersPending ? "Benutzer werden geladen..." : ""}
+              slotProps={{
+                select: {
+                  native: true,
+                  inputProps: { "aria-label": "Vertretung" },
+                },
+              }}
+              sx={{ flex: 1 }}
+            >
+              <option value="">Keine Vertretung</option>
+              {users.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.name} ({user.email})
+                </option>
+              ))}
+            </TextField>
+
+            <Button
+              type="submit"
+              variant="contained"
+              color="secondary"
+              disabled={isPending || invalidRange}
+              sx={{ minWidth: { md: 220 } }}
+            >
+              Urlaubsantrag stellen
+            </Button>
+          </Stack>
 
           {usersError ? (
             <Alert severity="warning">Benutzer konnten nicht geladen werden: {usersError.message}</Alert>
@@ -94,9 +121,6 @@ export const VacationRequestForm = ({ isPending, users, usersError, usersPending
 
           {invalidRange ? <Alert severity="warning">`Von` muss vor oder gleich `Bis` liegen.</Alert> : null}
 
-          <Button type="submit" variant="contained" color="secondary" disabled={isPending || invalidRange}>
-            Urlaubsantrag stellen
-          </Button>
         </Stack>
       </CardContent>
     </Card>

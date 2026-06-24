@@ -1,4 +1,5 @@
-import { Card, CardContent, Chip, Divider, Stack, Typography } from "@mui/material";
+import ExpandMoreRoundedIcon from "@mui/icons-material/ExpandMoreRounded";
+import { Accordion, AccordionDetails, AccordionSummary, Card, CardContent, Chip, Stack, Typography } from "@mui/material";
 import type { VacationRequest } from "../../api/client";
 import { formatDateRange } from "../../util/date";
 import { formatVacationStatus } from "../../util/status";
@@ -45,19 +46,32 @@ export const VacationRequestList = ({ requests, maxItems }: VacationRequestListP
                 </Stack>
               </Stack>
 
-              <Divider />
-
-              <Stack spacing={1}>
-                <Typography variant="subtitle2">Statushistorie</Typography>
-                {request.statusHistorie.map((entry, index) => (
-                  <Stack key={`${request.id}-${entry.status}-${index}`} direction={{ xs: "column", md: "row" }} spacing={1} alignItems={{ xs: "flex-start", md: "center" }}>
-                    <Chip size="small" variant="outlined" label={formatVacationStatus(entry.status)} />
-                    {entry.kommentar?.trim() ? (
-                      <Typography color="text.secondary">{entry.kommentar.trim()}</Typography>
-                    ) : null}
+              <Accordion variant="outlined" disableGutters slotProps={{ transition: { unmountOnExit: true } }}>
+                <AccordionSummary expandIcon={<ExpandMoreRoundedIcon />} aria-label={`Statushistorie fuer Antrag ${request.id}`}>
+                  <Typography variant="subtitle2">Statushistorie</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Stack spacing={1}>
+                    {request.statusHistorie.length > 0 ? (
+                      request.statusHistorie.map((entry, index) => (
+                        <Stack
+                          key={`${request.id}-${entry.status}-${index}`}
+                          direction={{ xs: "column", md: "row" }}
+                          spacing={1}
+                          alignItems={{ xs: "flex-start", md: "center" }}
+                        >
+                          <Chip size="small" variant="outlined" label={formatVacationStatus(entry.status)} />
+                          {entry.kommentar?.trim() ? (
+                            <Typography color="text.secondary">{entry.kommentar.trim()}</Typography>
+                          ) : null}
+                        </Stack>
+                      ))
+                    ) : (
+                      <Typography color="text.secondary">Keine Statushistorie vorhanden.</Typography>
+                    )}
                   </Stack>
-                ))}
-              </Stack>
+                </AccordionDetails>
+              </Accordion>
             </Stack>
           </CardContent>
         </Card>

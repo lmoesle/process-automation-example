@@ -13,7 +13,7 @@ export const TaskList = ({ tasks, selectedTaskId, onSelectTask, maxItems }: Task
   const visibleTasks = typeof maxItems === "number" ? tasks.slice(0, maxItems) : tasks;
 
   return (
-    <List sx={{ p: 0 }}>
+    <List sx={{ p: 0, width: "100%" }}>
       {visibleTasks.map((task) => {
         const subtitle = task.urlaubsantrag
           ? formatDateRange(task.urlaubsantrag.von, task.urlaubsantrag.bis)
@@ -24,7 +24,20 @@ export const TaskList = ({ tasks, selectedTaskId, onSelectTask, maxItems }: Task
             key={task.taskId}
             selected={task.taskId === selectedTaskId}
             onClick={() => onSelectTask(task.taskId)}
-            sx={{ borderRadius: 3, mb: 1, alignItems: "flex-start" }}
+            sx={(theme) => ({
+              alignItems: "flex-start",
+              backgroundColor: "#F9F7F7",
+              border: `1px solid ${theme.palette.divider}`,
+              borderRadius: 3,
+              mb: 1,
+              width: "100%",
+              "&.Mui-selected": {
+                backgroundColor: "#F9F7F7",
+              },
+              "&.Mui-selected:hover, &:hover": {
+                backgroundColor: theme.palette.action.hover,
+              },
+            })}
           >
             <Avatar sx={{ mr: 2, bgcolor: task.bearbeiter ? "secondary.main" : "primary.main" }}>
               {task.taskId.slice(0, 2).toUpperCase()}
@@ -48,6 +61,10 @@ export const TaskList = ({ tasks, selectedTaskId, onSelectTask, maxItems }: Task
                   </Typography>
                 </Stack>
               }
+              slotProps={{
+                primary: { component: "div" },
+                secondary: { component: "div" },
+              }}
             />
           </ListItemButton>
         );
