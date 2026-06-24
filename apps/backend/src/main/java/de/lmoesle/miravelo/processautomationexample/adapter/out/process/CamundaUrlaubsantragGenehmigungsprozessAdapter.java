@@ -29,9 +29,9 @@ public class CamundaUrlaubsantragGenehmigungsprozessAdapter implements Urlaubsan
     @Override
     public ProzessinstanzId starteGenehmigungsprozessFuer(Urlaubsantrag urlaubsantrag, List<BenutzerId> teamLeadIds) {
         final var prozessinstanzInfo = startProcessApi.startProcess(new StartProcessByDefinitionCmd(
-            VacationApprovalProcessApi.PROCESS_ID,
+            VacationApprovalProcessApi.PROCESS_ID.getValue(),
             () -> Map.of(
-                VacationApprovalProcessApi.Variables.URLAUBSANTRAG_ID, urlaubsantrag.id().value().toString(),
+                VacationApprovalProcessApi.Variables.AutomaticCheck.URLAUBSANTRAG_ID.getValue(), urlaubsantrag.id().value().toString(),
                 TEAM_LEAD_VARIABLE, mapTeamLeadIds(teamLeadIds)
             ),
             Map.of()

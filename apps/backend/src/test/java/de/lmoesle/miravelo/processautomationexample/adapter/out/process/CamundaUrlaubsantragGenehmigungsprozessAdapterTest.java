@@ -46,10 +46,10 @@ class CamundaUrlaubsantragGenehmigungsprozessAdapterTest {
         verify(startProcessApi).startProcess(commandCaptor.capture());
 
         final StartProcessByDefinitionCmd command = (StartProcessByDefinitionCmd) commandCaptor.getValue();
-        assertThat(command.getDefinitionKey()).isEqualTo(VacationApprovalProcessApi.PROCESS_ID);
+        assertThat(command.getDefinitionKey()).isEqualTo(VacationApprovalProcessApi.PROCESS_ID.getValue());
         assertThat(command.get())
             .containsEntry(
-                VacationApprovalProcessApi.Variables.URLAUBSANTRAG_ID,
+                VacationApprovalProcessApi.Variables.AutomaticCheck.URLAUBSANTRAG_ID.getValue(),
                 UrlaubsantragTestData.urlaubsantragId().value().toString()
             )
             .containsEntry(

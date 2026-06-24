@@ -72,7 +72,7 @@ public class TasklistRepository implements TasklistRepositoryOutPort {
     }
 
     private Optional<Urlaubsantrag> ladeUrlaubsantrag(Map<String, Object> payload) {
-        return parseUrlaubsantragId(payload.get(VacationApprovalProcessApi.Variables.URLAUBSANTRAG_ID))
+        return parseUrlaubsantragId(payload.get(VacationApprovalProcessApi.Variables.AutomaticCheck.URLAUBSANTRAG_ID.getValue()))
             .flatMap(urlaubsantraegeLadenOutPort::findeNachId);
     }
 

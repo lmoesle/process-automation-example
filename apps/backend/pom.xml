@@ -105,6 +105,11 @@
 			<artifactId>process-engine-api</artifactId>
 			<version>${process-engine-api.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>io.miragon</groupId>
+			<artifactId>bpmn-to-code-runtime</artifactId>
+			<version>${bpmn2code.version}</version>
+		</dependency>
 
 		<!-- DB -->
 		<dependency>

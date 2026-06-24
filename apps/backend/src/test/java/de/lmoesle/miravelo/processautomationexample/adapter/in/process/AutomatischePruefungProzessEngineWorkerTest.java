@@ -4,6 +4,8 @@ import de.lmoesle.miravelo.processautomationexample.application.ports.in.Urlaubs
 import de.lmoesle.miravelo.processautomationexample.application.ports.in.UrlaubsantragAutomatischPruefenInPort.UrlaubsantragAutomatischPruefenCommand;
 import de.lmoesle.miravelo.processautomationexample.bpmn.VacationApprovalProcessApi;
 import de.lmoesle.miravelo.processautomationexample.domain.urlaubsantrag.UrlaubsantragTestData;
+import dev.bpmcrafters.processengine.worker.ProcessEngineWorker;
+import dev.bpmcrafters.processengine.worker.Variable;
 import dev.bpmcrafters.processengine.worker.registrar.ReflectionUtilsKt;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,7 +37,7 @@ class AutomatischePruefungProzessEngineWorkerTest {
         final var result = automatischePruefungProzessEngineWorker.pruefeAutomatisch(urlaubsantragId);
 
         assertThat(result)
-            .containsEntry(VacationApprovalProcessApi.Variables.GUELTIG, true)
+            .containsEntry(VacationApprovalProcessApi.Variables.AutomaticCheck.GUELTIG.getValue(), true)
             .hasSize(1);
         verify(pruefeUrlaubsantragAutomatischInPort).pruefeUrlaubsantragAutomatisch(
             new UrlaubsantragAutomatischPruefenCommand(UrlaubsantragTestData.urlaubsantragId())
@@ -48,5 +50,15 @@ class AutomatischePruefungProzessEngineWorkerTest {
         final var method = AutomatischePruefungProzessEngineWorker.class.getMethod("pruefeAutomatisch", String.class);
 
         assertThat(ReflectionUtilsKt.hasPayloadReturnType(method)).isTrue();
+    }
+
+    @Test
+    void exposesGeneratedWorkerContractInAnnotations() throws NoSuchMethodException {
+        final var method = AutomatischePruefungProzessEngineWorker.class.getMethod("pruefeAutomatisch", String.class);
+
+        assertThat(method.getAnnotation(ProcessEngineWorker.class).topic())
+            .isEqualTo(VacationApprovalProcessApi.ServiceTasks.AUTOMATIC_CHECK);
+        assertThat(method.getParameters()[0].getAnnotation(Variable.class).name())
+            .isEqualTo(VacationApprovalProcessApi.Variables.AutomaticCheck.URLAUBSANTRAG_ID.getValue());
     }
 }

@@ -26,7 +26,7 @@ public final class UserTaskTestdaten {
 
     public static Map<String, String> meta() {
         final LinkedHashMap<String, String> meta = new LinkedHashMap<>();
-        meta.put("processDefinitionKey", VacationApprovalProcessApi.PROCESS_ID);
+        meta.put("processDefinitionKey", VacationApprovalProcessApi.PROCESS_ID.getValue());
         meta.put("assignee", BenutzerTestdaten.ADA_UUID.toString());
         meta.put("formKey", "embedded:app:forms/vacation-approval.html");
         return meta;
@@ -34,7 +34,7 @@ public final class UserTaskTestdaten {
 
     public static Map<String, String> secondMeta() {
         final LinkedHashMap<String, String> meta = new LinkedHashMap<>();
-        meta.put("processDefinitionKey", VacationApprovalProcessApi.PROCESS_ID);
+        meta.put("processDefinitionKey", VacationApprovalProcessApi.PROCESS_ID.getValue());
         meta.put("assignee", BenutzerTestdaten.CARLA_UUID.toString());
         meta.put("formKey", "embedded:app:forms/vacation-approval.html");
         return meta;
@@ -42,7 +42,7 @@ public final class UserTaskTestdaten {
 
     public static Map<String, Object> payload() {
         final LinkedHashMap<String, Object> payload = new LinkedHashMap<>();
-        payload.put(VacationApprovalProcessApi.Variables.URLAUBSANTRAG_ID, UrlaubsantragTestData.VACATION_REQUEST_UUID.toString());
+        payload.put(VacationApprovalProcessApi.Variables.AutomaticCheck.URLAUBSANTRAG_ID.getValue(), UrlaubsantragTestData.VACATION_REQUEST_UUID.toString());
         payload.put("teamLeadIds", List.of(BenutzerTestdaten.ADA_UUID.toString(), BenutzerTestdaten.CARLA_UUID.toString()));
         payload.put("requester", "Ada Lovelace");
         payload.put("days", 5);
@@ -51,7 +51,7 @@ public final class UserTaskTestdaten {
 
     public static Map<String, Object> secondPayload() {
         final LinkedHashMap<String, Object> payload = new LinkedHashMap<>();
-        payload.put(VacationApprovalProcessApi.Variables.URLAUBSANTRAG_ID, UrlaubsantragTestData.SECOND_VACATION_REQUEST_UUID.toString());
+        payload.put(VacationApprovalProcessApi.Variables.AutomaticCheck.URLAUBSANTRAG_ID.getValue(), UrlaubsantragTestData.SECOND_VACATION_REQUEST_UUID.toString());
         payload.put("teamLeadIds", List.of(BenutzerTestdaten.CARLA_UUID.toString()));
         payload.put("requester", "Grace Hopper");
         payload.put("days", 10);

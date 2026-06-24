@@ -15,17 +15,19 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AutomatischePruefungProzessEngineWorker {
 
+    private static final String URLAUBSANTRAG_ID_VARIABLE = "urlaubsantragId";
+
     private final UrlaubsantragAutomatischPruefenInPort pruefeUrlaubsantragAutomatischInPort;
 
-    @ProcessEngineWorker(topic = VacationApprovalProcessApi.TaskTypes.AUTOMATIC_CHECK)
+    @ProcessEngineWorker(topic = VacationApprovalProcessApi.ServiceTasks.AUTOMATIC_CHECK)
     public Map<String, Object> pruefeAutomatisch(
         @Variable(
-            name = VacationApprovalProcessApi.Variables.URLAUBSANTRAG_ID
+            name = URLAUBSANTRAG_ID_VARIABLE
         ) final String urlaubsantragId
     ) {
         final var gueltig = pruefeUrlaubsantragAutomatischInPort.pruefeUrlaubsantragAutomatisch(
             new UrlaubsantragAutomatischPruefenCommand(UrlaubsantragId.of(urlaubsantragId))
         );
-        return Map.of(VacationApprovalProcessApi.Variables.GUELTIG, gueltig);
+        return Map.of(VacationApprovalProcessApi.Variables.AutomaticCheck.GUELTIG.getValue(), gueltig);
     }
 }
