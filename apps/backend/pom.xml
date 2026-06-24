@@ -25,7 +25,7 @@
 		<postgresql.version>42.7.9</postgresql.version>
 		<flyway.version>11.20.2</flyway.version>
 		<lombok.version>1.18.42</lombok.version>
-		<bpmn2code.version>0.0.18</bpmn2code.version>
+		<bpmn2code.version>3.0.0</bpmn2code.version>
 	</properties>
 
 	<dependencyManagement>
@@ -271,7 +271,7 @@
 					<version>${spring-boot.version}</version>
 				</plugin>
 				<plugin>
-					<groupId>io.github.emaarco</groupId>
+					<groupId>io.miragon</groupId>
 					<artifactId>bpmn-to-code-maven</artifactId>
 					<version>${bpmn2code.version}</version>
 				</plugin>
@@ -307,7 +307,7 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<groupId>io.github.emaarco</groupId>
+				<groupId>io.miragon</groupId>
 				<artifactId>bpmn-to-code-maven</artifactId>
 				<executions>
 					<execution>
@@ -323,7 +323,6 @@
 					<packagePath>${project.groupId}.bpmn</packagePath>
 					<outputLanguage>JAVA</outputLanguage>
 					<processEngine>CAMUNDA_7</processEngine>
-					<useVersioning>false</useVersioning>
 				</configuration>
 			</plugin>
 		</plugins>
