@@ -1,4 +1,4 @@
-# Process Automation Example
+# Miravelo Urlaubsantrag
 
 ## Purpose
 
@@ -27,16 +27,16 @@ The repository is intended as a small, concrete reference for combining process 
 pom.xml      Maven aggregator for all backend variants
 apps/
   backend/    Spring Boot backend variant
-  frontend/     Placeholder for the future React frontend
+  frontend/     Vite React frontend
 stack/        Local infrastructure such as Docker Compose
 ```
 
 ## Prerequisites
 
-- Java 21
+- Java 25
 - Docker with Docker Compose support
 
-The Maven build is configured with `source` and `target` level `21`. If you build with an older JDK, Maven will fail with `invalid target release: 21`.
+The Maven build is configured with `source` and `target` level `25`. If you build with an older JDK, Maven will fail with `invalid target release: 25`.
 
 ## Build The Project
 

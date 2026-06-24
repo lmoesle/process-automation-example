@@ -7,7 +7,7 @@ export type DemoUser = {
   initials: string;
 };
 
-const SELECTED_USER_STORAGE_KEY = "process-automation-example.selected-user";
+const SELECTED_USER_STORAGE_KEY = "miravelo-process-automation-example.selected-user";
 
 // Demo-only users with hardcoded credentials for quickly switching perspectives in the UI.
 // This intentionally is not secure user management and must not be reused for production auth.

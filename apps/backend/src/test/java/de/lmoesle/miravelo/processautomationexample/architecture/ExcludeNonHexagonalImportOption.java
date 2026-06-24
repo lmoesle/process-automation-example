@@ -1,0 +1,26 @@
+package de.lmoesle.miravelo.processautomationexample.architecture;
+
+import com.tngtech.archunit.core.importer.ImportOption;
+import com.tngtech.archunit.core.importer.Location;
+
+public final class ExcludeNonHexagonalImportOption implements ImportOption {
+
+    /**
+     * Exclude all Spring Boot AutoConfig classes and generated bpmn2code api
+     *
+     * @param location Location
+     * @return boolean
+     */
+    @Override
+    public boolean includes(final Location location) {
+        final String uri = location.asURI().toString();
+
+        if (uri.contains("/de/lmoesle/miravelo/processautomationexample/bpmn/")) {
+            return false;
+        }
+
+        return !uri.endsWith("/de/lmoesle/miravelo/processautomationexample/ProcessAutomationExampleApplication.class")
+            && !uri.endsWith("/de/lmoesle/miravelo/processautomationexample/shared/tasklist/UserTaskSupportConfiguration.class")
+            && !uri.endsWith("/de/lmoesle/miravelo/processautomationexample/shared/tasklist/TasklistRepository.class");
+    }
+}

@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:18
-    container_name: process-automation-example-postgres
+    container_name: miravelo-process-automation-example-postgres
     environment:
       POSTGRES_DB: "vacation-approval"
       POSTGRES_USER: "user"

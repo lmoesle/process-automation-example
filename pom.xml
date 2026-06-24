@@ -3,12 +3,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>de.lmoesle</groupId>
+	<groupId>de.lmoesle.miravelo.processautomationexample</groupId>
 	<artifactId>process-automation-example-backend-variants</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
-	<name>process-automation-example backend variants</name>
+	<name>miravelo-process-automation-example backend variants</name>
 	<description>Aggregator build for independent backend process-engine variants.</description>
 
 	<modules>

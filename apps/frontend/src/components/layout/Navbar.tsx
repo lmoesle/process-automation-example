@@ -53,7 +53,7 @@ export const Navbar = () => {
         >
           <Stack spacing={0.5}>
             <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.14em" }}>
-              Process Automation Example
+              Miravelo Urlaubsantrag
             </Typography>
           </Stack>
 

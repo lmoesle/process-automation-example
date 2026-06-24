@@ -2,11 +2,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>de.lmoesle</groupId>
+	<groupId>de.lmoesle.miravelo.processautomationexample</groupId>
 	<artifactId>process-automation-example</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>process-automation-example</name>
-	<description>process-automation-example</description>
+	<name>miravelo-process-automation-example</name>
+	<description>Miravelo process automation example</description>
 
 	<properties>
 		<maven.compiler.target>25</maven.compiler.target>
@@ -320,7 +320,7 @@
 					<baseDir>${project.basedir}</baseDir>
 					<filePattern>src/main/resources/bpmn/*.bpmn</filePattern>
 					<outputFolderPath>${project.basedir}/src/main/java</outputFolderPath>
-					<packagePath>${project.groupId}.processautomationexample.bpmn</packagePath>
+					<packagePath>${project.groupId}.bpmn</packagePath>
 					<outputLanguage>JAVA</outputLanguage>
 					<processEngine>CAMUNDA_7</processEngine>
 					<useVersioning>false</useVersioning>

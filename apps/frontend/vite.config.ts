@@ -18,7 +18,7 @@ export default defineConfig({
       },
     }),
   ],
-  cacheDir: "node_modules/.vite/process-automation-example-frontend",
+  cacheDir: "node_modules/.vite/miravelo-process-automation-example-frontend",
   server: {
     host: true,
     port: DEV_PORT,

@@ -1,6 +1,6 @@
 spring:
   application:
-    name: process-automation-example
+    name: miravelo-process-automation-example
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:vacation-approval}
     username: ${POSTGRES_USER:user}
@@ -57,8 +57,9 @@ dev:
             schedule-delivery-fixed-rate-in-seconds: 10
 
 de.lmoesle:
-  processautomationexample:
-    mail:
-      from-address: ${MAIL_FROM:no-reply@process-automation-example.local}
-      standard-template: classpath:mail/standard-benachrichtigung.mail.html
-      frontend-base-url: ${FRONTEND_BASE_URL:http://localhost:3000}
+  miravelo:
+    processautomationexample:
+      mail:
+        from-address: ${MAIL_FROM:no-reply@miravelo.local}
+        standard-template: classpath:mail/standard-benachrichtigung.mail.html
+        frontend-base-url: ${FRONTEND_BASE_URL:http://localhost:3000}
