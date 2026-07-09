@@ -1,0 +1,76 @@
+package de.lmoesle.miravelo.processautomationexample.application.usecases;
+
+import de.lmoesle.miravelo.processautomationexample.application.ports.in.BenutzeraufgabenLifecycleInPort;
+import de.lmoesle.miravelo.processautomationexample.application.ports.out.AktiveBenutzeraufgabenOutPort;
+import de.lmoesle.miravelo.processautomationexample.application.ports.out.SendeBenutzeraufgabenBenachrichtigungOutPort;
+import de.lmoesle.miravelo.processautomationexample.application.ports.out.TasklistRepositoryOutPort;
+import de.lmoesle.miravelo.processautomationexample.domain.benutzer.Benutzer;
+import de.lmoesle.miravelo.processautomationexample.domain.benutzer.BenutzerId;
+import de.lmoesle.miravelo.processautomationexample.domain.tasklist.TaskNichtGefundenException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+
+@Service
+@Slf4j
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class SendeBenutzeraufgabenBenachrichtigungUseCase implements BenutzeraufgabenLifecycleInPort {
+
+    private final AktiveBenutzeraufgabenOutPort aktiveBenutzeraufgabenOutPort;
+    private final TasklistRepositoryOutPort tasklistRepositoryOutPort;
+    private final SendeBenutzeraufgabenBenachrichtigungOutPort sendeBenutzeraufgabenBenachrichtigungOutPort;
+
+    @Override
+    public void verarbeiteAktiveBenutzeraufgabe(AktiveBenutzeraufgabeCommand command) {
+        Assert.notNull(command, "command darf nicht null sein");
+        Assert.notNull(command.taskId(), "taskId darf nicht null sein");
+
+        final var isNewUsertask = aktiveBenutzeraufgabenOutPort.speichereWennNeu(command.taskId());
+        if (!isNewUsertask) {
+            log.debug("Benutzeraufgabe {} ist bereits registriert, es wird keine Benachrichtigung versendet", command.taskId().value());
+            return;
+        }
+
+        try {
+            final var userTask = tasklistRepositoryOutPort.getTaskById(command.taskId())
+                .orElseThrow(() -> new TaskNichtGefundenException(command.taskId()));
+
+            final List<Benutzer> empfaenger = userTask.candidateUsers().stream()
+                .collect(
+                    LinkedHashMap<BenutzerId, Benutzer>::new,
+                    (map, benutzer) -> map.putIfAbsent(benutzer.id(), benutzer),
+                    LinkedHashMap::putAll
+                )
+                .values()
+                .stream()
+                .toList();
+
+            sendeBenutzeraufgabenBenachrichtigungOutPort.sendeBenutzeraufgabenBenachrichtigung(userTask, empfaenger);
+
+            log.info(
+                "Benutzeraufgabenbenachrichtigung versendet: taskId={}, empfaengerAnzahl={}",
+                command.taskId().value(),
+                empfaenger.size()
+            );
+        } catch (RuntimeException exception) {
+            aktiveBenutzeraufgabenOutPort.entferne(command.taskId());
+            throw exception;
+        }
+    }
+
+    @Override
+    public void verarbeiteEntfernteBenutzeraufgabe(EntfernteBenutzeraufgabeCommand command) {
+        Assert.notNull(command, "command darf nicht null sein");
+        Assert.notNull(command.taskId(), "taskId darf nicht null sein");
+
+        aktiveBenutzeraufgabenOutPort.entferne(command.taskId());
+
+        log.debug("Benutzeraufgabe entfernt: taskId={}", command.taskId().value());
+    }
+}

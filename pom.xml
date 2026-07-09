@@ -13,5 +13,6 @@
 
 	<modules>
 		<module>apps/backend</module>
+		<module>apps/c7-vanilla</module>
 	</modules>
 </project>

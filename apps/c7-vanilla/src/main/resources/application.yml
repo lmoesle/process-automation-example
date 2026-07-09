@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: miravelo-process-automation-example
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:vacation-approval}
+    username: ${POSTGRES_USER:user}
+    password: ${POSTGRES_PASSWORD:secret}
+    driver-class-name: org.postgresql.Driver
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    properties:
+      mail:
+        smtp:
+          connectiontimeout: 5000
+          timeout: 3000
+          writetimeout: 5000
+
+  flyway:
+    enabled: true
+    locations: "classpath:db/migration/schema"
+
+camunda:
+  bpm:
+    admin-user:
+      id: ${CAMUNDA_ADMIN_USER:admin}
+      password: ${CAMUNDA_ADMIN_PASSWORD:admin}
+      first-name: ${CAMUNDA_ADMIN_FIRST_NAME:Admin}
+      last-name: ${CAMUNDA_ADMIN_LAST_NAME:Admin}
+    # cockpit autologin
+    login:
+      enabled: true
+      user-id: admin
+
+de.lmoesle:
+  miravelo:
+    processautomationexample:
+      mail:
+        from-address: ${MAIL_FROM:no-reply@miravelo.local}
+        standard-template: classpath:mail/standard-benachrichtigung.mail.html
+        frontend-base-url: ${FRONTEND_BASE_URL:http://localhost:3000}

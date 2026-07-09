@@ -1,0 +1,38 @@
+@baseUrl = http://localhost:8080
+@vertretungId = f9821988-db4f-4daa-9414-6cc5227f7102
+
+### Urlaubsantrag erstellen
+POST {{baseUrl}}/api/urlaubsantraege
+Content-Type: application/json
+Accept: application/json
+
+{
+  "von": "2026-07-01",
+  "bis": "2026-07-10",
+  "vertretungId": "{{vertretungId}}"
+}
+
+### Urlaubsantraege laden
+GET {{baseUrl}}/api/urlaubsantraege
+Content-Type: application/json
+Accept: application/json
+
+### Alle Aufgaben
+GET {{baseUrl}}/api/tasks
+Content-Type: application/json
+Accept: application/json
+
+### Aufgaben Details
+GET {{baseUrl}}/api/tasks/a4049fe1-22b4-11f1-a1a1-3eb2fd0f8e34
+Content-Type: application/json
+Accept: application/json
+
+### Vorgesetztenentscheidung
+POST {{baseUrl}}/api/tasks/a4049fe1-22b4-11f1-a1a1-3eb2fd0f8e34/vorgesetztenentscheidung
+Content-Type: application/json
+Accept: application/json
+
+{
+  "genehmigt": true,
+  "kommentar": "Vertretung ist organisiert."
+}
