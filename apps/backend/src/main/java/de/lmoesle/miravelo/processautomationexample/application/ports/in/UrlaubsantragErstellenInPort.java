@@ -1,6 +1,5 @@
 package de.lmoesle.miravelo.processautomationexample.application.ports.in;
 
-import de.lmoesle.miravelo.processautomationexample.domain.urlaubsantrag.ProzessinstanzId;
 import de.lmoesle.miravelo.processautomationexample.domain.urlaubsantrag.UrlaubsantragId;
 import de.lmoesle.miravelo.processautomationexample.domain.urlaubsantrag.UrlaubsantragStatus;
 import de.lmoesle.miravelo.processautomationexample.domain.urlaubsantrag.UrlaubsantragStatusHistorieneintrag;
@@ -24,7 +23,6 @@ public interface UrlaubsantragErstellenInPort {
 
     record UrlaubsantragErstellenErgebnis(
         UrlaubsantragId urlaubsantragId,
-        ProzessinstanzId prozessinstanzId,
         UrlaubsantragStatus status,
         List<UrlaubsantragStatusHistorieneintrag> statusHistorie,
         Benutzer antragsteller,

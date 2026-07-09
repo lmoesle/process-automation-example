@@ -1,10 +1,12 @@
 package de.lmoesle.miravelo.processautomationexample.adapter.out.persistence;
 
 import de.lmoesle.miravelo.processautomationexample.adapter.out.persistence.entities.UrlaubsantragEntity;
+import de.lmoesle.miravelo.processautomationexample.application.ports.out.UrlaubsantragProzessinstanzSpeichernOutPort;
 import de.lmoesle.miravelo.processautomationexample.application.ports.out.UrlaubsantraegeLadenOutPort;
 import de.lmoesle.miravelo.processautomationexample.application.ports.out.UrlaubsantragSpeichernOutPort;
 import de.lmoesle.miravelo.processautomationexample.domain.benutzer.Benutzer;
 import de.lmoesle.miravelo.processautomationexample.domain.benutzer.BenutzerId;
+import de.lmoesle.miravelo.processautomationexample.domain.urlaubsantrag.ProzessinstanzId;
 import de.lmoesle.miravelo.processautomationexample.domain.urlaubsantrag.Urlaubsantrag;
 import de.lmoesle.miravelo.processautomationexample.domain.urlaubsantrag.UrlaubsantragId;
 import lombok.RequiredArgsConstructor;
@@ -20,21 +22,58 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
 
 @Component
 @RequiredArgsConstructor
-public class UrlaubsantragPersistenceAdapter implements UrlaubsantragSpeichernOutPort, UrlaubsantraegeLadenOutPort {
+public class UrlaubsantragPersistenceAdapter implements
+    UrlaubsantragSpeichernOutPort,
+    UrlaubsantraegeLadenOutPort,
+    UrlaubsantragProzessinstanzSpeichernOutPort {
 
     private final UrlaubsantragJpaRepository urlaubsantragJpaRepository;
     private final BenutzerJpaRepository benutzerJpaRepository;
 
     @Override
     public Urlaubsantrag speichere(Urlaubsantrag urlaubsantrag) {
-        urlaubsantragJpaRepository.saveAndFlush(UrlaubsantragPersistenceMapper.toEntity(urlaubsantrag));
+        final UrlaubsantragEntity entity = UrlaubsantragPersistenceMapper.toEntity(urlaubsantrag);
+        bewahreGespeicherteProzessinstanzId(entity);
+        urlaubsantragJpaRepository.saveAndFlush(entity);
         return urlaubsantrag;
+    }
+
+    @Override
+    public void speichereProzessinstanzId(UrlaubsantragId urlaubsantragId, ProzessinstanzId prozessinstanzId) {
+        final int aktualisierteDatensaetze = urlaubsantragJpaRepository.setzeProzessinstanzIdWennLeer(
+            urlaubsantragId.value(),
+            prozessinstanzId.value()
+        );
+
+        if (aktualisierteDatensaetze == 1) {
+            return;
+        }
+
+        final boolean prozessinstanzIdBereitsGespeichert = urlaubsantragJpaRepository.findeProzessinstanzIdNachId(urlaubsantragId.value())
+            .filter(existingProzessinstanzId -> !existingProzessinstanzId.isBlank())
+            .isPresent();
+
+        if (!prozessinstanzIdBereitsGespeichert) {
+            throw new IllegalStateException(
+                "ProzessinstanzId fuer Urlaubsantrag " + urlaubsantragId.value() + " konnte nicht gespeichert werden"
+            );
+        }
     }
 
     @Override
     public Optional<Urlaubsantrag> findeNachId(UrlaubsantragId urlaubsantragId) {
         return urlaubsantragJpaRepository.findById(urlaubsantragId.value())
             .map(this::toDomain);
+    }
+
+    private void bewahreGespeicherteProzessinstanzId(UrlaubsantragEntity entity) {
+        if (entity.getProzessinstanzId() != null) {
+            return;
+        }
+
+        urlaubsantragJpaRepository.findeProzessinstanzIdNachId(entity.getId())
+            .filter(prozessinstanzId -> !prozessinstanzId.isBlank())
+            .ifPresent(entity::setProzessinstanzId);
     }
 
     @Override

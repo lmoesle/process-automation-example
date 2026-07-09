@@ -1,7 +1,7 @@
 package de.lmoesle.miravelo.processautomationexample.application.usecases;
 
-import de.lmoesle.miravelo.processautomationexample.adapter.out.process.ProcessEngineApiTasklistAdapter;
 import de.lmoesle.miravelo.processautomationexample.application.ports.in.BenutzeraufgabeMirZuweisenInPort.WeiseBenutzeraufgabeMirZuCommand;
+import de.lmoesle.miravelo.processautomationexample.application.ports.out.AssignTaskOutPort;
 import de.lmoesle.miravelo.processautomationexample.application.ports.out.TasklistRepositoryOutPort;
 import de.lmoesle.miravelo.processautomationexample.application.ports.out.UrlaubsantragSpeichernOutPort;
 import de.lmoesle.miravelo.processautomationexample.domain.benutzer.BenutzerTestdaten;
@@ -21,18 +21,18 @@ import static org.mockito.Mockito.*;
 class BenutzeraufgabeMirZuweisenUseCaseTest {
 
     private TasklistRepositoryOutPort tasklistRepositoryOutPort;
-    private ProcessEngineApiTasklistAdapter processEngineApiTasklistAdapter;
+    private AssignTaskOutPort assignTaskOutPort;
     private UrlaubsantragSpeichernOutPort urlaubsantragSpeichernOutPort;
     private BenutzeraufgabeMirZuweisenUseCase benutzeraufgabeMirZuweisenUseCase;
 
     @BeforeEach
     void setUp() {
         tasklistRepositoryOutPort = mock(TasklistRepositoryOutPort.class);
-        processEngineApiTasklistAdapter = mock(ProcessEngineApiTasklistAdapter.class);
+        assignTaskOutPort = mock(AssignTaskOutPort.class);
         urlaubsantragSpeichernOutPort = mock(UrlaubsantragSpeichernOutPort.class);
         benutzeraufgabeMirZuweisenUseCase = new BenutzeraufgabeMirZuweisenUseCase(
             tasklistRepositoryOutPort,
-            processEngineApiTasklistAdapter,
+            assignTaskOutPort,
             urlaubsantragSpeichernOutPort
         );
     }
@@ -47,7 +47,7 @@ class BenutzeraufgabeMirZuweisenUseCaseTest {
         );
 
         verify(tasklistRepositoryOutPort).getTaskById(UserTaskTestdaten.taskId());
-        verify(processEngineApiTasklistAdapter).assignTaskToUser(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId());
+        verify(assignTaskOutPort).assignTaskToUser(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId());
         final ArgumentCaptor<de.lmoesle.miravelo.processautomationexample.domain.urlaubsantrag.Urlaubsantrag> urlaubsantragCaptor = ArgumentCaptor.forClass(
             de.lmoesle.miravelo.processautomationexample.domain.urlaubsantrag.Urlaubsantrag.class
         );

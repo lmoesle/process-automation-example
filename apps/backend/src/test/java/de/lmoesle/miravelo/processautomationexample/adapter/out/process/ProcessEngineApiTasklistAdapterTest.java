@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeoutException;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -62,6 +63,16 @@ class ProcessEngineApiTasklistAdapterTest {
     }
 
     @Test
+    void treatsModificationTimeoutAsUnclearEngineState() {
+        when(userTaskModificationApi.update(org.mockito.ArgumentMatchers.any(ModifyTaskCmd.class)))
+            .thenReturn(CompletableFuture.failedFuture(new TimeoutException("timeout")));
+
+        assertThatThrownBy(() -> processEngineApiTasklistAdapter.assignTaskToUser(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId()))
+            .isInstanceOf(ProzessEngineAuftragUnklarException.class)
+            .hasRootCauseInstanceOf(TimeoutException.class);
+    }
+
+    @Test
     void assignsTaskBeforeCompletingIt() {
         when(userTaskModificationApi.update(argThat(command ->
             command instanceof AssignTaskCmd assignTaskCmd
@@ -98,5 +109,17 @@ class ProcessEngineApiTasklistAdapterTest {
             .isInstanceOf(IllegalStateException.class)
             .hasMessage("Aufgabe " + UserTaskTestdaten.TASK_ID + " konnte nicht abgeschlossen werden")
             .hasRootCauseMessage("boom");
+    }
+
+    @Test
+    void treatsCompletionTimeoutAsUnclearEngineState() {
+        when(userTaskModificationApi.update(org.mockito.ArgumentMatchers.any(ModifyTaskCmd.class)))
+            .thenReturn(CompletableFuture.completedFuture(null));
+        when(userTaskCompletionApi.completeTask(org.mockito.ArgumentMatchers.any(CompleteTaskCmd.class)))
+            .thenReturn(CompletableFuture.failedFuture(new TimeoutException("timeout")));
+
+        assertThatThrownBy(() -> processEngineApiTasklistAdapter.completeTask(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId(), false))
+            .isInstanceOf(ProzessEngineAuftragUnklarException.class)
+            .hasRootCauseInstanceOf(TimeoutException.class);
     }
 }

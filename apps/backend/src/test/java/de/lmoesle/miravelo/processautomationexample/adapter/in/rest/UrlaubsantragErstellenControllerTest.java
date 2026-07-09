@@ -56,7 +56,6 @@ class UrlaubsantragErstellenControllerTest {
         when(erstelleUrlaubsantragInPort.erstelleUrlaubsantrag(any()))
             .thenReturn(new UrlaubsantragErstellenErgebnis(
                 UrlaubsantragId.of(urlaubsantragId),
-                UrlaubsantragTestData.prozessinstanzId(),
                 UrlaubsantragStatus.ANTRAG_GESTELLT,
                 UrlaubsantragTestData.initialStatusHistory(),
                 BenutzerTestdaten.ada(),

@@ -34,6 +34,37 @@ class UrlaubsantragPersistenceAdapterTest {
     }
 
     @Test
+    void preservesExistingProcessInstanceIdWhenSavingStaleUrlaubsantrag() {
+        when(urlaubsantragJpaRepository.findeProzessinstanzIdNachId(UrlaubsantragTestData.VACATION_REQUEST_UUID))
+            .thenReturn(Optional.of(UrlaubsantragTestData.PROCESS_INSTANCE_ID_VALUE));
+
+        urlaubsantragPersistenceAdapter.speichere(UrlaubsantragTestData.urlaubsantrag());
+
+        verify(urlaubsantragJpaRepository).findeProzessinstanzIdNachId(UrlaubsantragTestData.VACATION_REQUEST_UUID);
+        verify(urlaubsantragJpaRepository).saveAndFlush(argThat(entity ->
+            UrlaubsantragTestData.PROCESS_INSTANCE_ID_VALUE.equals(entity.getProzessinstanzId())
+        ));
+    }
+
+    @Test
+    void storesProcessInstanceIdWithNarrowUpdate() {
+        when(urlaubsantragJpaRepository.setzeProzessinstanzIdWennLeer(
+            UrlaubsantragTestData.VACATION_REQUEST_UUID,
+            UrlaubsantragTestData.PROCESS_INSTANCE_ID_VALUE
+        )).thenReturn(1);
+
+        urlaubsantragPersistenceAdapter.speichereProzessinstanzId(
+            UrlaubsantragTestData.urlaubsantragId(),
+            UrlaubsantragTestData.prozessinstanzId()
+        );
+
+        verify(urlaubsantragJpaRepository).setzeProzessinstanzIdWennLeer(
+            UrlaubsantragTestData.VACATION_REQUEST_UUID,
+            UrlaubsantragTestData.PROCESS_INSTANCE_ID_VALUE
+        );
+    }
+
+    @Test
     void returnsEmptyWhenNoUrlaubsantragsExistForApplicant() {
         when(urlaubsantragJpaRepository.findAllByAntragstellerId(eq(BenutzerTestdaten.ADA_UUID), any(Sort.class)))
             .thenReturn(List.of());
