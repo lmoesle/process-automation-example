@@ -25,6 +25,7 @@
       <bpmn:extensionElements>
         <camunda:taskListener event="create" delegateExpression="${benutzeraufgabenBenachrichtigungTaskListener}" />
         <camunda:taskListener event="assignment" delegateExpression="${benutzeraufgabenBenachrichtigungTaskListener}" />
+        <camunda:taskListener event="update" delegateExpression="${benutzeraufgabenBenachrichtigungTaskListener}" />
         <camunda:taskListener event="complete" delegateExpression="${benutzeraufgabenBenachrichtigungTaskListener}" />
         <camunda:taskListener event="delete" delegateExpression="${benutzeraufgabenBenachrichtigungTaskListener}" />
       </bpmn:extensionElements>

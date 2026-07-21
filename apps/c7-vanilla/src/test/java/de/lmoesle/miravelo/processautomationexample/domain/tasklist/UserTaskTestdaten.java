@@ -12,6 +12,8 @@ public final class UserTaskTestdaten {
 
     public static final String TASK_ID = "approve-vacation-1";
     public static final String SECOND_TASK_ID = "approve-vacation-2";
+    public static final String TASK_NAME = "Genehmigung von Vorgesetztem";
+    public static final String BUSINESS_KEY = UrlaubsantragTestData.VACATION_REQUEST_UUID.toString();
 
     private UserTaskTestdaten() {
     }
@@ -82,5 +84,16 @@ public final class UserTaskTestdaten {
 
     public static UserTask secondUserTaskWithoutPayload() {
         return secondUserTask();
+    }
+
+    public static OffeneBenutzeraufgabe offeneBenutzeraufgabe() {
+        return new OffeneBenutzeraufgabe(
+            taskId(),
+            TASK_NAME,
+            UrlaubsantragTestData.prozessinstanzId(),
+            BUSINESS_KEY,
+            List.of(BenutzerTestdaten.adaId(), BenutzerTestdaten.carlaId()),
+            BenutzerTestdaten.adaId()
+        );
     }
 }

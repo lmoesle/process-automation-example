@@ -1,39 +1,39 @@
-package de.lmoesle.miravelo.processautomationexample.shared.tasklist;
+package de.lmoesle.miravelo.processautomationexample.adapter.out.persistence;
 
 import de.lmoesle.miravelo.processautomationexample.adapter.in.process.BenutzeraufgabenBenachrichtigungTaskListener;
-import de.lmoesle.miravelo.processautomationexample.application.ports.out.AktiveBenutzeraufgabenOutPort;
 import de.lmoesle.miravelo.processautomationexample.application.ports.out.BenutzerRepositoryOutPort;
 import de.lmoesle.miravelo.processautomationexample.application.ports.out.SendeBenutzeraufgabenBenachrichtigungOutPort;
 import de.lmoesle.miravelo.processautomationexample.application.ports.out.UrlaubsantraegeLadenOutPort;
 import de.lmoesle.miravelo.processautomationexample.application.usecases.SendeBenutzeraufgabenBenachrichtigungUseCase;
-import org.camunda.bpm.engine.TaskService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-class CamundaTasklistBeansTest {
+class TasklistBeansTest {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-        .withBean(TaskService.class, () -> mock(TaskService.class))
+        .withBean(OffeneBenutzeraufgabeJpaRepository.class, () -> mock(OffeneBenutzeraufgabeJpaRepository.class))
         .withBean(UrlaubsantraegeLadenOutPort.class, () -> mock(UrlaubsantraegeLadenOutPort.class))
         .withBean(BenutzerRepositoryOutPort.class, () -> mock(BenutzerRepositoryOutPort.class))
-        .withBean(AktiveBenutzeraufgabenOutPort.class, () -> mock(AktiveBenutzeraufgabenOutPort.class))
-        .withBean(SendeBenutzeraufgabenBenachrichtigungOutPort.class, () -> mock(SendeBenutzeraufgabenBenachrichtigungOutPort.class))
+        .withBean(
+            SendeBenutzeraufgabenBenachrichtigungOutPort.class,
+            () -> mock(SendeBenutzeraufgabenBenachrichtigungOutPort.class)
+        )
         .withUserConfiguration(
             BenutzeraufgabenBenachrichtigungTaskListener.class,
             SendeBenutzeraufgabenBenachrichtigungUseCase.class,
-            TasklistRepository.class
+            TasklistPersistenceAdapter.class
         );
 
     @Test
-    void createsBeansWithoutCircularDependency() {
+    void createsTasklistBeansWithoutCircularDependency() {
         contextRunner.run(context -> {
             assertThat(context).hasNotFailed();
             assertThat(context).hasSingleBean(BenutzeraufgabenBenachrichtigungTaskListener.class);
             assertThat(context).hasSingleBean(SendeBenutzeraufgabenBenachrichtigungUseCase.class);
-            assertThat(context).hasSingleBean(TasklistRepository.class);
+            assertThat(context).hasSingleBean(TasklistPersistenceAdapter.class);
         });
     }
 }

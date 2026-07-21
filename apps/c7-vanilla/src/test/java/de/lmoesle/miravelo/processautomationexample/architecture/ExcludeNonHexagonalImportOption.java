@@ -19,7 +19,6 @@ public final class ExcludeNonHexagonalImportOption implements ImportOption {
             return false;
         }
 
-        return !uri.endsWith("/de/lmoesle/miravelo/processautomationexample/ProcessAutomationExampleC7VanillaApplication.class")
-            && !uri.endsWith("/de/lmoesle/miravelo/processautomationexample/shared/tasklist/TasklistRepository.class");
+        return !uri.endsWith("/de/lmoesle/miravelo/processautomationexample/ProcessAutomationExampleC7VanillaApplication.class");
     }
 }

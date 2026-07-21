@@ -35,7 +35,11 @@ class CamundaUrlaubsantragGenehmigungsprozessAdapterTest {
     void startsApprovalProcess() {
         final ProcessInstance processInstance = mock(ProcessInstance.class);
         when(processInstance.getProcessInstanceId()).thenReturn(UrlaubsantragTestData.PROCESS_INSTANCE_ID_VALUE);
-        when(runtimeService.startProcessInstanceByKey(eq(VacationApprovalProcessApi.PROCESS_ID.getValue()), anyMap()))
+        when(runtimeService.startProcessInstanceByKey(
+            eq(VacationApprovalProcessApi.PROCESS_ID.getValue()),
+            eq(UrlaubsantragTestData.VACATION_REQUEST_UUID.toString()),
+            anyMap()
+        ))
             .thenReturn(processInstance);
 
         final var prozessinstanzId = camundaUrlaubsantragGenehmigungsprozessAdapter.starteGenehmigungsprozessFuer(
@@ -46,6 +50,7 @@ class CamundaUrlaubsantragGenehmigungsprozessAdapterTest {
         final ArgumentCaptor<Map<String, Object>> variablesCaptor = ArgumentCaptor.captor();
         verify(runtimeService).startProcessInstanceByKey(
             eq(VacationApprovalProcessApi.PROCESS_ID.getValue()),
+            eq(UrlaubsantragTestData.VACATION_REQUEST_UUID.toString()),
             variablesCaptor.capture()
         );
         assertThat(variablesCaptor.getValue())
@@ -62,7 +67,11 @@ class CamundaUrlaubsantragGenehmigungsprozessAdapterTest {
 
     @Test
     void raisesErrorWhenStartingApprovalProcessFails() {
-        when(runtimeService.startProcessInstanceByKey(eq(VacationApprovalProcessApi.PROCESS_ID.getValue()), anyMap()))
+        when(runtimeService.startProcessInstanceByKey(
+            eq(VacationApprovalProcessApi.PROCESS_ID.getValue()),
+            eq(UrlaubsantragTestData.VACATION_REQUEST_UUID.toString()),
+            anyMap()
+        ))
             .thenThrow(new RuntimeException("boom"));
 
         assertThatThrownBy(() -> camundaUrlaubsantragGenehmigungsprozessAdapter.starteGenehmigungsprozessFuer(

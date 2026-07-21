@@ -25,6 +25,7 @@ public class CamundaUrlaubsantragGenehmigungsprozessAdapter implements Urlaubsan
         try {
             final var prozessinstanz = runtimeService.startProcessInstanceByKey(
                 VacationApprovalProcessApi.PROCESS_ID.getValue(),
+                urlaubsantrag.id().value().toString(),
                 Map.of(
                     VacationApprovalProcessApi.Variables.AutomaticCheck.URLAUBSANTRAG_ID.getValue(),
                     urlaubsantrag.id().value().toString(),

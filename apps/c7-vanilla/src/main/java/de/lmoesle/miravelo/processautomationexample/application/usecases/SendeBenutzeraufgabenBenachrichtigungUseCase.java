@@ -1,7 +1,6 @@
 package de.lmoesle.miravelo.processautomationexample.application.usecases;
 
 import de.lmoesle.miravelo.processautomationexample.application.ports.in.BenutzeraufgabenLifecycleInPort;
-import de.lmoesle.miravelo.processautomationexample.application.ports.out.AktiveBenutzeraufgabenOutPort;
 import de.lmoesle.miravelo.processautomationexample.application.ports.out.SendeBenutzeraufgabenBenachrichtigungOutPort;
 import de.lmoesle.miravelo.processautomationexample.application.ports.out.TasklistRepositoryOutPort;
 import de.lmoesle.miravelo.processautomationexample.domain.benutzer.Benutzer;
@@ -19,10 +18,9 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional
 public class SendeBenutzeraufgabenBenachrichtigungUseCase implements BenutzeraufgabenLifecycleInPort {
 
-    private final AktiveBenutzeraufgabenOutPort aktiveBenutzeraufgabenOutPort;
     private final TasklistRepositoryOutPort tasklistRepositoryOutPort;
     private final SendeBenutzeraufgabenBenachrichtigungOutPort sendeBenutzeraufgabenBenachrichtigungOutPort;
 
@@ -30,44 +28,42 @@ public class SendeBenutzeraufgabenBenachrichtigungUseCase implements Benutzerauf
     public void verarbeiteAktiveBenutzeraufgabe(AktiveBenutzeraufgabeCommand command) {
         Assert.notNull(command, "command darf nicht null sein");
 
-        final var isNewUsertask = aktiveBenutzeraufgabenOutPort.speichereWennNeu(command.taskId());
+        final var isNewUsertask = tasklistRepositoryOutPort.speichere(command.aufgabe());
         if (!isNewUsertask) {
-            log.debug("Benutzeraufgabe {} ist bereits registriert, es wird keine Benachrichtigung versendet", command.taskId().value());
+            log.debug(
+                "Benutzeraufgabe {} wurde aktualisiert, es wird keine weitere Benachrichtigung versendet",
+                command.aufgabe().id().value()
+            );
             return;
         }
 
-        try {
-            final var userTask = tasklistRepositoryOutPort.getTaskById(command.taskId())
-                .orElseThrow(() -> new TaskNichtGefundenException(command.taskId()));
+        final var userTask = tasklistRepositoryOutPort.getTaskById(command.aufgabe().id())
+            .orElseThrow(() -> new TaskNichtGefundenException(command.aufgabe().id()));
 
-            final List<Benutzer> empfaenger = userTask.candidateUsers().stream()
-                .collect(
-                    LinkedHashMap<BenutzerId, Benutzer>::new,
-                    (map, benutzer) -> map.putIfAbsent(benutzer.id(), benutzer),
-                    LinkedHashMap::putAll
-                )
-                .values()
-                .stream()
-                .toList();
+        final List<Benutzer> empfaenger = userTask.candidateUsers().stream()
+            .collect(
+                LinkedHashMap<BenutzerId, Benutzer>::new,
+                (map, benutzer) -> map.putIfAbsent(benutzer.id(), benutzer),
+                LinkedHashMap::putAll
+            )
+            .values()
+            .stream()
+            .toList();
 
-            sendeBenutzeraufgabenBenachrichtigungOutPort.sendeBenutzeraufgabenBenachrichtigung(userTask, empfaenger);
+        sendeBenutzeraufgabenBenachrichtigungOutPort.sendeBenutzeraufgabenBenachrichtigung(userTask, empfaenger);
 
-            log.info(
-                "Benutzeraufgabenbenachrichtigung versendet: taskId={}, empfaengerAnzahl={}",
-                command.taskId().value(),
-                empfaenger.size()
-            );
-        } catch (RuntimeException exception) {
-            aktiveBenutzeraufgabenOutPort.entferne(command.taskId());
-            throw exception;
-        }
+        log.info(
+            "Benutzeraufgabenbenachrichtigung versendet: taskId={}, empfaengerAnzahl={}",
+            command.aufgabe().id().value(),
+            empfaenger.size()
+        );
     }
 
     @Override
     public void verarbeiteEntfernteBenutzeraufgabe(EntfernteBenutzeraufgabeCommand command) {
         Assert.notNull(command, "command darf nicht null sein");
 
-        aktiveBenutzeraufgabenOutPort.entferne(command.taskId());
+        tasklistRepositoryOutPort.entferne(command.taskId());
 
         log.debug("Benutzeraufgabe entfernt: taskId={}", command.taskId().value());
     }
