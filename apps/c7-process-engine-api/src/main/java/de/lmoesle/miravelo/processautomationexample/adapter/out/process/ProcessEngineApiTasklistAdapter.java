@@ -1,7 +1,6 @@
 package de.lmoesle.miravelo.processautomationexample.adapter.out.process;
 
-import de.lmoesle.miravelo.processautomationexample.application.ports.out.AssignTaskOutPort;
-import de.lmoesle.miravelo.processautomationexample.application.ports.out.CompleteTaskOutPort;
+import de.lmoesle.miravelo.processautomationexample.application.ports.out.TaskBearbeitenDirektOutPort;
 import de.lmoesle.miravelo.processautomationexample.domain.benutzer.BenutzerId;
 import de.lmoesle.miravelo.processautomationexample.domain.tasklist.UserTaskId;
 import dev.bpmcrafters.processengineapi.task.ChangeAssignmentModifyTaskCmd.AssignTaskCmd;
@@ -18,7 +17,7 @@ import java.util.concurrent.TimeoutException;
 
 @Component
 @RequiredArgsConstructor
-public class ProcessEngineApiTasklistAdapter implements CompleteTaskOutPort, AssignTaskOutPort {
+public class ProcessEngineApiTasklistAdapter implements TaskBearbeitenDirektOutPort {
 
     private static final long TASK_MODIFICATION_TIMEOUT_SECONDS = 10;
     private static final long TASK_COMPLETION_TIMEOUT_SECONDS = 10;
@@ -31,9 +30,22 @@ public class ProcessEngineApiTasklistAdapter implements CompleteTaskOutPort, Ass
         try {
             userTaskModificationApi.update(new AssignTaskCmd(taskId.value(), benutzerId.value().toString()))
                 .get(TASK_MODIFICATION_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-        } catch (TimeoutException | InterruptedException | IllegalStateException | ExecutionException exception) {
+        } catch (TimeoutException exception) {
+            throw new ProzessEngineAuftragUnklarException(
+                "Aufgabe " + taskId.value() + " konnte Benutzer " + benutzerId.value()
+                    + " innerhalb des Timeouts nicht eindeutig zugewiesen werden",
+                exception
+            );
+        } catch (InterruptedException | IllegalStateException | ExecutionException exception) {
             if (exception instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
+            }
+            if (istDurchTimeoutVerursacht(exception)) {
+                throw new ProzessEngineAuftragUnklarException(
+                    "Aufgabe " + taskId.value() + " konnte Benutzer " + benutzerId.value()
+                        + " nicht eindeutig zugewiesen werden",
+                    exception
+                );
             }
             throw new IllegalStateException(
                 "Aufgabe " + taskId.value() + " konnte Benutzer " + benutzerId.value() + " nicht zugewiesen werden",
@@ -48,15 +60,37 @@ public class ProcessEngineApiTasklistAdapter implements CompleteTaskOutPort, Ass
         try {
             userTaskCompletionApi.completeTask(new CompleteTaskCmd(taskId.value(), Map.of("genehmigt", genehmigt)))
                 .get(TASK_COMPLETION_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-        } catch (TimeoutException | InterruptedException | IllegalStateException | ExecutionException exception) {
+        } catch (TimeoutException exception) {
+            throw new ProzessEngineAuftragUnklarException(
+                "Aufgabe " + taskId.value() + " konnte innerhalb des Timeouts nicht eindeutig abgeschlossen werden",
+                exception
+            );
+        } catch (InterruptedException | IllegalStateException | ExecutionException exception) {
             if (exception instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
+            }
+            if (istDurchTimeoutVerursacht(exception)) {
+                throw new ProzessEngineAuftragUnklarException(
+                    "Aufgabe " + taskId.value() + " konnte nicht eindeutig abgeschlossen werden",
+                    exception
+                );
             }
             throw new IllegalStateException(
                 "Aufgabe " + taskId.value() + " konnte nicht abgeschlossen werden",
                 exception
             );
         }
+    }
+
+    private boolean istDurchTimeoutVerursacht(Throwable exception) {
+        Throwable currentException = exception;
+        while (currentException != null) {
+            if (currentException instanceof TimeoutException) {
+                return true;
+            }
+            currentException = currentException.getCause();
+        }
+        return false;
     }
 
 }

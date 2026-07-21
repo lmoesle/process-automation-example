@@ -5,7 +5,6 @@ import de.lmoesle.miravelo.processautomationexample.application.ports.out.Urlaub
 import de.lmoesle.miravelo.processautomationexample.application.ports.out.UrlaubsantragGenehmigungsprozessStartenOutPort;
 import de.lmoesle.miravelo.processautomationexample.application.ports.out.BenutzerRepositoryOutPort;
 import de.lmoesle.miravelo.processautomationexample.domain.benutzer.Team;
-import de.lmoesle.miravelo.processautomationexample.domain.urlaubsantrag.ProzessinstanzId;
 import de.lmoesle.miravelo.processautomationexample.domain.urlaubsantrag.Urlaubsantrag;
 import de.lmoesle.miravelo.processautomationexample.domain.benutzer.Benutzer;
 import de.lmoesle.miravelo.processautomationexample.domain.benutzer.BenutzerId;
@@ -42,25 +41,21 @@ public class UrlaubsantragErstellenUseCase implements UrlaubsantragErstellenInPo
 
         urlaubsantragSpeichernOutPort.speichere(urlaubsantrag);
 
-        final ProzessinstanzId prozessinstanzId = genehmigungsprozessStartenOutPort.starteGenehmigungsprozessFuer(
+        genehmigungsprozessStartenOutPort.starteGenehmigungsprozessFuer(
             urlaubsantrag,
             ermittleTeamLeadIds(antragsteller)
         );
-        urlaubsantrag.markiereGenehmigungsprozessAlsGestartet(prozessinstanzId);
-        final Urlaubsantrag gespeicherterUrlaubsantrag = urlaubsantragSpeichernOutPort.speichere(urlaubsantrag);
 
         log.info(
-            "Urlaubsantrag erfolgreich erstellt: urlaubsantragId={}, prozessinstanzId={}, status={}",
-            gespeicherterUrlaubsantrag.id().value(),
-            prozessinstanzId.value(),
-            gespeicherterUrlaubsantrag.status()
+            "Urlaubsantrag erfolgreich erstellt und Genehmigungsprozess-Start beauftragt: urlaubsantragId={}, status={}",
+            urlaubsantrag.id().value(),
+            urlaubsantrag.status()
         );
 
         return new UrlaubsantragErstellenErgebnis(
-            gespeicherterUrlaubsantrag.id(),
-            prozessinstanzId,
-            gespeicherterUrlaubsantrag.status(),
-            gespeicherterUrlaubsantrag.statusHistorie(),
+            urlaubsantrag.id(),
+            urlaubsantrag.status(),
+            urlaubsantrag.statusHistorie(),
             antragsteller,
             vertretung
         );
