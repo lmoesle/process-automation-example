@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
 import java.util.Collection;
@@ -24,9 +25,9 @@ public interface ProzessEngineOutboxAuftragJpaRepository extends JpaRepository<P
         order by auftrag.erstelltAm asc
         """)
     List<ProzessEngineOutboxAuftragEntity> findeFaelligeAuftraege(
-        Collection<ProzessEngineOutboxAuftragStatus> status,
-        Instant zeitpunkt,
-        int maximaleVersuche,
+        @Param("status") Collection<ProzessEngineOutboxAuftragStatus> status,
+        @Param("zeitpunkt") Instant zeitpunkt,
+        @Param("maximaleVersuche") int maximaleVersuche,
         Pageable pageable
     );
 }

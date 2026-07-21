@@ -5,6 +5,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.UUID;
@@ -20,5 +21,8 @@ public interface UrlaubsantragJpaRepository extends JpaRepository<UrlaubsantragE
         where urlaubsantrag.id = :urlaubsantragId
           and urlaubsantrag.prozessinstanzId is null
         """)
-    int setzeProzessinstanzIdWennLeer(UUID urlaubsantragId, String prozessinstanzId);
+    int setzeProzessinstanzIdWennLeer(
+        @Param("urlaubsantragId") UUID urlaubsantragId,
+        @Param("prozessinstanzId") String prozessinstanzId
+    );
 }
