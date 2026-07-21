@@ -71,9 +71,12 @@ public class ProzessEngineOutboxAuftragEntity {
     @Column(name = "letzte_fehlermeldung")
     private String letzteFehlermeldung;
 
-    public void registriereVersuch(Instant zeitpunkt) {
+    public void markiereInBearbeitung(Instant zeitpunkt) {
+        status = ProzessEngineOutboxAuftragStatus.IN_BEARBEITUNG;
         versuche++;
+        abgeschlossenAm = null;
         zuletztGeaendertAm = zeitpunkt;
+        letzteFehlermeldung = null;
     }
 
     public void markiereErfolgreich(Instant zeitpunkt) {

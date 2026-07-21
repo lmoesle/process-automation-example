@@ -7,15 +7,11 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public interface UrlaubsantragJpaRepository extends JpaRepository<UrlaubsantragEntity, UUID> {
 
     List<UrlaubsantragEntity> findAllByAntragstellerId(UUID antragstellerId, Sort sort);
-
-    @Query("select urlaubsantrag.prozessinstanzId from UrlaubsantragEntity urlaubsantrag where urlaubsantrag.id = :urlaubsantragId")
-    Optional<String> findeProzessinstanzIdNachId(UUID urlaubsantragId);
 
     @Modifying
     @Query("""

@@ -9,9 +9,13 @@ import de.lmoesle.miravelo.processautomationexample.domain.benutzer.BenutzerId;
 import de.lmoesle.miravelo.processautomationexample.domain.urlaubsantrag.ProzessinstanzId;
 import de.lmoesle.miravelo.processautomationexample.domain.urlaubsantrag.Urlaubsantrag;
 import de.lmoesle.miravelo.processautomationexample.domain.urlaubsantrag.UrlaubsantragId;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.function.Function;
@@ -29,8 +33,10 @@ public class UrlaubsantragPersistenceAdapter implements
 
     private final UrlaubsantragJpaRepository urlaubsantragJpaRepository;
     private final BenutzerJpaRepository benutzerJpaRepository;
+    private final EntityManager entityManager;
 
     @Override
+    @Transactional
     public Urlaubsantrag speichere(Urlaubsantrag urlaubsantrag) {
         final UrlaubsantragEntity entity = UrlaubsantragPersistenceMapper.toEntity(urlaubsantrag);
         bewahreGespeicherteProzessinstanzId(entity);
@@ -39,6 +45,7 @@ public class UrlaubsantragPersistenceAdapter implements
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void speichereProzessinstanzId(UrlaubsantragId urlaubsantragId, ProzessinstanzId prozessinstanzId) {
         final int aktualisierteDatensaetze = urlaubsantragJpaRepository.setzeProzessinstanzIdWennLeer(
             urlaubsantragId.value(),
@@ -49,8 +56,8 @@ public class UrlaubsantragPersistenceAdapter implements
             return;
         }
 
-        final boolean prozessinstanzIdBereitsGespeichert = urlaubsantragJpaRepository.findeProzessinstanzIdNachId(urlaubsantragId.value())
-            .filter(existingProzessinstanzId -> !existingProzessinstanzId.isBlank())
+        final boolean prozessinstanzIdBereitsGespeichert = findeProzessinstanzIdNachId(urlaubsantragId.value())
+            .filter(prozessinstanzId.value()::equals)
             .isPresent();
 
         if (!prozessinstanzIdBereitsGespeichert) {
@@ -71,9 +78,17 @@ public class UrlaubsantragPersistenceAdapter implements
             return;
         }
 
-        urlaubsantragJpaRepository.findeProzessinstanzIdNachId(entity.getId())
+        findeProzessinstanzIdNachId(entity.getId())
             .filter(prozessinstanzId -> !prozessinstanzId.isBlank())
             .ifPresent(entity::setProzessinstanzId);
+    }
+
+    private Optional<String> findeProzessinstanzIdNachId(UUID urlaubsantragId) {
+        return urlaubsantragJpaRepository.findById(urlaubsantragId)
+            .map(entity -> {
+                entityManager.refresh(entity, LockModeType.PESSIMISTIC_WRITE);
+                return entity.getProzessinstanzId();
+            });
     }
 
     @Override

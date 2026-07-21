@@ -19,7 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
@@ -40,6 +39,7 @@ public class ProzessEngineOutboxAdapter implements
     );
 
     private final ProzessEngineOutboxAuftragJpaRepository outboxAuftragJpaRepository;
+    private final ProzessEngineOutboxTransaktionen outboxTransaktionen;
     private final StarteGenehmigungsprozessDirektOutPort starteGenehmigungsprozessDirektOutPort;
     private final TaskBearbeitenDirektOutPort taskBearbeitenDirektOutPort;
     private final UrlaubsantraegeLadenOutPort urlaubsantraegeLadenOutPort;
@@ -70,22 +70,32 @@ public class ProzessEngineOutboxAdapter implements
     }
 
     @Scheduled(fixedDelayString = "${de.lmoesle.miravelo.processautomationexample.process-engine-outbox.fixed-delay-ms:5000}")
-    @Transactional
     public void verarbeiteFaelligeAuftraege() {
-        final List<ProzessEngineOutboxAuftragEntity> auftraege = outboxAuftragJpaRepository.findeFaelligeAuftraege(
-            WIEDERHOLBARE_STATUS,
-            Instant.now(),
-            MAXIMALE_VERSUCHE,
-            PageRequest.of(0, BATCH_SIZE)
-        );
+        for (int verarbeiteteAuftraege = 0; verarbeiteteAuftraege < BATCH_SIZE; verarbeiteteAuftraege++) {
+            if (Thread.currentThread().isInterrupted()) {
+                return;
+            }
 
-        auftraege.forEach(this::verarbeiteAuftrag);
+            final var auftrag = outboxTransaktionen.beansprucheNaechstenFaelligenAuftrag(
+                WIEDERHOLBARE_STATUS,
+                Instant.now(),
+                MAXIMALE_VERSUCHE,
+                PageRequest.of(0, 1)
+            );
+            if (auftrag.isEmpty()) {
+                return;
+            }
+
+            verarbeiteUndSpeichereAuftrag(auftrag.get());
+        }
+    }
+
+    private void verarbeiteUndSpeichereAuftrag(ProzessEngineOutboxAuftragEntity auftrag) {
+        verarbeiteAuftrag(auftrag);
+        outboxTransaktionen.speichere(auftrag);
     }
 
     private void verarbeiteAuftrag(ProzessEngineOutboxAuftragEntity auftrag) {
-        final Instant versuchsZeitpunkt = Instant.now();
-        auftrag.registriereVersuch(versuchsZeitpunkt);
-
         try {
             switch (auftrag.getTyp()) {
                 case STARTE_GENEHMIGUNGSPROZESS -> starteGenehmigungsprozess(auftrag);
@@ -103,29 +113,14 @@ public class ProzessEngineOutboxAdapter implements
             log.info("Prozess-Engine-Outbox-Auftrag erfolgreich verarbeitet: auftragId={}, typ={}", auftrag.getId(), auftrag.getTyp());
         } catch (ProzessEngineAuftragUnklarException exception) {
             final Instant fehlgeschlagenAm = Instant.now();
-            if (istUnklareProzessStartAntwortWiederholbar(auftrag)) {
-                auftrag.markiereFehlgeschlagen(
-                    exception.getMessage(),
-                    fehlgeschlagenAm,
-                    berechneNaechstenVersuch(fehlgeschlagenAm, auftrag.getVersuche())
-                );
-                log.warn(
-                    "Prozess-Engine-Outbox-Auftrag mit unklarem Prozessstart wird wiederholt: auftragId={}, typ={}, versuch={}",
-                    auftrag.getId(),
-                    auftrag.getTyp(),
-                    auftrag.getVersuche(),
-                    exception
-                );
-            } else {
-                auftrag.markiereEndgueltigFehlgeschlagen(exception.getMessage(), fehlgeschlagenAm);
-                log.error(
-                    "Prozess-Engine-Outbox-Auftrag mit unklarem Engine-Zustand endgueltig fehlgeschlagen: auftragId={}, typ={}, versuch={}",
-                    auftrag.getId(),
-                    auftrag.getTyp(),
-                    auftrag.getVersuche(),
-                    exception
-                );
-            }
+            auftrag.markiereEndgueltigFehlgeschlagen(exception.getMessage(), fehlgeschlagenAm);
+            log.error(
+                "Prozess-Engine-Outbox-Auftrag mit unklarem Engine-Zustand endgueltig fehlgeschlagen: auftragId={}, typ={}, versuch={}",
+                auftrag.getId(),
+                auftrag.getTyp(),
+                auftrag.getVersuche(),
+                exception
+            );
         } catch (RuntimeException exception) {
             final Instant fehlgeschlagenAm = Instant.now();
             if (auftrag.getVersuche() >= MAXIMALE_VERSUCHE) {
@@ -147,11 +142,6 @@ public class ProzessEngineOutboxAdapter implements
         }
     }
 
-    private boolean istUnklareProzessStartAntwortWiederholbar(ProzessEngineOutboxAuftragEntity auftrag) {
-        return auftrag.getTyp() == ProzessEngineOutboxAuftragTyp.STARTE_GENEHMIGUNGSPROZESS
-            && auftrag.getVersuche() < MAXIMALE_VERSUCHE;
-    }
-
     private void starteGenehmigungsprozess(ProzessEngineOutboxAuftragEntity auftrag) {
         final Urlaubsantrag urlaubsantrag = urlaubsantraegeLadenOutPort.findeNachId(
             UrlaubsantragId.of(auftrag.getUrlaubsantragId())
@@ -159,8 +149,7 @@ public class ProzessEngineOutboxAdapter implements
             "Urlaubsantrag " + auftrag.getUrlaubsantragId() + " fuer Prozess-Engine-Outbox-Auftrag nicht gefunden"
         ));
 
-        if (urlaubsantrag.prozessinstanzId() != null) {
-            auftrag.setProzessinstanzId(urlaubsantrag.prozessinstanzId().value());
+        if (uebernehmeBestehendeProzessinstanzId(auftrag, urlaubsantrag)) {
             return;
         }
 
@@ -176,7 +165,7 @@ public class ProzessEngineOutboxAdapter implements
             .orElseThrow(() -> new IllegalStateException(
                 "Urlaubsantrag " + auftrag.getUrlaubsantragId() + " fuer Prozess-Engine-Outbox-Auftrag nicht gefunden"
             ));
-        if (aktualisierterUrlaubsantrag.prozessinstanzId() != null) {
+        if (uebernehmeBestehendeProzessinstanzId(auftrag, aktualisierterUrlaubsantrag)) {
             return;
         }
 
@@ -186,6 +175,26 @@ public class ProzessEngineOutboxAdapter implements
             aktualisierterUrlaubsantrag.id(),
             aktualisierterUrlaubsantrag.prozessinstanzId()
         );
+    }
+
+    private boolean uebernehmeBestehendeProzessinstanzId(
+        ProzessEngineOutboxAuftragEntity auftrag,
+        Urlaubsantrag urlaubsantrag
+    ) {
+        if (urlaubsantrag.prozessinstanzId() == null) {
+            return false;
+        }
+
+        final String bestehendeProzessinstanzId = urlaubsantrag.prozessinstanzId().value();
+        if (auftrag.getProzessinstanzId() != null && !auftrag.getProzessinstanzId().equals(bestehendeProzessinstanzId)) {
+            throw new ProzessEngineAuftragUnklarException(
+                "Urlaubsantrag " + urlaubsantrag.id().value() + " verweist auf Prozessinstanz "
+                    + bestehendeProzessinstanzId + " statt auf die gestartete Prozessinstanz " + auftrag.getProzessinstanzId()
+            );
+        }
+
+        auftrag.setProzessinstanzId(bestehendeProzessinstanzId);
+        return true;
     }
 
     private Instant berechneNaechstenVersuch(Instant fehlgeschlagenAm, int versuche) {

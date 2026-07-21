@@ -12,6 +12,7 @@ import de.lmoesle.miravelo.processautomationexample.domain.urlaubsantrag.Urlaubs
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -30,6 +32,7 @@ import static org.mockito.Mockito.when;
 class ProzessEngineOutboxAdapterTest {
 
     private ProzessEngineOutboxAuftragJpaRepository outboxAuftragJpaRepository;
+    private ProzessEngineOutboxTransaktionen outboxTransaktionen;
     private StarteGenehmigungsprozessDirektOutPort starteGenehmigungsprozessDirektOutPort;
     private TaskBearbeitenDirektOutPort taskBearbeitenDirektOutPort;
     private UrlaubsantraegeLadenOutPort urlaubsantraegeLadenOutPort;
@@ -39,12 +42,14 @@ class ProzessEngineOutboxAdapterTest {
     @BeforeEach
     void setUp() {
         outboxAuftragJpaRepository = mock(ProzessEngineOutboxAuftragJpaRepository.class);
+        outboxTransaktionen = new ProzessEngineOutboxTransaktionen(outboxAuftragJpaRepository);
         starteGenehmigungsprozessDirektOutPort = mock(StarteGenehmigungsprozessDirektOutPort.class);
         taskBearbeitenDirektOutPort = mock(TaskBearbeitenDirektOutPort.class);
         urlaubsantraegeLadenOutPort = mock(UrlaubsantraegeLadenOutPort.class);
         urlaubsantragProzessinstanzSpeichernOutPort = mock(UrlaubsantragProzessinstanzSpeichernOutPort.class);
         prozessEngineOutboxAdapter = new ProzessEngineOutboxAdapter(
             outboxAuftragJpaRepository,
+            outboxTransaktionen,
             starteGenehmigungsprozessDirektOutPort,
             taskBearbeitenDirektOutPort,
             urlaubsantraegeLadenOutPort,
@@ -79,7 +84,7 @@ class ProzessEngineOutboxAdapterTest {
             java.time.Instant.now()
         );
         when(outboxAuftragJpaRepository.findeFaelligeAuftraege(any(), any(), anyInt(), any()))
-            .thenReturn(List.of(auftrag));
+            .thenReturn(List.of(auftrag), List.of());
         when(urlaubsantraegeLadenOutPort.findeNachId(UrlaubsantragTestData.urlaubsantragId()))
             .thenReturn(Optional.of(UrlaubsantragTestData.urlaubsantrag()))
             .thenReturn(Optional.of(UrlaubsantragTestData.urlaubsantrag()));
@@ -94,6 +99,12 @@ class ProzessEngineOutboxAdapterTest {
             UrlaubsantragTestData.urlaubsantragId(),
             UrlaubsantragTestData.prozessinstanzId()
         );
+        final InOrder inOrder = inOrder(outboxAuftragJpaRepository, starteGenehmigungsprozessDirektOutPort);
+        inOrder.verify(outboxAuftragJpaRepository).flush();
+        inOrder.verify(starteGenehmigungsprozessDirektOutPort).starteGenehmigungsprozess(
+            UrlaubsantragTestData.urlaubsantragId(),
+            List.of(BenutzerTestdaten.adaId())
+        );
         assertThat(auftrag.getStatus()).isEqualTo(ProzessEngineOutboxAuftragStatus.ERFOLGREICH);
         assertThat(auftrag.getVersuche()).isEqualTo(1);
     }
@@ -106,7 +117,7 @@ class ProzessEngineOutboxAdapterTest {
             java.time.Instant.now()
         );
         when(outboxAuftragJpaRepository.findeFaelligeAuftraege(any(), any(), anyInt(), any()))
-            .thenReturn(List.of(auftrag));
+            .thenReturn(List.of(auftrag), List.of());
         when(urlaubsantraegeLadenOutPort.findeNachId(UrlaubsantragTestData.urlaubsantragId()))
             .thenReturn(Optional.of(UrlaubsantragTestData.urlaubsantragWithStartedProcess()));
 
@@ -118,7 +129,36 @@ class ProzessEngineOutboxAdapterTest {
     }
 
     @Test
-    void retriesUnclearProcessStartAndStoresResolvedProcessInstanceId() {
+    void marksUnclearProcessStartAsTerminalFailure() {
+        final var auftrag = ProzessEngineOutboxMapper.starteGenehmigungsprozess(
+            UrlaubsantragTestData.urlaubsantrag(),
+            List.of(BenutzerTestdaten.adaId()),
+            java.time.Instant.now()
+        );
+        when(outboxAuftragJpaRepository.findeFaelligeAuftraege(any(), any(), anyInt(), any()))
+            .thenReturn(List.of(auftrag), List.of());
+        when(urlaubsantraegeLadenOutPort.findeNachId(UrlaubsantragTestData.urlaubsantragId()))
+            .thenReturn(Optional.of(UrlaubsantragTestData.urlaubsantrag()));
+        when(starteGenehmigungsprozessDirektOutPort.starteGenehmigungsprozess(
+            UrlaubsantragTestData.urlaubsantragId(),
+            List.of(BenutzerTestdaten.adaId())
+        )).thenThrow(new ProzessEngineAuftragUnklarException("timeout", new TimeoutException()));
+
+        prozessEngineOutboxAdapter.verarbeiteFaelligeAuftraege();
+
+        verify(starteGenehmigungsprozessDirektOutPort).starteGenehmigungsprozess(
+            UrlaubsantragTestData.urlaubsantragId(),
+            List.of(BenutzerTestdaten.adaId())
+        );
+        verify(urlaubsantragProzessinstanzSpeichernOutPort, never()).speichereProzessinstanzId(any(), any());
+        assertThat(auftrag.getVersuche()).isEqualTo(1);
+        assertThat(auftrag.getProzessinstanzId()).isNull();
+        assertThat(auftrag.getStatus()).isEqualTo(ProzessEngineOutboxAuftragStatus.ENDGUELTIG_FEHLGESCHLAGEN);
+        assertThat(auftrag.getLetzteFehlermeldung()).isEqualTo("timeout");
+    }
+
+    @Test
+    void stopsBeforeClaimingAnotherJobWhenInterrupted() {
         final var auftrag = ProzessEngineOutboxMapper.starteGenehmigungsprozess(
             UrlaubsantragTestData.urlaubsantrag(),
             List.of(BenutzerTestdaten.adaId()),
@@ -127,27 +167,49 @@ class ProzessEngineOutboxAdapterTest {
         when(outboxAuftragJpaRepository.findeFaelligeAuftraege(any(), any(), anyInt(), any()))
             .thenReturn(List.of(auftrag));
         when(urlaubsantraegeLadenOutPort.findeNachId(UrlaubsantragTestData.urlaubsantragId()))
-            .thenReturn(Optional.of(UrlaubsantragTestData.urlaubsantrag()))
-            .thenReturn(Optional.of(UrlaubsantragTestData.urlaubsantrag()))
-            .thenReturn(Optional.of(UrlaubsantragTestData.urlaubsantrag()))
             .thenReturn(Optional.of(UrlaubsantragTestData.urlaubsantrag()));
-        when(starteGenehmigungsprozessDirektOutPort.starteGenehmigungsprozess(
-            UrlaubsantragTestData.urlaubsantragId(),
-            List.of(BenutzerTestdaten.adaId())
-        ))
-            .thenThrow(new ProzessEngineAuftragUnklarException("timeout", new TimeoutException()))
-            .thenReturn(UrlaubsantragTestData.prozessinstanzId());
+        when(starteGenehmigungsprozessDirektOutPort.starteGenehmigungsprozess(any(), any()))
+            .thenAnswer(invocation -> {
+                Thread.currentThread().interrupt();
+                throw new ProzessEngineAuftragUnklarException("interrupted");
+            });
 
-        prozessEngineOutboxAdapter.verarbeiteFaelligeAuftraege();
-        prozessEngineOutboxAdapter.verarbeiteFaelligeAuftraege();
+        try {
+            prozessEngineOutboxAdapter.verarbeiteFaelligeAuftraege();
 
-        verify(urlaubsantragProzessinstanzSpeichernOutPort).speichereProzessinstanzId(
-            UrlaubsantragTestData.urlaubsantragId(),
-            UrlaubsantragTestData.prozessinstanzId()
+            verify(outboxAuftragJpaRepository, times(1)).findeFaelligeAuftraege(any(), any(), anyInt(), any());
+            verify(starteGenehmigungsprozessDirektOutPort, times(1)).starteGenehmigungsprozess(any(), any());
+            assertThat(auftrag.getStatus()).isEqualTo(ProzessEngineOutboxAuftragStatus.ENDGUELTIG_FEHLGESCHLAGEN);
+        } finally {
+            Thread.interrupted();
+        }
+    }
+
+    @Test
+    void marksConflictingProcessInstanceIdAsTerminalFailure() {
+        final var auftrag = ProzessEngineOutboxMapper.starteGenehmigungsprozess(
+            UrlaubsantragTestData.urlaubsantrag(),
+            List.of(BenutzerTestdaten.adaId()),
+            java.time.Instant.now()
         );
-        assertThat(auftrag.getVersuche()).isEqualTo(2);
-        assertThat(auftrag.getProzessinstanzId()).isEqualTo(UrlaubsantragTestData.PROCESS_INSTANCE_ID_VALUE);
-        assertThat(auftrag.getStatus()).isEqualTo(ProzessEngineOutboxAuftragStatus.ERFOLGREICH);
+        auftrag.setProzessinstanzId(UrlaubsantragTestData.PROCESS_INSTANCE_ID_VALUE);
+        final var urlaubsantragMitAbweichenderProzessinstanz = UrlaubsantragTestData.urlaubsantrag(
+            UrlaubsantragTestData.urlaubsantragId(),
+            UrlaubsantragTestData.vacationPeriod(),
+            UrlaubsantragTestData.antragsteller(),
+            UrlaubsantragTestData.vertretung(),
+            UrlaubsantragTestData.secondProzessinstanzId()
+        );
+        when(outboxAuftragJpaRepository.findeFaelligeAuftraege(any(), any(), anyInt(), any()))
+            .thenReturn(List.of(auftrag), List.of());
+        when(urlaubsantraegeLadenOutPort.findeNachId(UrlaubsantragTestData.urlaubsantragId()))
+            .thenReturn(Optional.of(urlaubsantragMitAbweichenderProzessinstanz));
+
+        prozessEngineOutboxAdapter.verarbeiteFaelligeAuftraege();
+
+        verify(starteGenehmigungsprozessDirektOutPort, never()).starteGenehmigungsprozess(any(), any());
+        assertThat(auftrag.getStatus()).isEqualTo(ProzessEngineOutboxAuftragStatus.ENDGUELTIG_FEHLGESCHLAGEN);
+        assertThat(auftrag.getLetzteFehlermeldung()).contains("statt auf die gestartete Prozessinstanz");
     }
 
     @Test
@@ -158,7 +220,7 @@ class ProzessEngineOutboxAdapterTest {
             java.time.Instant.now()
         );
         when(outboxAuftragJpaRepository.findeFaelligeAuftraege(any(), any(), anyInt(), any()))
-            .thenReturn(List.of(auftrag));
+            .thenReturn(List.of(auftrag), List.of(), List.of(auftrag), List.of());
         when(urlaubsantraegeLadenOutPort.findeNachId(UrlaubsantragTestData.urlaubsantragId()))
             .thenReturn(Optional.of(UrlaubsantragTestData.urlaubsantrag()))
             .thenReturn(Optional.of(UrlaubsantragTestData.urlaubsantrag()))
@@ -193,7 +255,7 @@ class ProzessEngineOutboxAdapterTest {
             java.time.Instant.now()
         );
         when(outboxAuftragJpaRepository.findeFaelligeAuftraege(any(), any(), anyInt(), any()))
-            .thenReturn(List.of(auftrag));
+            .thenReturn(List.of(auftrag), List.of());
         doThrow(new IllegalStateException("boom"))
             .when(taskBearbeitenDirektOutPort)
             .assignTaskToUser(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId());
@@ -215,7 +277,7 @@ class ProzessEngineOutboxAdapterTest {
             java.time.Instant.now()
         );
         when(outboxAuftragJpaRepository.findeFaelligeAuftraege(any(), any(), anyInt(), any()))
-            .thenReturn(List.of(auftrag));
+            .thenReturn(List.of(auftrag), List.of());
         doThrow(new ProzessEngineAuftragUnklarException("Auftrag konnte nicht eindeutig abgeschlossen werden", new TimeoutException()))
             .when(taskBearbeitenDirektOutPort)
             .completeTask(UserTaskTestdaten.taskId(), BenutzerTestdaten.adaId(), true);
