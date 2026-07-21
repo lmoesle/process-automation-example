@@ -30,8 +30,6 @@ public class GenehmigungVomVorgesetztenUseCase implements GenehmigungVomVorgeset
     @Override
     public void entscheideGenehmigungVomVorgesetzten(GenehmigungVomVorgesetztenCommand command) {
         Assert.notNull(command, "command darf nicht null sein");
-        Assert.notNull(command.taskId(), "taskId darf nicht null sein");
-        Assert.notNull(command.benutzerId(), "benutzerId darf nicht null sein");
 
         final var task = tasklistRepositoryOutPort.getTaskById(command.taskId())
             .orElseThrow(() -> new TaskNichtGefundenException(command.taskId()));

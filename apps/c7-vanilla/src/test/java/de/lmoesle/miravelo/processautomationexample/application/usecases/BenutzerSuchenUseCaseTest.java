@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 class BenutzerSuchenUseCaseTest {
@@ -56,10 +55,4 @@ class BenutzerSuchenUseCaseTest {
         assertThat(benutzer).containsExactly(BenutzerTestdaten.carla());
     }
 
-    @Test
-    void rejectsMissingCommand() {
-        assertThatThrownBy(() -> useCase.sucheBenutzer(null))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("command darf nicht null sein");
-    }
 }

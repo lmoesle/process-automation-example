@@ -29,7 +29,6 @@ public class SendeBenutzeraufgabenBenachrichtigungUseCase implements Benutzerauf
     @Override
     public void verarbeiteAktiveBenutzeraufgabe(AktiveBenutzeraufgabeCommand command) {
         Assert.notNull(command, "command darf nicht null sein");
-        Assert.notNull(command.taskId(), "taskId darf nicht null sein");
 
         final var isNewUsertask = aktiveBenutzeraufgabenOutPort.speichereWennNeu(command.taskId());
         if (!isNewUsertask) {
@@ -67,7 +66,6 @@ public class SendeBenutzeraufgabenBenachrichtigungUseCase implements Benutzerauf
     @Override
     public void verarbeiteEntfernteBenutzeraufgabe(EntfernteBenutzeraufgabeCommand command) {
         Assert.notNull(command, "command darf nicht null sein");
-        Assert.notNull(command.taskId(), "taskId darf nicht null sein");
 
         aktiveBenutzeraufgabenOutPort.entferne(command.taskId());
 

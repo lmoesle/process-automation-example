@@ -27,7 +27,6 @@ public class UrlaubsantragAutomatischPruefenUseCase implements UrlaubsantragAuto
     @Override
     public boolean pruefeUrlaubsantragAutomatisch(UrlaubsantragAutomatischPruefenCommand command) {
         Assert.notNull(command, "command darf nicht null sein");
-        Assert.notNull(command.urlaubsantragId(), "urlaubsantragId darf nicht null sein");
 
         final Urlaubsantrag urlaubsantrag = urlaubsantraegeLadenOutPort.findeNachId(command.urlaubsantragId())
             .orElseThrow(() -> new IllegalArgumentException("urlaubsantragId verweist auf keinen vorhandenen Urlaubsantrag"));

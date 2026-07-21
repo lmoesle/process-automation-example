@@ -18,7 +18,6 @@ public class UrlaubsantraegeFuerBenutzerLadenUseCase implements UrlaubsantraegeF
     @Override
     public List<Urlaubsantrag> ladeUrlaubsantraegeFuerBenutzer(UrlaubsantraegeFuerBenutzerLadenCommand command) {
         Assert.notNull(command, "command darf nicht null sein");
-        Assert.notNull(command.benutzerId(), "benutzerId darf nicht null sein");
         return urlaubsantraegeLadenOutPort.findeAlleNachAntragstellerId(command.benutzerId());
     }
 }

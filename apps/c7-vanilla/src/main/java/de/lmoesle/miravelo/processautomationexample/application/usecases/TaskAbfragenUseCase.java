@@ -19,15 +19,12 @@ public class TaskAbfragenUseCase implements TaskAbfragenInPort {
     @Override
     public List<UserTask> getAllTasks(GetAllTasksCommand command) {
         Assert.notNull(command, "command darf nicht null sein");
-        Assert.notNull(command.benutzerId(), "benutzerId darf nicht null sein");
         return tasklistRepositoryOutPort.getAllTasks(command.benutzerId());
     }
 
     @Override
     public UserTask getTaskById(GetTaskByIdCommand command) {
         Assert.notNull(command, "command darf nicht null sein");
-        Assert.notNull(command.taskId(), "taskId darf nicht null sein");
-        Assert.notNull(command.benutzerId(), "benutzerId darf nicht null sein");
         return tasklistRepositoryOutPort.getTaskById(command.taskId(), command.benutzerId())
             .orElseThrow(() -> new TaskNichtGefundenException(command.taskId()));
     }
