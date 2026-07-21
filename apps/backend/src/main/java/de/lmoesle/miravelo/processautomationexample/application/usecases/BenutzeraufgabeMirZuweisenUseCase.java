@@ -38,12 +38,12 @@ public class BenutzeraufgabeMirZuweisenUseCase implements BenutzeraufgabeMirZuwe
             throw new TaskZugriffVerweigertException(command.taskId());
         }
 
-        assignTaskOutPort.assignTaskToUser(command.taskId(), command.benutzerId());
-
         if (task.urlaubsantrag() != null) {
             task.urlaubsantrag().weiseVorgesetztenZu(ermittleVorgesetzten(task, command.benutzerId()));
             urlaubsantragSpeichernOutPort.speichere(task.urlaubsantrag());
         }
+
+        assignTaskOutPort.assignTaskToUser(command.taskId(), command.benutzerId());
 
         log.info(
             "Benutzeraufgabe erfolgreich zugewiesen: taskId={}, benutzerId={}, urlaubsantragId={}",

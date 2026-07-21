@@ -5,6 +5,8 @@ import de.lmoesle.miravelo.processautomationexample.domain.benutzer.Benutzer;
 import de.lmoesle.miravelo.processautomationexample.domain.benutzer.BenutzerTestdaten;
 import de.lmoesle.miravelo.processautomationexample.domain.urlaubsantrag.UrlaubsantragStatus;
 import de.lmoesle.miravelo.processautomationexample.domain.urlaubsantrag.UrlaubsantragTestData;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Sort;
@@ -21,15 +23,75 @@ class UrlaubsantragPersistenceAdapterTest {
 
     private UrlaubsantragJpaRepository urlaubsantragJpaRepository;
     private BenutzerJpaRepository benutzerJpaRepository;
+    private EntityManager entityManager;
     private UrlaubsantragPersistenceAdapter urlaubsantragPersistenceAdapter;
 
     @BeforeEach
     void setUp() {
         urlaubsantragJpaRepository = mock(UrlaubsantragJpaRepository.class);
         benutzerJpaRepository = mock(BenutzerJpaRepository.class);
+        entityManager = mock(EntityManager.class);
         urlaubsantragPersistenceAdapter = new UrlaubsantragPersistenceAdapter(
             urlaubsantragJpaRepository,
-            benutzerJpaRepository
+            benutzerJpaRepository,
+            entityManager
+        );
+    }
+
+    @Test
+    void preservesExistingProcessInstanceIdWhenSavingStaleUrlaubsantrag() {
+        final UrlaubsantragEntity gespeicherterUrlaubsantrag = UrlaubsantragPersistenceMapper.toEntity(
+            UrlaubsantragTestData.urlaubsantragWithStartedProcess()
+        );
+        when(urlaubsantragJpaRepository.findById(UrlaubsantragTestData.VACATION_REQUEST_UUID))
+            .thenReturn(Optional.of(gespeicherterUrlaubsantrag));
+
+        urlaubsantragPersistenceAdapter.speichere(UrlaubsantragTestData.urlaubsantrag());
+
+        verify(urlaubsantragJpaRepository).findById(UrlaubsantragTestData.VACATION_REQUEST_UUID);
+        verify(entityManager).refresh(gespeicherterUrlaubsantrag, LockModeType.PESSIMISTIC_WRITE);
+        verify(urlaubsantragJpaRepository).saveAndFlush(argThat(entity ->
+            UrlaubsantragTestData.PROCESS_INSTANCE_ID_VALUE.equals(entity.getProzessinstanzId())
+        ));
+    }
+
+    @Test
+    void rejectsConflictingProcessInstanceId() {
+        final UrlaubsantragEntity gespeicherterUrlaubsantrag = UrlaubsantragPersistenceMapper.toEntity(
+            UrlaubsantragTestData.urlaubsantragWithStartedProcess()
+        );
+        when(urlaubsantragJpaRepository.setzeProzessinstanzIdWennLeer(
+            UrlaubsantragTestData.VACATION_REQUEST_UUID,
+            UrlaubsantragTestData.SECOND_PROCESS_INSTANCE_ID_VALUE
+        )).thenReturn(0);
+        when(urlaubsantragJpaRepository.findById(UrlaubsantragTestData.VACATION_REQUEST_UUID))
+            .thenReturn(Optional.of(gespeicherterUrlaubsantrag));
+
+        assertThatThrownBy(() -> urlaubsantragPersistenceAdapter.speichereProzessinstanzId(
+            UrlaubsantragTestData.urlaubsantragId(),
+            UrlaubsantragTestData.secondProzessinstanzId()
+        ))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining(UrlaubsantragTestData.VACATION_REQUEST_UUID.toString());
+
+        verify(entityManager).refresh(gespeicherterUrlaubsantrag, LockModeType.PESSIMISTIC_WRITE);
+    }
+
+    @Test
+    void storesProcessInstanceIdWithNarrowUpdate() {
+        when(urlaubsantragJpaRepository.setzeProzessinstanzIdWennLeer(
+            UrlaubsantragTestData.VACATION_REQUEST_UUID,
+            UrlaubsantragTestData.PROCESS_INSTANCE_ID_VALUE
+        )).thenReturn(1);
+
+        urlaubsantragPersistenceAdapter.speichereProzessinstanzId(
+            UrlaubsantragTestData.urlaubsantragId(),
+            UrlaubsantragTestData.prozessinstanzId()
+        );
+
+        verify(urlaubsantragJpaRepository).setzeProzessinstanzIdWennLeer(
+            UrlaubsantragTestData.VACATION_REQUEST_UUID,
+            UrlaubsantragTestData.PROCESS_INSTANCE_ID_VALUE
         );
     }
 
