@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ProcessAutomationExampleApplication {
+public class ProcessAutomationExampleC7ProcessEngineApiApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ProcessAutomationExampleApplication.class, args);
+		SpringApplication.run(ProcessAutomationExampleC7ProcessEngineApiApplication.class, args);
 	}
 
 }

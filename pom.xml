@@ -12,7 +12,7 @@
 	<description>Aggregator build for independent backend process-engine variants.</description>
 
 	<modules>
-		<module>apps/backend</module>
+		<module>apps/c7-process-engine-api</module>
 		<module>apps/c7-vanilla</module>
 	</modules>
 </project>
