@@ -16,25 +16,28 @@ The repository is intended as a small, concrete reference for combining process 
 
 - Spring Boot 3.5.7
 - Camunda 7.24 embedded in the application
-- Process-Engine-API
+- Process Engine API and vanilla Camunda 7 backend variations
 - PostgreSQL 18 provided via Docker Compose
 - Flyway database migrations
-- BPMN-to-Java code generation from files in `apps/backend/src/main/resources/bpmn`
+- BPMN-to-Java code generation from files in each backend's `src/main/resources/bpmn` directory
 
 ## Repository Structure
 
 ```text
 pom.xml      Maven aggregator for all backend variants
 apps/
-  backend/    Spring Boot backend variant
-  frontend/     Vite React frontend
-stack/        Local infrastructure such as Docker Compose
+  c7-process-engine-api/  Backend using the Process Engine API
+  c7-vanilla/             Backend using the vanilla Camunda 7 APIs
+  frontend/               Vite React frontend
+stack/                    Infrastructure and full-stack Docker Compose files
 ```
 
 ## Prerequisites
 
 - Java 25
+- Node.js 24 with npm
 - Docker with Docker Compose support
+- GNU Make
 
 The Maven build is configured with `source` and `target` level `25`. If you build with an older JDK, Maven will fail with `invalid target release: 25`.
 
@@ -50,7 +53,7 @@ This build runs the BPMN code generation, compiles the application, executes the
 
 ## Start The Infrastructure Stack
 
-The repository contains a Docker Compose file for PostgreSQL:
+The repository contains a Docker Compose file for PostgreSQL and MailHog:
 
 ```bash
 docker compose -f stack/docker-compose.yml up -d
@@ -76,10 +79,12 @@ The database is exposed on `localhost:5432` with these default settings:
 
 ## Run The Application
 
-After the database is up, start the Spring Boot application:
+After the infrastructure is up, start either Spring Boot backend:
 
 ```bash
-./mvnw -pl apps/backend spring-boot:run
+./mvnw -pl apps/c7-process-engine-api spring-boot:run
+# or
+./mvnw -pl apps/c7-vanilla spring-boot:run
 ```
 
 By default, the application connects to the PostgreSQL container started through Docker Compose.
@@ -100,4 +105,58 @@ The OpenAPI description and Swagger UI are available at:
 ```text
 http://localhost:8080/v3/api-docs
 http://localhost:8080/swagger-ui/index.html
+```
+
+## Run A Full Stack With Docker Compose
+
+The Makefile builds the application artifacts and local Docker images before starting a stack. Show all available targets with:
+
+```bash
+make help
+```
+
+Build and start the Process Engine API variation:
+
+```bash
+make full-c7-process-engine-api
+```
+
+Build and start the vanilla Camunda 7 variation:
+
+```bash
+make full-c7-vanilla
+```
+
+The variations use separate Compose projects, networks, and PostgreSQL volumes because their Flyway migrations differ. They also use distinct host ports and can run concurrently:
+
+| Service | Process Engine API | Vanilla Camunda 7 |
+| --- | --- | --- |
+| Frontend | http://localhost:3000 | http://localhost:3001 |
+| Backend | http://localhost:8080 | http://localhost:8081 |
+| Camunda | http://localhost:8080/camunda/app/ | http://localhost:8081/camunda/app/ |
+| PostgreSQL | localhost:5432 | localhost:5433 |
+| MailHog SMTP | localhost:1025 | localhost:1026 |
+| MailHog UI | http://localhost:8025 | http://localhost:8026 |
+
+All ports are bound to the local loopback interface. The full stacks are alternatives to running the same services directly on the host. Stop processes that already use the listed ports first; in particular, run `make infrastructure-down` before starting the Process Engine API full stack.
+
+Use the `-up` targets to start already-built images, the `-logs` targets to follow application logs, and the `-down` targets to stop a stack:
+
+```bash
+make full-c7-process-engine-api-up
+make full-c7-process-engine-api-logs
+make full-c7-process-engine-api-down
+```
+
+The `-down` targets preserve PostgreSQL data. Use the explicit `-reset` target to stop a stack and delete its database volume:
+
+```bash
+make full-c7-process-engine-api-reset
+```
+
+After building the local images, the Compose files can also be used directly:
+
+```bash
+docker compose -f stack/docker-compose.c7-process-engine-api.yml up -d
+docker compose -f stack/docker-compose.c7-vanilla.yml up -d
 ```
