@@ -3,7 +3,7 @@ import checker from "vite-plugin-checker";
 import { defineConfig } from "vite";
 
 const DEV_PORT = 3000;
-const API_TARGET = "http://localhost:8080";
+const API_TARGET = process.env.VITE_API_PROXY_TARGET || "http://localhost:8080";
 
 process.env.LAUNCH_EDITOR = "idea";
 

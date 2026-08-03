@@ -41,6 +41,8 @@ services:
 
   frontend:
     image: miravelo-process-automation-example-frontend:local
+    environment:
+      VITE_API_PROXY_TARGET: http://backend:8080
     ports:
       - "127.0.0.1:3002:80"
     depends_on:
