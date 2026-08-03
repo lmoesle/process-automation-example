@@ -1,0 +1,88 @@
+package de.lmoesle.miravelo.processautomationexample.application.usecases;
+
+import de.lmoesle.miravelo.processautomationexample.application.ports.in.UrlaubsantragErstellenInPort;
+import de.lmoesle.miravelo.processautomationexample.application.ports.out.UrlaubsantraegeLadenOutPort;
+import de.lmoesle.miravelo.processautomationexample.application.ports.out.UrlaubsantragSpeichernOutPort;
+import de.lmoesle.miravelo.processautomationexample.application.ports.out.UrlaubsantragGenehmigungsprozessStartenOutPort;
+import de.lmoesle.miravelo.processautomationexample.application.ports.out.BenutzerRepositoryOutPort;
+import de.lmoesle.miravelo.processautomationexample.domain.benutzer.Team;
+import de.lmoesle.miravelo.processautomationexample.domain.urlaubsantrag.ProzessinstanzId;
+import de.lmoesle.miravelo.processautomationexample.domain.urlaubsantrag.Urlaubsantrag;
+import de.lmoesle.miravelo.processautomationexample.domain.benutzer.Benutzer;
+import de.lmoesle.miravelo.processautomationexample.domain.benutzer.BenutzerId;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+@Slf4j
+@RequiredArgsConstructor
+@Transactional
+public class UrlaubsantragErstellenUseCase implements UrlaubsantragErstellenInPort {
+
+    private final BenutzerRepositoryOutPort benutzerRepositoryOutPort;
+    private final UrlaubsantragSpeichernOutPort urlaubsantragSpeichernOutPort;
+    private final UrlaubsantraegeLadenOutPort urlaubsantraegeLadenOutPort;
+    private final UrlaubsantragGenehmigungsprozessStartenOutPort genehmigungsprozessStartenOutPort;
+
+    @Override
+    public UrlaubsantragErstellenErgebnis erstelleUrlaubsantrag(UrlaubsantragErstellenCommand command) {
+        final Benutzer antragsteller = ladeBenutzer(command.antragstellerId(), "antragstellerId");
+        final Benutzer vertretung = command.vertretungId() == null
+            ? null
+            : ladeBenutzer(command.vertretungId(), "vertretungId");
+
+        final Urlaubsantrag urlaubsantrag = Urlaubsantrag.stelle(
+            command.von(),
+            command.bis(),
+            antragsteller,
+            vertretung
+        );
+
+        urlaubsantragSpeichernOutPort.speichere(urlaubsantrag);
+
+        final ProzessinstanzId prozessinstanzId = genehmigungsprozessStartenOutPort.starteGenehmigungsprozessFuer(
+            urlaubsantrag,
+            ermittleTeamLeadIds(antragsteller)
+        );
+        final Urlaubsantrag aktualisierterUrlaubsantrag = urlaubsantraegeLadenOutPort.findeNachId(urlaubsantrag.id())
+            .orElseThrow(() -> new IllegalStateException("Gespeicherter Urlaubsantrag konnte nach Prozessstart nicht geladen werden"));
+        aktualisierterUrlaubsantrag.markiereGenehmigungsprozessAlsGestartet(prozessinstanzId);
+        final Urlaubsantrag gespeicherterUrlaubsantrag = urlaubsantragSpeichernOutPort.speichere(aktualisierterUrlaubsantrag);
+
+        log.info(
+            "Urlaubsantrag erfolgreich erstellt: urlaubsantragId={}, prozessinstanzId={}, status={}",
+            gespeicherterUrlaubsantrag.id().value(),
+            prozessinstanzId.value(),
+            gespeicherterUrlaubsantrag.status()
+        );
+
+        return new UrlaubsantragErstellenErgebnis(
+            gespeicherterUrlaubsantrag.id(),
+            prozessinstanzId,
+            gespeicherterUrlaubsantrag.status(),
+            gespeicherterUrlaubsantrag.statusHistorie(),
+            antragsteller,
+            vertretung
+        );
+    }
+
+    private Benutzer ladeBenutzer(BenutzerId benutzerId, String feldname) {
+        return benutzerRepositoryOutPort.findeNachId(benutzerId)
+            .orElseThrow(() -> new IllegalArgumentException(feldname + " verweist auf keinen vorhandenen Benutzer"));
+    }
+
+    private List<BenutzerId> ermittleTeamLeadIds(Benutzer antragsteller) {
+        return antragsteller.teams().stream()
+            .map(Team::id)
+            .map(benutzerRepositoryOutPort::findeAlleLeitendenNachTeamId)
+            .flatMap(List::stream)
+            .filter(benutzer -> !benutzer.id().equals(antragsteller.id()))
+            .map(Benutzer::id)
+            .distinct()
+            .toList();
+    }
+}

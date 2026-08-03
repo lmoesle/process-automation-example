@@ -1,0 +1,52 @@
+name: miravelo-kogito
+
+services:
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: vacation-approval
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "127.0.0.1:5434:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    ports:
+      - "127.0.0.1:1027:1025"
+      - "127.0.0.1:8027:8025"
+    restart: on-failure
+
+  backend:
+    image: miravelo-process-automation-example-kogito:local
+    environment:
+      POSTGRES_HOST: postgres
+      MAIL_HOST: mailhog
+      FRONTEND_BASE_URL: http://localhost:3002
+    ports:
+      - "127.0.0.1:8082:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+    restart: on-failure
+
+  frontend:
+    image: miravelo-process-automation-example-frontend:local
+    ports:
+      - "127.0.0.1:3002:80"
+    depends_on:
+      backend:
+        condition: service_started
+    restart: on-failure
+
+volumes:
+  postgres-data:
