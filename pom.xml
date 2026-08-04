@@ -14,5 +14,6 @@
 	<modules>
 		<module>apps/c7-process-engine-api</module>
 		<module>apps/c7-vanilla</module>
+		<module>apps/kogito</module>
 	</modules>
 </project>

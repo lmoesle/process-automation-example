@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: miravelo-process-automation-example-kogito
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:vacation-approval}
+    username: ${POSTGRES_USER:user}
+    password: ${POSTGRES_PASSWORD:secret}
+    driver-class-name: org.postgresql.Driver
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    properties:
+      mail:
+        smtp:
+          connectiontimeout: 5000
+          timeout: 3000
+          writetimeout: 5000
+
+  flyway:
+    enabled: true
+    locations: "classpath:db/migration/schema"
+    # Kogito creates its persistence tables in the shared schema before application migrations run.
+    baseline-on-migrate: true
+
+kie:
+  flyway:
+    enabled: true
+
+kogito:
+  persistence:
+    type: jdbc
+    optimistic:
+      lock: true
+
+de.lmoesle:
+  miravelo:
+    processautomationexample:
+      mail:
+        from-address: ${MAIL_FROM:no-reply@miravelo.local}
+        standard-template: classpath:mail/standard-benachrichtigung.mail.html
+        frontend-base-url: ${FRONTEND_BASE_URL:http://localhost:3000}

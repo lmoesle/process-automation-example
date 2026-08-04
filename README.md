@@ -14,12 +14,12 @@ The repository is intended as a small, concrete reference for combining process 
 
 ## Technical Setup
 
-- Spring Boot 3.5.7
-- Camunda 7.24 embedded in the application
-- Process Engine API and vanilla Camunda 7 backend variations
+- Spring Boot 3.5
+- Camunda 7.24 embedded in the Process Engine API and vanilla Camunda 7 backend variations
+- Kogito 10.2 embedded in the Kogito backend variation
 - PostgreSQL 18 provided via Docker Compose
 - Flyway database migrations
-- BPMN-to-Java code generation from files in each backend's `src/main/resources/bpmn` directory
+- BPMN-to-Java code generation for the Camunda backends and Kogito process code generation from each backend's `src/main/resources/bpmn` directory
 
 ## Repository Structure
 
@@ -28,6 +28,7 @@ pom.xml      Maven aggregator for all backend variants
 apps/
   c7-process-engine-api/  Backend using the Process Engine API
   c7-vanilla/             Backend using the vanilla Camunda 7 APIs
+  kogito/                 Backend using Kogito APIs
   frontend/               Vite React frontend
 stack/                    Infrastructure and full-stack Docker Compose files
 ```
@@ -79,17 +80,25 @@ The database is exposed on `localhost:5432` with these default settings:
 
 ## Run The Application
 
-After the infrastructure is up, start either Spring Boot backend:
+After the infrastructure is up, start one Spring Boot backend:
 
 ```bash
 ./mvnw -pl apps/c7-process-engine-api spring-boot:run
 # or
 ./mvnw -pl apps/c7-vanilla spring-boot:run
+# or
+./mvnw -pl apps/kogito spring-boot:run
 ```
 
 By default, the application connects to the PostgreSQL container started through Docker Compose.
 
-Camunda admin credentials are configured with these defaults:
+Do not run the Kogito backend against a database schema or Docker volume that was initialized by a Camunda backend. Kogito and Camunda manage different process-engine tables and Flyway histories. Reset the database first or use the isolated Kogito full stack described below.
+
+The Kogito variation performs the automatic validity check synchronously while the vacation-request HTTP call is running. The Camunda variations execute that step asynchronously through the job executor. The resulting API state is equivalent, but the execution and retry behavior differs.
+
+The Kogito variation uses its persisted `offene_benutzeraufgaben` projection as the canonical tasklist because the generated embedded Kogito UserTask store is in-memory. Assignment and authorization are enforced by the application, while process work items are completed through the Kogito process API. This keeps active tasks recoverable after an application restart, but Kogito UserTask lifecycle history is not the task audit source.
+
+The Camunda variants configure these admin credentials by default:
 
 - username: `admin`
 - password: `admin`
@@ -127,16 +136,22 @@ Build and start the vanilla Camunda 7 variation:
 make full-c7-vanilla
 ```
 
+Build and start the Kogito variation:
+
+```bash
+make full-kogito
+```
+
 The variations use separate Compose projects, networks, and PostgreSQL volumes because their Flyway migrations differ. They also use distinct host ports and can run concurrently:
 
-| Service | Process Engine API | Vanilla Camunda 7 |
-| --- | --- | --- |
-| Frontend | http://localhost:3000 | http://localhost:3001 |
-| Backend | http://localhost:8080 | http://localhost:8081 |
-| Camunda | http://localhost:8080/camunda/app/ | http://localhost:8081/camunda/app/ |
-| PostgreSQL | localhost:5432 | localhost:5433 |
-| MailHog SMTP | localhost:1025 | localhost:1026 |
-| MailHog UI | http://localhost:8025 | http://localhost:8026 |
+| Service | Process Engine API | Vanilla Camunda 7 | Kogito |
+| --- | --- | --- | --- |
+| Frontend | http://localhost:3000 | http://localhost:3001 | http://localhost:3002 |
+| Backend | http://localhost:8080 | http://localhost:8081 | http://localhost:8082 |
+| Camunda | http://localhost:8080/camunda/app/ | http://localhost:8081/camunda/app/ | n/a |
+| PostgreSQL | localhost:5432 | localhost:5433 | localhost:5434 |
+| MailHog SMTP | localhost:1025 | localhost:1026 | localhost:1027 |
+| MailHog UI | http://localhost:8025 | http://localhost:8026 | http://localhost:8027 |
 
 All ports are bound to the local loopback interface. The full stacks are alternatives to running the same services directly on the host. Stop processes that already use the listed ports first; in particular, run `make infrastructure-down` before starting the Process Engine API full stack.
 
@@ -159,4 +174,5 @@ After building the local images, the Compose files can also be used directly:
 ```bash
 docker compose -f stack/docker-compose.c7-process-engine-api.yml up -d
 docker compose -f stack/docker-compose.c7-vanilla.yml up -d
+docker compose -f stack/docker-compose.kogito.yml up -d
 ```

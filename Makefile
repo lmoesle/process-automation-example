@@ -1,12 +1,15 @@
 C7_PROCESS_ENGINE_API_DIR := apps/c7-process-engine-api
 C7_VANILLA_DIR := apps/c7-vanilla
+KOGITO_DIR := apps/kogito
 FRONTEND_DIR := apps/frontend
 STACK_DIR := stack
 
 C7_PROCESS_ENGINE_API_COMPOSE := $(STACK_DIR)/docker-compose.c7-process-engine-api.yml
 C7_VANILLA_COMPOSE := $(STACK_DIR)/docker-compose.c7-vanilla.yml
+KOGITO_COMPOSE := $(STACK_DIR)/docker-compose.kogito.yml
 LOCAL_IMAGES := miravelo-process-automation-example-c7-process-engine-api:local \
 	miravelo-process-automation-example-c7-vanilla:local \
+	miravelo-process-automation-example-kogito:local \
 	miravelo-process-automation-example-frontend:local
 
 .DEFAULT_GOAL := help
@@ -18,7 +21,7 @@ help: ## Show this help.
 ##@ Build
 
 .PHONY: setup
-setup: ## Install frontend dependencies and verify both backends without tests.
+setup: ## Install frontend dependencies and verify all backends without tests.
 	cd $(FRONTEND_DIR) && npm ci
 	./mvnw clean verify -DskipTests
 
@@ -26,7 +29,7 @@ setup: ## Install frontend dependencies and verify both backends without tests.
 build-app: build-backend build-frontend ## Build and test all application artifacts.
 
 .PHONY: build-backend
-build-backend: ## Build and test both backend variations.
+build-backend: ## Build and test all backend variations.
 	./mvnw clean verify
 
 .PHONY: build-backend-c7-process-engine-api
@@ -37,6 +40,10 @@ build-backend-c7-process-engine-api: ## Build and test the Process Engine API ba
 build-backend-c7-vanilla: ## Build and test the vanilla Camunda 7 backend.
 	./mvnw -pl $(C7_VANILLA_DIR) clean verify
 
+.PHONY: build-backend-kogito
+build-backend-kogito: ## Build and test the Kogito backend.
+	./mvnw -pl $(KOGITO_DIR) clean verify
+
 .PHONY: build-frontend
 build-frontend: ## Build, lint, and test the frontend.
 	cd $(FRONTEND_DIR) && npm ci && npm run lint && npm run test:coverage && VITE_API_BASE_URL=/ npm run build
@@ -45,7 +52,7 @@ build-frontend: ## Build, lint, and test the frontend.
 build-docker: docker-build-backends docker-build-frontend ## Build all local Docker images.
 
 .PHONY: docker-build-backends
-docker-build-backends: docker-build-c7-process-engine-api docker-build-c7-vanilla ## Build both backend images.
+docker-build-backends: docker-build-c7-process-engine-api docker-build-c7-vanilla docker-build-kogito ## Build all backend images.
 
 .PHONY: docker-build-c7-process-engine-api
 docker-build-c7-process-engine-api: build-backend-c7-process-engine-api ## Build the Process Engine API backend image.
@@ -54,6 +61,10 @@ docker-build-c7-process-engine-api: build-backend-c7-process-engine-api ## Build
 .PHONY: docker-build-c7-vanilla
 docker-build-c7-vanilla: build-backend-c7-vanilla ## Build the vanilla Camunda 7 backend image.
 	docker build -t miravelo-process-automation-example-c7-vanilla:local $(C7_VANILLA_DIR)
+
+.PHONY: docker-build-kogito
+docker-build-kogito: build-backend-kogito ## Build the Kogito backend image.
+	docker build -t miravelo-process-automation-example-kogito:local $(KOGITO_DIR)
 
 .PHONY: docker-build-frontend
 docker-build-frontend: build-frontend ## Build the frontend image.
@@ -125,3 +136,25 @@ full-c7-vanilla-logs: ## Follow vanilla Camunda 7 backend and frontend logs.
 .PHONY: full-c7-vanilla-reset
 full-c7-vanilla-reset: ## Stop the vanilla Camunda 7 stack and delete its database.
 	docker compose -f $(C7_VANILLA_COMPOSE) down --volumes
+
+##@ Kogito Stack
+
+.PHONY: full-kogito
+full-kogito: docker-build-kogito docker-build-frontend ## Build and start the Kogito stack.
+	$(MAKE) full-kogito-up
+
+.PHONY: full-kogito-up
+full-kogito-up: ## Start the Kogito stack from existing images.
+	docker compose -f $(KOGITO_COMPOSE) up -d
+
+.PHONY: full-kogito-down
+full-kogito-down: ## Stop the Kogito stack.
+	docker compose -f $(KOGITO_COMPOSE) down
+
+.PHONY: full-kogito-logs
+full-kogito-logs: ## Follow Kogito backend and frontend logs.
+	docker compose -f $(KOGITO_COMPOSE) logs --follow backend frontend
+
+.PHONY: full-kogito-reset
+full-kogito-reset: ## Stop the Kogito stack and delete its database.
+	docker compose -f $(KOGITO_COMPOSE) down --volumes

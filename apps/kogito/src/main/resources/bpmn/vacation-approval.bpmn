@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                   xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                   xmlns:drools="http://www.jboss.org/drools"
+                   id="vacation_approval_definitions"
+                   targetNamespace="https://lmoesle.de/process-automation-example">
+
+    <bpmn2:itemDefinition id="urlaubsantragIdItem" structureRef="java.lang.String"/>
+    <bpmn2:itemDefinition id="teamLeadIdsItem" structureRef="java.lang.String"/>
+    <bpmn2:itemDefinition id="gueltigItem" structureRef="java.lang.Boolean"/>
+    <bpmn2:itemDefinition id="genehmigtItem" structureRef="java.lang.Boolean"/>
+    <bpmn2:itemDefinition id="automaticCheckUrlaubsantragIdItem" structureRef="java.lang.String"/>
+    <bpmn2:itemDefinition id="automaticCheckResultItem" structureRef="java.lang.Boolean"/>
+    <bpmn2:itemDefinition id="managerTaskNameItem" structureRef="java.lang.String"/>
+    <bpmn2:itemDefinition id="managerActorIdItem" structureRef="java.lang.String"/>
+    <bpmn2:itemDefinition id="managerSkippableItem" structureRef="java.lang.Object"/>
+    <bpmn2:itemDefinition id="managerDecisionItem" structureRef="java.lang.Boolean"/>
+
+    <bpmn2:process id="vacation_approval"
+                   name="Urlaubsantrag"
+                   isExecutable="true"
+                   processType="Public"
+                   drools:packageName="de.lmoesle.miravelo.processautomationexample.bpmn"
+                   drools:version="1.0">
+        <bpmn2:property id="urlaubsantragId" name="urlaubsantragId" itemSubjectRef="urlaubsantragIdItem"/>
+        <bpmn2:property id="teamLeadIds" name="teamLeadIds" itemSubjectRef="teamLeadIdsItem"/>
+        <bpmn2:property id="gueltig" name="gueltig" itemSubjectRef="gueltigItem"/>
+        <bpmn2:property id="genehmigt" name="genehmigt" itemSubjectRef="genehmigtItem"/>
+
+        <bpmn2:startEvent id="start" name="Urlaubsantrag stellen">
+            <bpmn2:outgoing>flow_start_check</bpmn2:outgoing>
+        </bpmn2:startEvent>
+
+        <bpmn2:task id="automatic_check"
+                    name="Automatische Prüfung"
+                    drools:taskName="AutomatischePruefung">
+            <bpmn2:incoming>flow_start_check</bpmn2:incoming>
+            <bpmn2:outgoing>flow_check_validity</bpmn2:outgoing>
+            <bpmn2:ioSpecification>
+                <bpmn2:dataInput id="automaticCheckUrlaubsantragId" name="urlaubsantragId"
+                                 drools:dtype="java.lang.String"
+                                 itemSubjectRef="automaticCheckUrlaubsantragIdItem"/>
+                <bpmn2:dataOutput id="automaticCheckResult" name="gueltig"
+                                  drools:dtype="java.lang.Boolean"
+                                  itemSubjectRef="automaticCheckResultItem"/>
+                <bpmn2:inputSet>
+                    <bpmn2:dataInputRefs>automaticCheckUrlaubsantragId</bpmn2:dataInputRefs>
+                </bpmn2:inputSet>
+                <bpmn2:outputSet>
+                    <bpmn2:dataOutputRefs>automaticCheckResult</bpmn2:dataOutputRefs>
+                </bpmn2:outputSet>
+            </bpmn2:ioSpecification>
+            <bpmn2:dataInputAssociation>
+                <bpmn2:sourceRef>urlaubsantragId</bpmn2:sourceRef>
+                <bpmn2:targetRef>automaticCheckUrlaubsantragId</bpmn2:targetRef>
+            </bpmn2:dataInputAssociation>
+            <bpmn2:dataOutputAssociation>
+                <bpmn2:sourceRef>automaticCheckResult</bpmn2:sourceRef>
+                <bpmn2:targetRef>gueltig</bpmn2:targetRef>
+            </bpmn2:dataOutputAssociation>
+        </bpmn2:task>
+
+        <bpmn2:exclusiveGateway id="validity_gateway" name="Automatisch gültig?" gatewayDirection="Diverging">
+            <bpmn2:incoming>flow_check_validity</bpmn2:incoming>
+            <bpmn2:outgoing>flow_valid_manager</bpmn2:outgoing>
+            <bpmn2:outgoing>flow_invalid_rejected</bpmn2:outgoing>
+        </bpmn2:exclusiveGateway>
+
+        <bpmn2:userTask id="manager_approval" name="Genehmigung von Vorgesetztem">
+            <bpmn2:incoming>flow_valid_manager</bpmn2:incoming>
+            <bpmn2:outgoing>flow_manager_decision</bpmn2:outgoing>
+            <bpmn2:ioSpecification>
+                <bpmn2:dataInput id="managerTaskName" name="TaskName"
+                                 drools:dtype="java.lang.String"
+                                 itemSubjectRef="managerTaskNameItem"/>
+                <bpmn2:dataInput id="managerActorId" name="ActorId"
+                                 drools:dtype="java.lang.String"
+                                 itemSubjectRef="managerActorIdItem"/>
+                <bpmn2:dataInput id="managerSkippable" name="Skippable"
+                                 drools:dtype="java.lang.Object"
+                                 itemSubjectRef="managerSkippableItem"/>
+                <bpmn2:dataOutput id="managerDecision" name="genehmigt"
+                                  drools:dtype="java.lang.Boolean"
+                                  itemSubjectRef="managerDecisionItem"/>
+                <bpmn2:inputSet>
+                    <bpmn2:dataInputRefs>managerTaskName</bpmn2:dataInputRefs>
+                    <bpmn2:dataInputRefs>managerActorId</bpmn2:dataInputRefs>
+                    <bpmn2:dataInputRefs>managerSkippable</bpmn2:dataInputRefs>
+                </bpmn2:inputSet>
+                <bpmn2:outputSet>
+                    <bpmn2:dataOutputRefs>managerDecision</bpmn2:dataOutputRefs>
+                </bpmn2:outputSet>
+            </bpmn2:ioSpecification>
+            <bpmn2:dataInputAssociation>
+                <bpmn2:targetRef>managerTaskName</bpmn2:targetRef>
+                <bpmn2:assignment>
+                    <bpmn2:from xsi:type="bpmn2:tFormalExpression">Vorgesetztenentscheidung</bpmn2:from>
+                    <bpmn2:to xsi:type="bpmn2:tFormalExpression">managerTaskName</bpmn2:to>
+                </bpmn2:assignment>
+            </bpmn2:dataInputAssociation>
+            <bpmn2:dataInputAssociation>
+                <bpmn2:sourceRef>teamLeadIds</bpmn2:sourceRef>
+                <bpmn2:targetRef>managerActorId</bpmn2:targetRef>
+            </bpmn2:dataInputAssociation>
+            <bpmn2:dataInputAssociation>
+                <bpmn2:targetRef>managerSkippable</bpmn2:targetRef>
+                <bpmn2:assignment>
+                    <bpmn2:from xsi:type="bpmn2:tFormalExpression">true</bpmn2:from>
+                    <bpmn2:to xsi:type="bpmn2:tFormalExpression">managerSkippable</bpmn2:to>
+                </bpmn2:assignment>
+            </bpmn2:dataInputAssociation>
+            <bpmn2:dataOutputAssociation>
+                <bpmn2:sourceRef>managerDecision</bpmn2:sourceRef>
+                <bpmn2:targetRef>genehmigt</bpmn2:targetRef>
+            </bpmn2:dataOutputAssociation>
+        </bpmn2:userTask>
+
+        <bpmn2:exclusiveGateway id="decision_gateway" name="Genehmigt?" gatewayDirection="Diverging">
+            <bpmn2:incoming>flow_manager_decision</bpmn2:incoming>
+            <bpmn2:outgoing>flow_approved</bpmn2:outgoing>
+            <bpmn2:outgoing>flow_manager_rejected</bpmn2:outgoing>
+        </bpmn2:exclusiveGateway>
+
+        <bpmn2:endEvent id="approved" name="Urlaubsantrag genehmigt">
+            <bpmn2:incoming>flow_approved</bpmn2:incoming>
+        </bpmn2:endEvent>
+        <bpmn2:exclusiveGateway id="rejection_gateway" name="Ablehnung zusammenführen" gatewayDirection="Converging">
+            <bpmn2:incoming>flow_invalid_rejected</bpmn2:incoming>
+            <bpmn2:incoming>flow_manager_rejected</bpmn2:incoming>
+            <bpmn2:outgoing>flow_rejected</bpmn2:outgoing>
+        </bpmn2:exclusiveGateway>
+        <bpmn2:endEvent id="rejected" name="Urlaubsantrag abgelehnt">
+            <bpmn2:incoming>flow_rejected</bpmn2:incoming>
+        </bpmn2:endEvent>
+
+        <bpmn2:sequenceFlow id="flow_start_check" sourceRef="start" targetRef="automatic_check"/>
+        <bpmn2:sequenceFlow id="flow_check_validity" sourceRef="automatic_check" targetRef="validity_gateway"/>
+        <bpmn2:sequenceFlow id="flow_valid_manager" name="gültig" sourceRef="validity_gateway" targetRef="manager_approval">
+            <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.java.com/java"><![CDATA[return gueltig;]]></bpmn2:conditionExpression>
+        </bpmn2:sequenceFlow>
+        <bpmn2:sequenceFlow id="flow_invalid_rejected" name="ungültig" sourceRef="validity_gateway" targetRef="rejection_gateway">
+            <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.java.com/java"><![CDATA[return !gueltig;]]></bpmn2:conditionExpression>
+        </bpmn2:sequenceFlow>
+        <bpmn2:sequenceFlow id="flow_manager_decision" sourceRef="manager_approval" targetRef="decision_gateway"/>
+        <bpmn2:sequenceFlow id="flow_approved" name="genehmigt" sourceRef="decision_gateway" targetRef="approved">
+            <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.java.com/java"><![CDATA[return genehmigt;]]></bpmn2:conditionExpression>
+        </bpmn2:sequenceFlow>
+        <bpmn2:sequenceFlow id="flow_manager_rejected" name="abgelehnt" sourceRef="decision_gateway" targetRef="rejection_gateway">
+            <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.java.com/java"><![CDATA[return !genehmigt;]]></bpmn2:conditionExpression>
+        </bpmn2:sequenceFlow>
+        <bpmn2:sequenceFlow id="flow_rejected" sourceRef="rejection_gateway" targetRef="rejected"/>
+    </bpmn2:process>
+
+    <bpmndi:BPMNDiagram id="vacation_approval_diagram">
+        <bpmndi:BPMNPlane id="vacation_approval_plane" bpmnElement="vacation_approval">
+            <bpmndi:BPMNShape id="start_shape" bpmnElement="start">
+                <dc:Bounds x="80" y="172" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="automatic_check_shape" bpmnElement="automatic_check">
+                <dc:Bounds x="170" y="150" width="150" height="80"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="validity_gateway_shape" bpmnElement="validity_gateway" isMarkerVisible="true">
+                <dc:Bounds x="380" y="165" width="50" height="50"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="manager_approval_shape" bpmnElement="manager_approval">
+                <dc:Bounds x="500" y="150" width="170" height="80"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="decision_gateway_shape" bpmnElement="decision_gateway" isMarkerVisible="true">
+                <dc:Bounds x="730" y="165" width="50" height="50"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="approved_shape" bpmnElement="approved">
+                <dc:Bounds x="850" y="90" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="rejection_gateway_shape" bpmnElement="rejection_gateway" isMarkerVisible="true">
+                <dc:Bounds x="830" y="253" width="50" height="50"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="rejected_shape" bpmnElement="rejected">
+                <dc:Bounds x="930" y="260" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+
+            <bpmndi:BPMNEdge id="flow_start_check_edge" bpmnElement="flow_start_check">
+                <di:waypoint x="116" y="190"/>
+                <di:waypoint x="170" y="190"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge id="flow_check_validity_edge" bpmnElement="flow_check_validity">
+                <di:waypoint x="320" y="190"/>
+                <di:waypoint x="380" y="190"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge id="flow_valid_manager_edge" bpmnElement="flow_valid_manager">
+                <di:waypoint x="430" y="190"/>
+                <di:waypoint x="500" y="190"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge id="flow_invalid_rejected_edge" bpmnElement="flow_invalid_rejected">
+                <di:waypoint x="405" y="215"/>
+                <di:waypoint x="405" y="278"/>
+                <di:waypoint x="830" y="278"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge id="flow_manager_decision_edge" bpmnElement="flow_manager_decision">
+                <di:waypoint x="670" y="190"/>
+                <di:waypoint x="730" y="190"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge id="flow_approved_edge" bpmnElement="flow_approved">
+                <di:waypoint x="755" y="165"/>
+                <di:waypoint x="755" y="108"/>
+                <di:waypoint x="850" y="108"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge id="flow_manager_rejected_edge" bpmnElement="flow_manager_rejected">
+                <di:waypoint x="755" y="215"/>
+                <di:waypoint x="755" y="278"/>
+                <di:waypoint x="830" y="278"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge id="flow_rejected_edge" bpmnElement="flow_rejected">
+                <di:waypoint x="880" y="278"/>
+                <di:waypoint x="930" y="278"/>
+            </bpmndi:BPMNEdge>
+        </bpmndi:BPMNPlane>
+    </bpmndi:BPMNDiagram>
+</bpmn2:definitions>
